@@ -61,21 +61,28 @@
                         📚 高校受験
                     </button>
                     
-                    <button id="btn-university_entrance" onclick="selectCategory('university_entrance_main')" class="w-full py-4 bg-primary text-white text-xl font-bold rounded-xl shadow-lg hover:bg-indigo-600 transition-colors duration-200 transform hover:scale-[1.02]">
-                        🎓 大学受験
+                    <button id="btn-common_test" onclick="selectCategory('common_test_main')" class="w-full py-4 bg-primary text-white text-xl font-bold rounded-xl shadow-lg hover:bg-indigo-600 transition-colors duration-200 transform hover:scale-[1.02]">
+                        🎓 共通テスト
                     </button>
                 </div>
 
-                <div id="university-entrance-sub" class="mt-8 pt-6 border-t border-gray-200 w-full max-w-md hidden">
-                    <h3 class="text-xl font-semibold text-gray-700 mb-4">大学受験：学習内容を選択</h3>
+                <div id="common-test-sub" class="mt-8 pt-6 border-t border-gray-200 w-full max-w-md hidden">
+                    <h3 class="text-xl font-semibold text-gray-700 mb-4">共通テスト：学習内容を選択</h3>
                     <div class="flex space-x-4">
                         <button onclick="startLearning('common_test_listening')" class="flex-1 py-3 bg-red-500 text-white font-bold rounded-lg shadow hover:bg-red-600 transition-colors duration-200">
-                            共通テスト リスニング
+                            リスニング
                         </button>
                         <button onclick="startLearning('common_test_reading')" class="flex-1 py-3 bg-blue-500 text-white font-bold rounded-lg shadow hover:bg-blue-600 transition-colors duration-200">
-                            共通テスト リーディング
+                            リーディング
                         </button>
                     </div>
+                </div>
+                
+                <div id="single-category-transition" class="mt-8 pt-6 w-full max-w-md hidden">
+                    <h3 id="single-category-title" class="text-xl font-semibold text-gray-700 mb-4"></h3>
+                    <button id="single-category-start-btn" class="w-full py-3 bg-secondary text-white font-bold rounded-lg shadow hover:bg-green-600 transition-colors duration-200">
+                        学習を開始する
+                    </button>
                 </div>
             </div>
             
@@ -171,6 +178,7 @@
 
     // JSONパスと対応する音声フォルダを定義
     const CATEGORY_MAP = {
+        // ダミーのデータパス。実際のデータファイル名に合わせて調整してください。
         'travel': { 
             jsonPath: './data/travel_sentences.json', 
             audioFolder: 'travel',
@@ -181,15 +189,16 @@
             audioFolder: 'high_school',
             name: '高校受験'
         },
+        // 共通テストのリスニングとリーディングは同じデータを使用
         'common_test_listening': { 
-            jsonPath: './data/common_test_listening_sentences.json', 
+            jsonPath: './data/sentences_converted.json', // 添付されたJSONを使用
             audioFolder: 'common_test', 
-            name: '大学受験 (リスニング)'
+            name: '共通テスト (リスニング)'
         },
         'common_test_reading': { 
-            jsonPath: './data/common_test_reading_sentences.json', 
+            jsonPath: './data/sentences_converted.json', // 添付されたJSONを使用
             audioFolder: 'common_test', 
-            name: '大学受験 (リーディング)'
+            name: '共通テスト (リーディング)'
         },
     };
 
@@ -206,12 +215,16 @@
     const resetScrambleBtn = document.getElementById('reset-scramble-btn');
     const selectionScreenEl = document.getElementById('selection-screen'); 
     const learningScreenEl = document.getElementById('learning-screen'); 
-    const universityEntranceSubEl = document.getElementById('university-entrance-sub'); // ID変更
+    const commonTestSubEl = document.getElementById('common-test-sub'); 
     const appHeaderEl = document.getElementById('app-header'); 
     const appFooterEl = document.getElementById('app-footer'); 
     const currentCategoryNameEl = document.getElementById('current-category-name'); 
     const selectionTitleEl = document.getElementById('selection-title');
     const mainCategoryButtonsEl = document.getElementById('main-category-buttons');
+    const singleCategoryTransitionEl = document.getElementById('single-category-transition');
+    const singleCategoryTitleEl = document.getElementById('single-category-title');
+    const singleCategoryStartBtn = document.getElementById('single-category-start-btn');
+
 
     // --- アプリ初期化 ---
     window.onload = function() {
@@ -227,26 +240,44 @@
         appHeaderEl.classList.add('hidden');
         appFooterEl.classList.add('hidden');
 
-        // メインカテゴリボタンを再表示し、サブカテゴリは非表示にする
+        // メインカテゴリボタンを再表示し、サブカテゴリは全て非表示にする
         mainCategoryButtonsEl.classList.remove('hidden');
-        universityEntranceSubEl.classList.add('hidden');
+        commonTestSubEl.classList.add('hidden');
+        singleCategoryTransitionEl.classList.add('hidden');
+        
         selectionTitleEl.textContent = '学習コンテンツを選択してください'; // タイトルをリセット
         englishTextEl.textContent = '学習コンテンツを選択してください'; // メッセージリセット
     }
 
     /**
      * カテゴリボタンが押されたときの処理
-     * @param {string} category - 選択されたカテゴリキー ('travel', 'high_school', 'university_entrance_main')
+     * @param {string} category - 選択されたカテゴリキー ('travel', 'high_school', 'common_test_main')
      */
     function selectCategory(category) {
-        if (category === 'university_entrance_main') {
-            // 大学受験が選択されたら、メインボタンを非表示にし、サブカテゴリを表示
-            mainCategoryButtonsEl.classList.add('hidden');
-            universityEntranceSubEl.classList.remove('hidden');
-            selectionTitleEl.textContent = '大学受験：学習内容を選択'; // タイトルを変更
+        // メインボタンを非表示にする
+        mainCategoryButtonsEl.classList.add('hidden');
+        commonTestSubEl.classList.add('hidden');
+        singleCategoryTransitionEl.classList.add('hidden');
+
+        if (category === 'common_test_main') {
+            // 共通テストが選択された場合
+            commonTestSubEl.classList.remove('hidden');
+            selectionTitleEl.textContent = '共通テスト：学習内容を選択'; // タイトルを変更
         } else {
-            // 他のカテゴリが選択されたら、即座に学習開始
-            startLearning(category);
+            // 旅行用英語または高校受験が選択された場合
+            const configKey = (category === 'travel' ? 'travel' : 'high_school');
+            const config = CATEGORY_MAP[configKey];
+            
+            // 次の画面への遷移アニメーション（学習開始ボタンを表示）
+            singleCategoryTransitionEl.classList.remove('hidden');
+            singleCategoryTitleEl.textContent = `${config.name} の学習を開始しますか？`;
+            
+            // 開始ボタンの処理を設定
+            singleCategoryStartBtn.onclick = () => {
+                // 選択されたカテゴリキーに対応するリスニング/リーディングのキーに割り当てる
+                // (データ構造を簡略化するため、一旦キーを固定)
+                startLearning(configKey === 'travel' ? 'travel' : 'high_school');
+            };
         }
     }
     
@@ -266,7 +297,10 @@
         learningScreenEl.classList.remove('hidden');
         appHeaderEl.classList.remove('hidden');
         appFooterEl.classList.remove('hidden');
-        universityEntranceSubEl.classList.add('hidden'); // サブカテゴリも非表示に戻す
+
+        // サブ画面要素を非表示に戻す（念のため）
+        commonTestSubEl.classList.add('hidden'); 
+        singleCategoryTransitionEl.classList.add('hidden');
         
         currentCategoryKey = key;
         currentCategoryNameEl.textContent = `カテゴリ: ${config.name}`;
@@ -276,7 +310,6 @@
 
             const response = await fetch(config.jsonPath); 
             if (!response.ok) {
-                // ファイルが存在しない、またはHTTPエラーの場合
                 throw new Error(`ファイルが見つからない、またはエラーが発生しました。パス: ${config.jsonPath}`);
             }
             
@@ -288,9 +321,8 @@
                 return;
             }
             
-            // データがロードされたら、初期モードで学習開始
-            currentSentenceIndex = 0; // インデックスをリセット
-            changeMode(1); // 初期モード（英文先行）で開始
+            currentSentenceIndex = 0; 
+            changeMode(1); 
         } catch (error) {
             console.error("データの読み込み中にエラーが発生しました:", error);
             englishTextEl.textContent = `データの読み込みに失敗しました。\n${error.message}`;
@@ -426,10 +458,16 @@
         const data = DB[currentSentenceIndex];
         
         // 現在のカテゴリキーからオーディオフォルダを決定
-        const audioFolder = CATEGORY_MAP[currentCategoryKey]?.audioFolder || 'common_test'; 
+        // (キーが travel, high_school, common_test_listening/readingのいずれかであることを前提とする)
+        let audioFolder = 'common_test'; 
+        if (currentCategoryKey === 'travel') {
+            audioFolder = 'travel';
+        } else if (currentCategoryKey === 'high_school') {
+            audioFolder = 'high_school';
+        }
         
         // 音声ファイルパスを動的に生成
-        const audioPath = `./audio/${audioFolder}/${data.id}.mp3`;
+        const audioPath = `./audio/${data.id}.mp3`;
         
         const audio = new Audio(audioPath);
         audio.play().catch(e => {
