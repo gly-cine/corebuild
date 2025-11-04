@@ -57,27 +57,22 @@
                         ✈️ 旅行用英語
                     </button>
 
-                    <button id="btn-high_school" onclick="selectCategory('high_school')" class="w-full py-4 bg-green-500 text-white text-xl font-bold rounded-xl shadow-lg hover:bg-green-600 transition-colors duration-200 transform hover:scale-[1.02]">
-                        📚 高校受験
-                    </button>
-                    
-                    <button id="btn-common_test" onclick="selectCategory('common_test_main')" class="w-full py-4 bg-primary text-white text-xl font-bold rounded-xl shadow-lg hover:bg-indigo-600 transition-colors duration-200 transform hover:scale-[1.02]">
-                        🎓 共通テスト
-                    </button>
-                </div>
+                    </div>
+                
+                <div id="common-test-sub-group" class="w-full max-w-md hidden">
+                    <h2 id="common-test-sub-title" class="text-3xl font-extrabold text-gray-800 mb-4">
+                        共通テスト：学習内容を選択
+                    </h2>
 
-                <h2 id="common-test-sub-title" class="text-3xl font-extrabold text-gray-800 mt-8 mb-4 hidden">
-                    共通テスト：学習内容を選択
-                </h2>
-
-                <div id="common-test-sub" class="mt-8 pt-6 w-full max-w-md hidden">
-                    <div class="flex space-x-4">
-                        <button onclick="startLearning('common_test_listening')" class="flex-1 py-3 bg-red-500 text-white font-bold rounded-lg shadow hover:bg-red-600 transition-colors duration-200">
-                            リスニング
-                        </button>
-                        <button onclick="startLearning('common_test_reading')" class="flex-1 py-3 bg-blue-500 text-white font-bold rounded-lg shadow hover:bg-blue-600 transition-colors duration-200">
-                            リーディング
-                        </button>
+                    <div id="common-test-sub">
+                        <div class="flex space-x-4">
+                            <button onclick="startLearning('common_test_listening')" class="flex-1 py-3 bg-red-500 text-white font-bold rounded-lg shadow hover:bg-red-600 transition-colors duration-200">
+                                リスニング
+                            </button>
+                            <button onclick="startLearning('common_test_reading')" class="flex-1 py-3 bg-blue-500 text-white font-bold rounded-lg shadow hover:bg-blue-600 transition-colors duration-200">
+                                リーディング
+                            </button>
+                        </div>
                     </div>
                 </div>
                 
@@ -218,17 +213,13 @@
     const resetScrambleBtn = document.getElementById('reset-scramble-btn');
     const selectionScreenEl = document.getElementById('selection-screen'); 
     const learningScreenEl = document.getElementById('learning-screen'); 
-    const commonTestSubEl = document.getElementById('common-test-sub'); 
-    const commonTestSubTitleEl = document.getElementById('common-test-sub-title'); // 新しく追加
+    const commonTestSubGroupEl = document.getElementById('common-test-sub-group'); 
     const appHeaderEl = document.getElementById('app-header'); 
     const appFooterEl = document.getElementById('app-footer'); 
     const currentCategoryNameEl = document.getElementById('current-category-name'); 
     const selectionTitleEl = document.getElementById('selection-title');
     const mainCategoryButtonsEl = document.getElementById('main-category-buttons');
     const singleCategoryTransitionEl = document.getElementById('single-category-transition');
-    const singleCategoryTitleEl = document.getElementById('single-category-title');
-    const singleCategoryStartBtn = document.getElementById('single-category-start-btn');
-
 
     // --- アプリ初期化 ---
     window.onload = function() {
@@ -244,10 +235,10 @@
         appHeaderEl.classList.add('hidden');
         appFooterEl.classList.add('hidden');
         
-        // メインカテゴリボタンを再表示し、サブカテゴリは全て非表示にする
+        // メインカテゴリボタンを再表示
         mainCategoryButtonsEl.classList.remove('hidden');
-        commonTestSubEl.classList.add('hidden');
-        commonTestSubTitleEl.classList.add('hidden'); // サブタイトルも非表示
+        // 他のサブ画面要素は非表示
+        commonTestSubGroupEl.classList.add('hidden'); 
         singleCategoryTransitionEl.classList.add('hidden');
         
         // メインタイトルをリセット (表示)
@@ -260,36 +251,36 @@
      * @param {string} category - 選択されたカテゴリキー ('travel', 'high_school', 'common_test_main')
      */
     function selectCategory(category) {
+        // 現時点では「旅行用英語」のみをサポート
+        if (category === 'travel') {
+            // 中間画面をスキップし、直接学習開始
+            startLearning('travel');
+            return;
+        } 
+        
+        // 今後の拡張のために、既存のロジックは残しつつ非表示にしておく
+        
         // メインボタンを非表示にする
         mainCategoryButtonsEl.classList.add('hidden');
-        commonTestSubEl.classList.add('hidden');
-        commonTestSubTitleEl.classList.add('hidden'); // 一旦非表示
+        commonTestSubGroupEl.classList.add('hidden'); 
         singleCategoryTransitionEl.classList.add('hidden');
         
-        // 共通テストが選択された場合
         if (category === 'common_test_main') {
-            // メインの「学習コンテンツを選択してください」タイトルを非表示
+            // 共通テストが選択された場合 (現在は削除済みだがロジックは残す)
             selectionTitleEl.classList.add('hidden');
-            
-            // サブカテゴリ選択画面のタイトルとボタンエリアを表示
-            commonTestSubTitleEl.classList.remove('hidden');
-            commonTestSubEl.classList.remove('hidden');
+            commonTestSubGroupEl.classList.remove('hidden');
 
         } else {
-            // 旅行用英語または高校受験が選択された場合
+            // 高校受験などが選択された場合 (現在は削除済みだがロジックは残す)
             const configKey = category;
             const config = CATEGORY_MAP[configKey];
             
-            // メインタイトルを再表示する（次の画面のためのタイトルとして使用）
             selectionTitleEl.classList.remove('hidden');
             selectionTitleEl.textContent = config.name + 'の学習を開始します';
             
-            // 次の画面への遷移アニメーション（学習開始ボタンを表示）
             singleCategoryTransitionEl.classList.remove('hidden');
-            singleCategoryTitleEl.textContent = `${config.name} の学習を開始しますか？`;
-            
-            // 開始ボタンの処理を設定
-            singleCategoryStartBtn.onclick = () => {
+            document.getElementById('single-category-title').textContent = `${config.name} の学習を開始しますか？`;
+            document.getElementById('single-category-start-btn').onclick = () => {
                 startLearning(configKey);
             };
         }
@@ -313,10 +304,9 @@
         appFooterEl.classList.remove('hidden');
 
         // サブ画面要素を非表示に戻す（念のため）
-        commonTestSubEl.classList.add('hidden'); 
-        commonTestSubTitleEl.classList.add('hidden'); 
+        commonTestSubGroupEl.classList.add('hidden'); 
         singleCategoryTransitionEl.classList.add('hidden');
-        selectionTitleEl.classList.remove('hidden'); // タイトルは学習画面では使わないが、戻った時のためにリセット
+        selectionTitleEl.classList.remove('hidden'); 
 
         currentCategoryKey = key;
         currentCategoryNameEl.textContent = `カテゴリ: ${config.name}`;
@@ -324,6 +314,7 @@
         try {
             englishTextEl.textContent = `${config.name}のデータを読み込み中です...`;
 
+            // ここで、必要に応じてファイルパスを調整してください。
             const response = await fetch(config.jsonPath); 
             if (!response.ok) {
                 throw new Error(`ファイルが見つからない、またはエラーが発生しました。パス: ${config.jsonPath}`);
@@ -452,16 +443,16 @@
         if (isTranslationVisible) {
             translationCardEl.classList.remove('hidden');
             if (currentMode === 2) {
-                 toggleTranslationBtn.textContent = '英文・和訳を非表示';
+                 document.getElementById('toggle-translation-btn').textContent = '英文・和訳を非表示';
             } else {
-                toggleTranslationBtn.textContent = '和訳を非表示';
+                document.getElementById('toggle-translation-btn').textContent = '和訳を非表示';
             }
         } else {
             translationCardEl.classList.add('hidden');
             if (currentMode === 2) {
-                 toggleTranslationBtn.textContent = '英文・和訳を表示';
+                 document.getElementById('toggle-translation-btn').textContent = '英文・和訳を表示';
             } else {
-                toggleTranslationBtn.textContent = '和訳を非表示';
+                document.getElementById('toggle-translation-btn').textContent = '和訳を表示';
             }
         }
     }
