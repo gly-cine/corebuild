@@ -176,25 +176,23 @@
 
     // JSONパスと対応する音声フォルダを定義
     const CATEGORY_MAP = {
-        // ダミーのデータパス。実際のデータファイル名に合わせて調整してください。
         'travel': { 
             jsonPath: './data/travel_sentences.json', 
-            audioFolder: 'travel',
+            audioFolder: 'travel', // <--- travelフォルダを指定
             name: '旅行用英語'
         },
         'high_school': { 
             jsonPath: './data/high_school_entrance_sentences.json', 
-            audioFolder: 'high_school',
+            audioFolder: 'high_school', // <--- high_schoolフォルダを指定
             name: '高校受験'
         },
-        // 共通テストのリスニングとリーディングは同じデータを使用
         'common_test_listening': { 
-            jsonPath: './data/sentences_converted.json', // 添付されたJSONを使用
-            audioFolder: 'common_test', 
+            jsonPath: './data/common_test_listening_sentences.json', 
+            audioFolder: 'common_test', // <--- common_testフォルダを指定
             name: '共通テスト (リスニング)'
         },
         'common_test_reading': { 
-            jsonPath: './data/sentences_converted.json', // 添付されたJSONを使用
+            jsonPath: './data/common_test_reading_sentences.json', 
             audioFolder: 'common_test', 
             name: '共通テスト (リーディング)'
         },
@@ -314,7 +312,7 @@
         try {
             englishTextEl.textContent = `${config.name}のデータを読み込み中です...`;
 
-            // ここで、必要に応じてファイルパスを調整してください。
+            // JSONファイルの読み込み
             const response = await fetch(config.jsonPath); 
             if (!response.ok) {
                 throw new Error(`ファイルが見つからない、またはエラーが発生しました。パス: ${config.jsonPath}`);
@@ -462,19 +460,18 @@
      * 音声ファイルを再生する
      */
     function playAudio() {
-        if (DB.length === 0) return;
+        if (DB.length === 0 || !currentCategoryKey) return;
+        
         const data = DB[currentSentenceIndex];
+        const config = CATEGORY_MAP[currentCategoryKey];
         
-        // 現在のカテゴリキーからオーディオフォルダを決定
-        let audioFolder = 'common_test'; 
-        if (currentCategoryKey === 'travel') {
-            audioFolder = 'travel';
-        } else if (currentCategoryKey === 'high_school') {
-            audioFolder = 'high_school';
+        if (!config || !config.audioFolder) {
+             showMessage("エラー: 音声フォルダ設定がありません。", 'danger');
+             return;
         }
-        
-        // 音声ファイルパスを動的に生成
-        const audioPath = `./audio/${data.id}.mp3`;
+
+        // 音声ファイルパスを動的に生成: ./audio/{audioFolder}/{data.id}.mp3
+        const audioPath = `./audio/${config.audioFolder}/${data.id}.mp3`;
         
         const audio = new Audio(audioPath);
         audio.play().catch(e => {
