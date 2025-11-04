@@ -246,7 +246,6 @@
         singleCategoryTransitionEl.classList.add('hidden');
         
         selectionTitleEl.textContent = '学習コンテンツを選択してください'; // タイトルをリセット
-        englishTextEl.textContent = '学習コンテンツを選択してください'; // メッセージリセット
     }
 
     /**
@@ -258,11 +257,17 @@
         mainCategoryButtonsEl.classList.add('hidden');
         commonTestSubEl.classList.add('hidden');
         singleCategoryTransitionEl.classList.add('hidden');
+        
+        // 選択画面のタイトルも非表示にする (赤丸部分だけ表示するため)
+        selectionTitleEl.classList.add('hidden'); 
 
         if (category === 'common_test_main') {
             // 共通テストが選択された場合
+            // サブカテゴリ選択画面（赤丸の部分）を表示する
             commonTestSubEl.classList.remove('hidden');
-            selectionTitleEl.textContent = '共通テスト：学習内容を選択'; // タイトルを変更
+            // タイトルを「共通テスト：学習内容を選択」にする (画像にはないが分かりやすさのため)
+            document.querySelector('#common-test-sub h3').textContent = '共通テスト：学習内容を選択';
+
         } else {
             // 旅行用英語または高校受験が選択された場合
             const configKey = (category === 'travel' ? 'travel' : 'high_school');
@@ -274,9 +279,7 @@
             
             // 開始ボタンの処理を設定
             singleCategoryStartBtn.onclick = () => {
-                // 選択されたカテゴリキーに対応するリスニング/リーディングのキーに割り当てる
-                // (データ構造を簡略化するため、一旦キーを固定)
-                startLearning(configKey === 'travel' ? 'travel' : 'high_school');
+                startLearning(configKey);
             };
         }
     }
@@ -301,7 +304,8 @@
         // サブ画面要素を非表示に戻す（念のため）
         commonTestSubEl.classList.add('hidden'); 
         singleCategoryTransitionEl.classList.add('hidden');
-        
+        selectionTitleEl.classList.remove('hidden'); // タイトルは学習画面では使わないが、戻った時のためにリセット
+
         currentCategoryKey = key;
         currentCategoryNameEl.textContent = `カテゴリ: ${config.name}`;
         
@@ -313,6 +317,7 @@
                 throw new Error(`ファイルが見つからない、またはエラーが発生しました。パス: ${config.jsonPath}`);
             }
             
+            // JSONを読み込み、グローバルDBに格納
             DB = await response.json(); 
 
             if (DB.length === 0) {
@@ -322,7 +327,7 @@
             }
             
             currentSentenceIndex = 0; 
-            changeMode(1); 
+            changeMode(1); // デフォルトの学習モード (英文先行) で開始
         } catch (error) {
             console.error("データの読み込み中にエラーが発生しました:", error);
             englishTextEl.textContent = `データの読み込みに失敗しました。\n${error.message}`;
@@ -458,7 +463,6 @@
         const data = DB[currentSentenceIndex];
         
         // 現在のカテゴリキーからオーディオフォルダを決定
-        // (キーが travel, high_school, common_test_listening/readingのいずれかであることを前提とする)
         let audioFolder = 'common_test'; 
         if (currentCategoryKey === 'travel') {
             audioFolder = 'travel';
