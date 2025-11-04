@@ -13,7 +13,6 @@
         .word-button { transition: all 0.2s; }
         .word-button:hover { transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1); }
         .selected { opacity: 0.5; pointer-events: none; }
-        /* トランジションはコード簡略化のため削除 */
     </style>
     <script>
         tailwind.config = {
@@ -51,30 +50,30 @@
         <main class="flex-grow p-6 flex flex-col space-y-4 overflow-y-auto">
 
             <div id="selection-screen" class="p-12 flex flex-col items-center justify-center h-full text-center">
-                <h2 class="text-3xl font-extrabold text-gray-800 mb-8">学習コンテンツを選択してください</h2>
+                <h2 id="selection-title" class="text-3xl font-extrabold text-gray-800 mb-8">学習コンテンツを選択してください</h2>
                 
-                <div class="space-y-6 w-full max-w-md">
-                    <button onclick="selectCategory('travel')" class="w-full py-4 bg-yellow-500 text-white text-xl font-bold rounded-xl shadow-lg hover:bg-yellow-600 transition-colors duration-200 transform hover:scale-[1.02]">
+                <div id="main-category-buttons" class="space-y-6 w-full max-w-md">
+                    <button id="btn-travel" onclick="selectCategory('travel')" class="w-full py-4 bg-yellow-500 text-white text-xl font-bold rounded-xl shadow-lg hover:bg-yellow-600 transition-colors duration-200 transform hover:scale-[1.02]">
                         ✈️ 旅行用英語
                     </button>
 
-                    <button onclick="selectCategory('high_school')" class="w-full py-4 bg-green-500 text-white text-xl font-bold rounded-xl shadow-lg hover:bg-green-600 transition-colors duration-200 transform hover:scale-[1.02]">
+                    <button id="btn-high_school" onclick="selectCategory('high_school')" class="w-full py-4 bg-green-500 text-white text-xl font-bold rounded-xl shadow-lg hover:bg-green-600 transition-colors duration-200 transform hover:scale-[1.02]">
                         📚 高校受験
                     </button>
                     
-                    <button onclick="selectCategory('common_test_main')" class="w-full py-4 bg-primary text-white text-xl font-bold rounded-xl shadow-lg hover:bg-indigo-600 transition-colors duration-200 transform hover:scale-[1.02]">
-                        🎓 共通テスト
+                    <button id="btn-university_entrance" onclick="selectCategory('university_entrance_main')" class="w-full py-4 bg-primary text-white text-xl font-bold rounded-xl shadow-lg hover:bg-indigo-600 transition-colors duration-200 transform hover:scale-[1.02]">
+                        🎓 大学受験
                     </button>
                 </div>
 
-                <div id="common-test-sub" class="mt-8 pt-6 border-t border-gray-200 w-full max-w-md hidden">
-                    <h3 class="text-xl font-semibold text-gray-700 mb-4">共通テスト：学習内容を選択</h3>
+                <div id="university-entrance-sub" class="mt-8 pt-6 border-t border-gray-200 w-full max-w-md hidden">
+                    <h3 class="text-xl font-semibold text-gray-700 mb-4">大学受験：学習内容を選択</h3>
                     <div class="flex space-x-4">
                         <button onclick="startLearning('common_test_listening')" class="flex-1 py-3 bg-red-500 text-white font-bold rounded-lg shadow hover:bg-red-600 transition-colors duration-200">
-                            リスニング
+                            共通テスト リスニング
                         </button>
                         <button onclick="startLearning('common_test_reading')" class="flex-1 py-3 bg-blue-500 text-white font-bold rounded-lg shadow hover:bg-blue-600 transition-colors duration-200">
-                            リーディング
+                            共通テスト リーディング
                         </button>
                     </div>
                 </div>
@@ -168,9 +167,9 @@
     let correctWords = []; 
     let scrambledWords = []; 
     let answerSequence = []; 
-    let currentCategoryKey = ''; // 現在ロードされているデータのキー（'travel', 'common_test_listening'など）
+    let currentCategoryKey = ''; 
 
-    // 【修正箇所】JSONパスと対応する音声フォルダを定義
+    // JSONパスと対応する音声フォルダを定義
     const CATEGORY_MAP = {
         'travel': { 
             jsonPath: './data/travel_sentences.json', 
@@ -184,13 +183,13 @@
         },
         'common_test_listening': { 
             jsonPath: './data/common_test_listening_sentences.json', 
-            audioFolder: 'common_test', // 共通テストの音声フォルダ
-            name: '共通テスト (リスニング)'
+            audioFolder: 'common_test', 
+            name: '大学受験 (リスニング)'
         },
         'common_test_reading': { 
             jsonPath: './data/common_test_reading_sentences.json', 
-            audioFolder: 'common_test', // リーディングも共通テストの音声フォルダ
-            name: '共通テスト (リーディング)'
+            audioFolder: 'common_test', 
+            name: '大学受験 (リーディング)'
         },
     };
 
@@ -207,45 +206,53 @@
     const resetScrambleBtn = document.getElementById('reset-scramble-btn');
     const selectionScreenEl = document.getElementById('selection-screen'); 
     const learningScreenEl = document.getElementById('learning-screen'); 
-    const commonTestSubEl = document.getElementById('common-test-sub'); 
+    const universityEntranceSubEl = document.getElementById('university-entrance-sub'); // ID変更
     const appHeaderEl = document.getElementById('app-header'); 
     const appFooterEl = document.getElementById('app-footer'); 
     const currentCategoryNameEl = document.getElementById('current-category-name'); 
+    const selectionTitleEl = document.getElementById('selection-title');
+    const mainCategoryButtonsEl = document.getElementById('main-category-buttons');
 
     // --- アプリ初期化 ---
     window.onload = function() {
-        showSelectionScreen(); // 起動時はカテゴリ選択画面から
+        showSelectionScreen(); 
     };
     
     /**
-     * カテゴリ選択画面を表示し、学習画面を非表示にする
+     * カテゴリ選択画面を表示し、学習画面を非表示にする（初期状態と「カテゴリ変更」ボタン用）
      */
     function showSelectionScreen() {
         selectionScreenEl.classList.remove('hidden');
         learningScreenEl.classList.add('hidden');
         appHeaderEl.classList.add('hidden');
         appFooterEl.classList.add('hidden');
-        commonTestSubEl.classList.add('hidden'); // サブカテゴリも一旦非表示
+
+        // メインカテゴリボタンを再表示し、サブカテゴリは非表示にする
+        mainCategoryButtonsEl.classList.remove('hidden');
+        universityEntranceSubEl.classList.add('hidden');
+        selectionTitleEl.textContent = '学習コンテンツを選択してください'; // タイトルをリセット
         englishTextEl.textContent = '学習コンテンツを選択してください'; // メッセージリセット
     }
 
     /**
      * カテゴリボタンが押されたときの処理
-     * @param {string} category - 選択されたカテゴリキー ('travel', 'high_school', 'common_test_main')
+     * @param {string} category - 選択されたカテゴリキー ('travel', 'high_school', 'university_entrance_main')
      */
     function selectCategory(category) {
-        if (category === 'common_test_main') {
-            // 共通テストの場合はサブカテゴリを表示
-            commonTestSubEl.classList.remove('hidden');
+        if (category === 'university_entrance_main') {
+            // 大学受験が選択されたら、メインボタンを非表示にし、サブカテゴリを表示
+            mainCategoryButtonsEl.classList.add('hidden');
+            universityEntranceSubEl.classList.remove('hidden');
+            selectionTitleEl.textContent = '大学受験：学習内容を選択'; // タイトルを変更
         } else {
-            // それ以外の場合は即座に学習開始
+            // 他のカテゴリが選択されたら、即座に学習開始
             startLearning(category);
         }
     }
     
     /**
      * 学習を開始し、DBをロードする
-     * @param {string} key - CATEGORY_MAPのキー（e.g., 'travel', 'common_test_listening'）
+     * @param {string} key - CATEGORY_MAPのキー
      */
     async function startLearning(key) {
         const config = CATEGORY_MAP[key];
@@ -259,7 +266,7 @@
         learningScreenEl.classList.remove('hidden');
         appHeaderEl.classList.remove('hidden');
         appFooterEl.classList.remove('hidden');
-        commonTestSubEl.classList.add('hidden'); // サブカテゴリは非表示に戻す
+        universityEntranceSubEl.classList.add('hidden'); // サブカテゴリも非表示に戻す
         
         currentCategoryKey = key;
         currentCategoryNameEl.textContent = `カテゴリ: ${config.name}`;
@@ -294,27 +301,21 @@
 
     /**
      * 単語並べ替えのために英文を整形し、単語配列を生成する
-     * @param {string} sentence - 処理する英文
-     * @returns {string[]} 単語（句読点を含む）の配列
      */
     function tokenizeSentence(sentence) {
-        // スペース区切りで単語を抽出
         const words = sentence.trim().replace(/\n/g, ' ').split(/\s+/).filter(w => w.length > 0);
         return words;
     }
 
     /**
      * モードを切り替える
-     * @param {number} mode - 1, 2, or 3
      */
     function changeMode(mode) {
-        // DBがまだロードされていない場合は処理をスキップ
         if (DB.length === 0) return;
 
         currentMode = mode;
         isTranslationVisible = false;
 
-        // 共通要素の表示/非表示リセット
         translationCardEl.classList.add('hidden');
         toggleTranslationBtn.classList.add('hidden');
         scrambleUiEl.classList.add('hidden');
@@ -333,18 +334,15 @@
 
         // モード固有のUI設定
         if (mode === 1) {
-            // モード1: 英文先行
             englishTextEl.classList.remove('blur-sm', 'italic', 'text-gray-400');
             toggleTranslationBtn.textContent = '和訳を表示';
             toggleTranslationBtn.classList.remove('hidden');
         } else if (mode === 2) {
-            // モード2: 音声先行
-            englishTextEl.classList.add('blur-sm'); // 英文をぼかして隠す
+            englishTextEl.classList.add('blur-sm'); 
             englishTextEl.classList.remove('italic', 'text-gray-400');
             toggleTranslationBtn.textContent = '英文・和訳を表示';
             toggleTranslationBtn.classList.remove('hidden');
         } else if (mode === 3) {
-            // モード3: 並べ替え
             scrambleUiEl.classList.remove('hidden');
             checkAnswerBtn.classList.remove('hidden');
             resetScrambleBtn.classList.remove('hidden');
@@ -355,10 +353,9 @@
 
     /**
      * 現在の文のデータをUIに読み込む
-     * @param {number} index - DB配列のインデックス
      */
     function loadSentence(index) {
-        if (DB.length === 0) return; // データがない場合は何もしない
+        if (DB.length === 0) return; 
         
         currentSentenceIndex = (index + DB.length) % DB.length;
         const data = DB[currentSentenceIndex];
@@ -366,21 +363,17 @@
         document.getElementById('sentence-id').textContent = `ID: ${data.id}`;
         document.getElementById('sentence-year').textContent = `出題年度: ${data.year || 'N/A'}`; 
 
-        // 共通表示の更新
         englishTextEl.innerHTML = data.en.replace(/\n/g, '<br>');
         japaneseTextEl.innerHTML = data.ja.replace(/\n/g, '<br>');
 
-        // 和訳の表示をリセット (モード1, 2)
         if (currentMode === 1 || currentMode === 2) {
             isTranslationVisible = false;
             updateTranslationVisibility();
         }
 
-        // モード3のセットアップ
         if (currentMode === 3) {
             setupScrambleMode();
         } else {
-            // モード1と2では英文を初期状態に戻す
             if (currentMode === 1) {
                 englishTextEl.classList.remove('blur-sm');
             } else if (currentMode === 2) {
@@ -399,7 +392,6 @@
         updateTranslationVisibility();
 
         if (currentMode === 2 && isTranslationVisible) {
-            // モード2で表示されたら、英文のぼかしを解除
             englishTextEl.classList.remove('blur-sm');
         }
     }
@@ -433,8 +425,8 @@
         if (DB.length === 0) return;
         const data = DB[currentSentenceIndex];
         
-        // 【修正箇所】現在のカテゴリキーからオーディオフォルダを決定
-        const audioFolder = CATEGORY_MAP[currentCategoryKey]?.audioFolder || 'common_test'; // デフォルトは common_test
+        // 現在のカテゴリキーからオーディオフォルダを決定
+        const audioFolder = CATEGORY_MAP[currentCategoryKey]?.audioFolder || 'common_test'; 
         
         // 音声ファイルパスを動的に生成
         const audioPath = `./audio/${audioFolder}/${data.id}.mp3`;
@@ -454,7 +446,6 @@
 
     /**
      * 次または前の文へ移動する
-     * @param {number} direction - 1 for next, -1 for previous
      */
     function navigate(direction) {
         if (DB.length === 0) return;
@@ -470,19 +461,16 @@
     function setupScrambleMode() {
         const data = DB[currentSentenceIndex];
         
-        // 英文表示エリアには初期メッセージ
         englishTextEl.textContent = '並べ替えモード：以下の単語を正しい順番に組み替えてください。';
         englishTextEl.classList.add('italic', 'text-gray-400');
         englishTextEl.classList.remove('blur-sm'); 
 
-        // 正しい単語配列を生成
         correctWords = tokenizeSentence(data.en);
         
-        // シャッフルされた単語配列を生成
         scrambledWords = [...correctWords];
         shuffleArray(scrambledWords);
         
-        answerSequence = []; // ユーザー解答をリセット
+        answerSequence = []; 
         
         renderScrambledWords();
         renderAnswerArea();
@@ -491,7 +479,6 @@
     
     /**
      * 配列をシャッフルする（Fisher-Yatesアルゴリズム）
-     * @param {Array} array - シャッフルする配列
      */
     function shuffleArray(array) {
         for (let i = array.length - 1; i > 0; i--) {
@@ -511,7 +498,6 @@
             button.textContent = word;
             button.dataset.index = index;
             button.onclick = () => selectWord(word, index);
-            // answerSequenceに含まれる単語の元のインデックスと一致する場合、非表示にする
             if (answerSequence.some(item => item.originalIndex === index)) {
                 button.classList.add('selected');
             }
@@ -533,7 +519,6 @@
             answerAreaEl.appendChild(span);
         });
         
-        // 正しい順番の英文を表示するEnglish Display Cardに現在の回答を表示
         if (answerSequence.length === 0) {
             englishTextEl.textContent = '並べ替えモード：単語を選択してください';
         } else {
@@ -543,13 +528,10 @@
 
     /**
      * シャッフル単語を選択して解答エリアに追加する
-     * @param {string} word - 選択された単語
-     * @param {number} originalIndex - シャッフル配列内の元のインデックス
      */
     function selectWord(word, originalIndex) {
         const button = scrambledWordsAreaEl.querySelector(`[data-index="${originalIndex}"]`);
         if (button) {
-            // ボタンを非表示にし、クリック不能にする
             button.classList.add('selected');
         }
 
@@ -560,12 +542,10 @@
     
     /**
      * 解答エリアの単語を削除し、シャッフルエリアに戻す
-     * @param {number} answerIndex - 解答配列内のインデックス
      */
     function deselectWord(answerIndex) {
         const [removedItem] = answerSequence.splice(answerIndex, 1);
         
-        // 元のボタンを再有効化
         const button = scrambledWordsAreaEl.querySelector(`[data-index="${removedItem.originalIndex}"]`);
         if (button) {
             button.classList.remove('selected');
@@ -579,7 +559,7 @@
      * 並べ替えをリセットする
      */
     function resetScramble() {
-        setupScrambleMode(); // 再度シャッフルしてリセット
+        setupScrambleMode(); 
         showMessage("並べ替えがリセットされました。", 'gray');
     }
 
@@ -592,22 +572,18 @@
             return;
         }
 
-        // ユーザーの回答を文字列として結合
         const userSentence = answerSequence.map(item => item.word).join(' ');
         const correctSentence = correctWords.join(' ');
         
-        // 比較のために正規化（スペースを一つにし、前後の空白を削除）
         const normalizedUser = userSentence.replace(/\s+/g, ' ').trim();
         const normalizedCorrect = correctSentence.replace(/\s+/g, ' ').trim();
 
         if (normalizedUser === normalizedCorrect) {
             showMessage("正解です！よくできました！", 'secondary');
             
-            // 正解の場合、英文表示エリアに正しい英文をしっかりと表示
             englishTextEl.textContent = correctSentence;
             englishTextEl.classList.remove('italic', 'text-gray-400');
             
-            // 和訳を表示する
             translationCardEl.classList.remove('hidden');
 
         } else {
@@ -618,14 +594,11 @@
 
     /**
      * メッセージボックスを表示する
-     * @param {string} text - 表示するメッセージ
-     * @param {string} type - 'secondary', 'danger', 'primary', 'gray' など
      */
     function showMessage(text, type) {
         messageBoxEl.textContent = text;
         messageBoxEl.className = `text-center py-2 px-4 text-lg font-semibold rounded-lg shadow-sm mt-4`;
         
-        // カラークラスの設定
         let bgColor, textColor;
         switch (type) {
             case 'secondary': bgColor = 'bg-green-200'; textColor = 'text-green-800'; break;
