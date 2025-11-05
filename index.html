@@ -84,7 +84,7 @@
                     </p>
                 </div>
     
-                <div id="translation-card" class="bg-white p-4 border border-gray-200 rounded-xl shadow min-h-[60px] transition-all duration-300 hidden">
+                <div id="translation-card" class="bg-white p-4 border border-gray-200 rounded-xl shadow min-h-[60px] transition-all duration-300 hidden flex flex-col justify-center">
                     <p class="text-sm font-semibold text-gray-600 mb-1">和訳</p>
                     <p id="japanese-text" class="text-lg text-gray-700 text-center">
                         -
@@ -188,7 +188,6 @@
     const commonTestSubGroupEl = document.getElementById('common-test-sub-group'); 
     const appHeaderEl = document.getElementById('app-header'); 
     const appFooterEl = document.getElementById('app-footer'); 
-    // 修正: カテゴリ名表示を削除し、進捗インジケーターを参照
     const progressIndicatorEl = document.getElementById('progress-indicator'); 
     const selectionTitleEl = document.getElementById('selection-title');
     const mainCategoryButtonsEl = document.getElementById('main-category-buttons');
@@ -555,11 +554,14 @@
 
     /**
      * 次または前の文へ移動する
+     * @param {number} direction - 1:次, -1:前
      */
     function navigate(direction) {
         if (DB.length === 0) return;
         let newIndex = currentSentenceIndex + direction;
+        // ① 並べ替えモードのバグ修正: 文移動後、現在のモードを再適用し、setupScrambleMode()を強制的に実行させる
         loadSentence(newIndex);
+        changeMode(currentMode);
     }
     
     // --- モード 3 (並べ替え) のロジック ---
@@ -587,6 +589,9 @@
         
         // 並べ替えモードでは和訳を非表示にする
         translationCardEl.classList.add('hidden');
+        
+        // 並べ替えUIを再表示（回答チェックで非表示になっている可能性があるため）
+        scrambleUiEl.classList.remove('hidden');
     }
     
     /**
