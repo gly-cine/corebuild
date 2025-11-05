@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>英語学習サイト</title>
+    <title>英語学習サイト - スタイリッシュテーマ</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* カスタムフォントとして日本語表示に適したInterを設定 */
@@ -13,7 +13,7 @@
         .word-button { transition: all 0.2s; }
         .word-button:hover { transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1); }
         .selected { opacity: 0.5; pointer-events: none; }
-        /* ③ 音声先行モード用の強いぼかし */
+        /* 音声先行モード用の強いぼかし */
         .blur-strong { filter: blur(8px); }
     </style>
     <script>
@@ -21,8 +21,9 @@
             theme: {
                 extend: {
                     colors: {
-                        'primary': '#4f46e5',
-                        'secondary': '#10b981',
+                        // **テーマ 1: スタイリッシュ (IndigoとEmerald)**
+                        'primary': '#4f46e5', // Indigo-600
+                        'secondary': '#10b981', // Emerald-500
                         'danger': '#ef4444',
                     }
                 }
@@ -30,7 +31,7 @@
         }
     </script>
 </head>
-<body class="bg-gray-50 h-screen-no-scroll flex items-center justify-center p-4">
+<body class="bg-[#f9fafb] h-screen-no-scroll flex items-center justify-center p-4">
 
     <div id="app" class="w-full max-w-4xl bg-white shadow-2xl rounded-xl flex flex-col h-full md:h-5/6 overflow-hidden">
 
@@ -39,7 +40,7 @@
             
             <div class="flex items-center space-x-2 mt-3 md:mt-0">
                 <label for="mode-selector" class="text-sm font-medium">学習モード:</label>
-                <select id="mode-selector" onchange="changeMode(this.value)" class="text-gray-800 px-3 py-1 rounded-lg font-medium text-sm transition duration-200 focus:ring-indigo-500 focus:border-indigo-500">
+                <select id="mode-selector" onchange="changeMode(this.value)" class="text-gray-800 px-3 py-1 rounded-lg font-medium text-sm transition duration-200 focus:ring-primary focus:border-primary">
                     <option value="1">① 英文先行</option>
                     <option value="2">② 音声先行</option>
                     <option value="3">③ 並べ替え</option>
@@ -53,14 +54,24 @@
                 <h2 id="selection-title" class="text-3xl font-extrabold text-gray-800 mb-8">学習コンテンツを選択してください</h2>
                 
                 <div id="main-category-buttons" class="space-y-6 w-full max-w-md">
-                    <button id="btn-travel" onclick="selectCategory('travel')" class="w-full py-4 bg-yellow-500 text-white text-xl font-bold rounded-xl shadow-lg hover:bg-yellow-600 transition-colors duration-200 transform hover:scale-[1.02]">
+                    <button id="btn-travel" onclick="selectCategory('travel')" class="w-full py-4 bg-primary text-white text-xl font-bold rounded-xl shadow-lg hover:bg-indigo-700 transition-colors duration-200 transform hover:scale-[1.02]">
                         ✈️ 旅行用英語
+                    </button>
+                    <button id="btn-common-test" onclick="showSubCategory('common_test')" class="w-full py-4 bg-primary text-white text-xl font-bold rounded-xl shadow-lg hover:bg-indigo-700 transition-colors duration-200 transform hover:scale-[1.02]">
+                        📚 共通テスト出題文
                     </button>
                 </div>
                 
                 <div id="common-test-sub-group" class="w-full max-w-md hidden">
                     <h2 id="common-test-sub-title" class="text-3xl font-extrabold text-gray-800 mb-4">共通テスト：学習内容を選択</h2>
-                    <div id="common-test-sub">...</div>
+                    <div id="common-test-sub" class="space-y-4">
+                        <button onclick="startLearning('common_test_all')" class="w-full py-3 bg-secondary text-white font-bold rounded-lg hover:bg-emerald-600 transition-colors">
+                            全て (2006年〜2025年)
+                        </button>
+                        <button onclick="startLearning('common_test_2025')" class="w-full py-3 bg-secondary text-white font-bold rounded-lg hover:bg-emerald-600 transition-colors">
+                            2025年度出題文のみ
+                        </button>
+                    </div>
                 </div>
                 <div id="single-category-transition" class="mt-8 pt-6 w-full max-w-md hidden">...</div>
             </div>
@@ -72,13 +83,13 @@
                     <span id="progress-indicator" class="px-2 py-1 rounded-md text-gray-600 font-semibold"></span>
 
                     <div class="flex items-center space-x-2">
-                        <label for="scene-filter" class="text-sm font-medium text-gray-600">使用場面:</label>
-                        <select id="scene-filter" onchange="filterScenes(this.value)" class="text-gray-800 px-3 py-1 rounded-lg font-medium text-sm transition duration-200 focus:ring-indigo-500 focus:border-indigo-500"></select>
+                        <label for="scene-filter" class="text-sm font-medium text-gray-600">絞り込み:</label>
+                        <select id="scene-filter" onchange="filterScenes(this.value)" class="text-gray-800 px-3 py-1 rounded-lg font-medium text-sm transition duration-200 focus:ring-primary focus:border-primary"></select>
                     </div>
 
                 </div>
     
-                <div id="english-display-card" class="bg-indigo-50 p-6 rounded-xl shadow-inner min-h-[100px] flex items-center justify-center transition-all duration-300">
+                <div id="english-display-card" class="bg-[#eef2ff] p-6 rounded-xl shadow-inner min-h-[100px] flex items-center justify-center transition-all duration-300">
                     <p id="english-text" class="text-xl md:text-2xl font-bold text-gray-800 text-center select-none">
                         学習モードを選択してください
                     </p>
@@ -94,8 +105,8 @@
                 </div>
     
                 <div id="scramble-ui" class="space-y-4 hidden">
-                    <div class="p-4 bg-yellow-100 rounded-xl border-dashed border-2 border-yellow-300 min-h-[80px]">
-                        <p class="text-sm font-semibold text-yellow-700 mb-1">解答構築エリア</p>
+                    <div class="p-4 bg-indigo-100 rounded-xl border-dashed border-2 border-indigo-300 min-h-[80px]">
+                        <p class="text-sm font-semibold text-indigo-700 mb-1">解答構築エリア</p>
                         <div id="answer-area" class="flex flex-wrap gap-2">
                             </div>
                     </div>
@@ -107,7 +118,7 @@
                     </div>
     
                     <div class="flex justify-center space-x-4 pt-2">
-                        <button id="check-answer-btn" onclick="checkScrambledAnswer()" class="px-6 py-2 bg-secondary text-white font-bold rounded-lg hover:bg-green-600 transition-colors shadow-md hidden">
+                        <button id="check-answer-btn" onclick="checkScrambledAnswer()" class="px-6 py-2 bg-secondary text-white font-bold rounded-lg hover:bg-emerald-600 transition-colors shadow-md hidden">
                             解答チェック
                         </button>
                         <button id="reset-scramble-btn" onclick="resetScramble()" class="px-6 py-2 bg-gray-500 text-white font-bold rounded-lg hover:bg-gray-600 transition-colors shadow-md hidden">
@@ -136,7 +147,7 @@
             </button>
 
             <div class="flex space-x-3 mt-4 md:mt-0">
-                <button id="toggle-translation-btn" onclick="toggleTranslation()" class="px-6 py-2 bg-indigo-500 text-white font-bold rounded-lg hover:bg-indigo-600 transition-colors shadow-md hidden">
+                <button id="toggle-translation-btn" onclick="toggleTranslation()" class="px-6 py-2 bg-primary text-white font-bold rounded-lg hover:bg-indigo-700 transition-colors shadow-md hidden">
                     和訳を表示
                 </button>
 
@@ -170,7 +181,18 @@
             audioFolder: 'travel', 
             name: '旅行用英語'
         },
-        // 他のカテゴリは省略
+        'common_test_all': { 
+            jsonPath: './data/sentences_converted.json', 
+            audioFolder: 'common_test', 
+            name: '共通テスト出題文（全期間）',
+            filter: (item) => true 
+        },
+        'common_test_2025': { 
+            jsonPath: './data/sentences_converted.json', 
+            audioFolder: 'common_test', 
+            name: '共通テスト出題文（2025年度のみ）',
+            filter: (item) => item.year === '2025年度共通テスト出題'
+        }
     };
 
     // --- DOM要素の参照 ---
@@ -195,6 +217,7 @@
     const mainCategoryButtonsEl = document.getElementById('main-category-buttons');
     const singleCategoryTransitionEl = document.getElementById('single-category-transition');
     const sceneFilterEl = document.getElementById('scene-filter'); 
+    const commonTestSubEl = document.getElementById('common-test-sub');
 
     // --- アプリ初期化 ---
     window.onload = function() {
@@ -216,18 +239,31 @@
         
         selectionTitleEl.textContent = '学習コンテンツを選択してください'; 
         selectionTitleEl.classList.remove('hidden'); 
+        
         // 進捗表示をリセット
         progressIndicatorEl.textContent = ''; 
     }
+    
+    /**
+     * 共通テストのサブカテゴリ選択画面を表示
+     */
+    function showSubCategory(key) {
+        if (key === 'common_test') {
+            mainCategoryButtonsEl.classList.add('hidden');
+            commonTestSubGroupEl.classList.remove('hidden');
+        }
+    }
+
 
     /**
-     * カテゴリボタンが押されたときの処理
+     * カテゴリボタンが押されたときの処理 (メインカテゴリ)
      */
     function selectCategory(category) {
         if (category === 'travel') {
             startLearning('travel');
             return;
         } 
+        // 他のメインカテゴリがあればここに追記
     }
     
     /**
@@ -245,99 +281,121 @@
         learningScreenEl.classList.remove('hidden');
         appHeaderEl.classList.remove('hidden');
         appFooterEl.classList.remove('hidden');
+        document.getElementById('app-header').querySelector('h1').textContent = config.name;
 
         currentCategoryKey = key;
         
         try {
             englishTextEl.textContent = `データの読み込み中です...`;
             
-            // provided_json_content には添付ファイルの内容を想定
-            // NOTE: ここで実際のファイル内容をシミュレーションします
-            // ユーザー提供の `travel_sentences.json` の内容を使用
-            const provided_json_content = [
-              { "id": "travel_sentences_00001", "en": "I'd like to check in for my flight to New York.", "ja": "ニューヨーク行きのフライトのチェックインをしたいです。", "year": null, "category_main": "空港", "category_sub": "チェックイン", "priority": "高" },
-              { "id": "travel_sentences_00002", "en": "Can I have a window seat, please?", "ja": "窓側の席をお願いします。", "year": null, "category_main": "空港", "category_sub": "チェックイン", "priority": "中" },
-              { "id": "travel_sentences_00003", "en": "How many bags can I check in?", "ja": "預け荷物は何個までですか？", "year": null, "category_main": "空港", "category_sub": "チェックイン", "priority": "中" },
-              { "id": "travel_sentences_00004", "en": "Do I need to take my laptop out?", "ja": "ノートパソコンを取り出す必要がありますか？", "year": null, "category_main": "空港", "category_sub": "セキュリティチェック", "priority": "中" },
-              { "id": "travel_sentences_00005", "en": "Is this allowed in carry-on luggage?", "ja": "これは機内持ち込みできますか？", "year": null, "category_main": "空港", "category_sub": "セキュリティチェック", "priority": "中" },
-              { "id": "travel_sentences_00006", "en": "Which gate is the flight to Los Angeles?", "ja": "ロサンゼルス行きのフライトはどのゲートですか？", "year": null, "category_main": "空港", "category_sub": "搭乗", "priority": "高" },
-              { "id": "travel_sentences_00007", "en": "When does boarding start?", "ja": "搭乗はいつ始まりますか？", "year": null, "category_main": "空港", "category_sub": "搭乗", "priority": "高" },
-              { "id": "travel_sentences_00008", "en": "Where is the transfer desk?", "ja": "乗り継ぎカウンターはどこですか？", "year": null, "category_main": "空港", "category_sub": "乗り継ぎ", "priority": "低" },
-              { "id": "travel_sentences_00009", "en": "I’m here for sightseeing.", "ja": "観光で来ました。", "year": null, "category_main": "空港", "category_sub": "出入国審査", "priority": "高" },
-              { "id": "travel_sentences_00010", "en": "My flight was delayed. What should I do?", "ja": "フライトが遅れたのですが、どうすればいいですか？", "year": null, "category_main": "空港", "category_sub": "トラブル", "priority": "中" },
-              { "id": "travel_sentences_00011", "en": "How do I get to the train station?", "ja": "駅へはどう行けばいいですか？", "year": null, "category_main": "移動", "category_sub": "徒歩", "priority": "高" },
-              { "id": "travel_sentences_00012", "en": "Could you take me to the airport, please?", "ja": "空港までお願いします。", "year": null, "category_main": "移動", "category_sub": "タクシー", "priority": "高" },
-              { "id": "travel_sentences_00013", "en": "How much is the fare to downtown?", "ja": "中心街までの運賃はいくらですか？", "year": null, "category_main": "移動", "category_sub": "タクシー", "priority": "高" },
-              { "id": "travel_sentences_00014", "en": "Where can I buy a bus ticket?", "ja": "バスのチケットはどこで買えますか？", "year": null, "category_main": "移動", "category_sub": "バス", "priority": "中" },
-              { "id": "travel_sentences_00015", "en": "Does this bus go to the city center?", "ja": "このバスは市の中心部に行きますか？", "year": null, "category_main": "移動", "category_sub": "バス", "priority": "高" },
-              { "id": "travel_sentences_00016", "en": "Which platform does the train leave from?", "ja": "その電車はどのホームから出ますか？", "year": null, "category_main": "移動", "category_sub": "電車", "priority": "中" },
-              { "id": "travel_sentences_00017", "en": "How long does it take to get there?", "ja": "そこまでどのくらい時間がかかりますか？", "year": null, "category_main": "移動", "category_sub": "全般", "priority": "中" },
-              { "id": "travel_sentences_00018", "en": "Could you drop me off here, please?", "ja": "ここで降ろしてもらえますか？", "year": null, "category_main": "移動", "category_sub": "タクシー", "priority": "中" },
-              { "id": "travel_sentences_00019", "en": "Is it within walking distance?", "ja": "歩いて行ける距離ですか？", "year": null, "category_main": "移動", "category_sub": "徒歩", "priority": "低" },
-              { "id": "travel_sentences_00020", "en": "I think I’m lost. Can you help me?", "ja": "道に迷いました。助けてもらえますか？", "year": null, "category_main": "移動", "category_sub": "徒歩", "priority": "高" },
-              { "id": "travel_sentences_00021", "en": "I have a reservation under the name of Tanaka.", "ja": "田中の名前で予約しています。", "year": null, "category_main": "ホテル", "category_sub": "チェックイン", "priority": "高" },
-              { "id": "travel_sentences_00022", "en": "Could I have your ID and credit card, please?", "ja": "身分証明書とクレジットカードをお願いします。（※ホテル側の質問例）", "year": null, "category_main": "ホテル", "category_sub": "チェックイン", "priority": "中" },
-              { "id": "travel_sentences_00023", "en": "What time is check-out?", "ja": "チェックアウトは何時ですか？", "year": null, "category_main": "ホテル", "category_sub": "チェックイン", "priority": "高" },
-              { "id": "travel_sentences_00024", "en": "Could I have a late check-out, please?", "ja": "レイトチェックアウトをお願いできますか？", "year": null, "category_main": "ホテル", "category_sub": "チェックアウト", "priority": "中" },
-              { "id": "travel_sentences_00025", "en": "Is breakfast included?", "ja": "朝食は含まれていますか？", "year": null, "category_main": "ホテル", "category_sub": "サービス", "priority": "高" },
-              { "id": "travel_sentences_00026", "en": "Could you bring some extra towels, please?", "ja": "タオルをもう少し持ってきてもらえますか？", "year": null, "category_main": "ホテル", "category_sub": "サービス", "priority": "中" },
-              { "id": "travel_sentences_00027", "en": "The air conditioner isn’t working.", "ja": "エアコンが動きません。", "year": null, "category_main": "ホテル", "category_sub": "トラブル", "priority": "中" },
-              { "id": "travel_sentences_00028", "en": "Where is the nearest convenience store?", "ja": "一番近いコンビニはどこですか？", "year": null, "category_main": "ホテル", "category_sub": "周辺情報", "priority": "低" },
-              { "id": "travel_sentences_00029", "en": "I’d like to leave my luggage here until this afternoon.", "ja": "午後まで荷物を預かってもらえますか？", "year": null, "category_main": "ホテル", "category_sub": "サービス", "priority": "高" },
-              { "id": "travel_sentences_00030", "en": "Could you call a taxi for me, please?", "ja": "タクシーを呼んでもらえますか？", "year": null, "category_main": "ホテル", "category_sub": "サービス", "priority": "高" },
-              { "id": "travel_sentences_00031", "en": "Could you take a picture of me, please?", "ja": "写真を撮ってもらえますか？", "year": null, "category_main": "観光", "category_sub": "観光地", "priority": "高" },
-              { "id": "travel_sentences_00032", "en": "What time does the museum open?", "ja": "博物館は何時に開きますか？", "year": null, "category_main": "観光", "category_sub": "施設", "priority": "高" },
-              { "id": "travel_sentences_00033", "en": "How much is the entrance fee?", "ja": "入場料はいくらですか？", "year": null, "category_main": "観光", "category_sub": "施設", "priority": "高" },
-              { "id": "travel_sentences_00034", "en": "Is there a guided tour available?", "ja": "ガイドツアーはありますか？", "year": null, "category_main": "観光", "category_sub": "観光ツアー", "priority": "中" },
-              { "id": "travel_sentences_00035", "en": "Where can I buy tickets for the boat cruise?", "ja": "ボートクルーズのチケットはどこで買えますか？", "year": null, "category_main": "観光", "category_sub": "アクティビティ", "priority": "中" },
-              { "id": "travel_sentences_00036", "en": "How long does the tour take?", "ja": "ツアーはどのくらい時間がかかりますか？", "year": null, "category_main": "観光", "category_sub": "観光ツアー", "priority": "中" },
-              { "id": "travel_sentences_00037", "en": "Are there any famous restaurants around here?", "ja": "この近くに有名なレストランはありますか？", "year": null, "category_main": "観光", "category_sub": "周辺情報", "priority": "中" },
-              { "id": "travel_sentences_00038", "en": "Can I get there on foot?", "ja": "そこへは歩いて行けますか？", "year": null, "category_main": "観光", "category_sub": "道案内", "priority": "低" },
-              { "id": "travel_sentences_00039", "en": "Where is the nearest restroom?", "ja": "一番近いトイレはどこですか？", "year": null, "category_main": "観光", "category_sub": "周辺情報", "priority": "高" },
-              { "id": "travel_sentences_00040", "en": "What’s the best way to get to the city center?", "ja": "市の中心部へ行く一番良い方法は何ですか？", "year": null, "category_main": "観光", "category_sub": "道案内", "priority": "高" },
-              { "id": "travel_sentences_00041", "en": "Table for two, please.", "ja": "2人用の席をお願いします。", "year": null, "category_main": "食事", "category_sub": "入店・案内", "priority": "高" },
-              { "id": "travel_sentences_00042", "en": "Could we see the menu, please?", "ja": "メニューを見せてもらえますか？", "year": null, "category_main": "食事", "category_sub": "注文前", "priority": "高" },
-              { "id": "travel_sentences_00043", "en": "What do you recommend?", "ja": "おすすめは何ですか？", "year": null, "category_main": "食事", "category_sub": "注文前", "priority": "中" },
-              { "id": "travel_sentences_00044", "en": "I’ll have this one, please.", "ja": "これをお願いします。", "year": null, "category_main": "食事", "category_sub": "注文", "priority": "高" },
-              { "id": "travel_sentences_00045", "en": "Could I get some water, please?", "ja": "お水をいただけますか？", "year": null, "category_main": "食事", "category_sub": "注文", "priority": "高" },
-              { "id": "travel_sentences_00046", "en": "Does this dish contain nuts or seafood?", "ja": "この料理にはナッツやシーフードが入っていますか？", "year": null, "category_main": "食事", "category_sub": "注文前", "priority": "中" },
-              { "id": "travel_sentences_00047", "en": "Could we have the bill, please?", "ja": "お会計をお願いします。", "year": null, "category_main": "食事", "category_sub": "会計", "priority": "高" },
-              { "id": "travel_sentences_00048", "en": "Is service charge included?", "ja": "サービス料は含まれていますか？", "year": null, "category_main": "食事", "category_sub": "会計", "priority": "中" },
-              { "id": "travel_sentences_00049", "en": "Could you pack this to go?", "ja": "これを持ち帰りにしてもらえますか？", "year": null, "category_main": "食事", "category_sub": "持ち帰り", "priority": "中" },
-              { "id": "travel_sentences_00050", "en": "Everything was delicious, thank you!", "ja": "すべてとても美味しかったです、ありがとうございました！", "year": null, "category_main": "食事", "category_sub": "その他", "priority": "低" },
-              { "id": "travel_sentences_00051", "en": "How much is this?", "ja": "これはいくらですか？", "year": null, "category_main": "買い物", "category_sub": "価格", "priority": "高" },
-              { "id": "travel_sentences_00052", "en": "Can I try this on?", "ja": "試着してもいいですか？", "year": null, "category_main": "買い物", "category_sub": "衣料品", "priority": "高" },
-              { "id": "travel_sentences_00053", "en": "Do you have this in a different size?", "ja": "これの別のサイズはありますか？", "year": null, "category_main": "買い物", "category_sub": "衣料品", "priority": "中" },
-              { "id": "travel_sentences_00054", "en": "Do you have this in another color?", "ja": "これの別の色はありますか？", "year": null, "category_main": "買い物", "category_sub": "衣料品", "priority": "中" },
-              { "id": "travel_sentences_00055", "en": "Could you give me a discount?", "ja": "値引きしてもらえますか？", "year": null, "category_main": "買い物", "category_sub": "価格", "priority": "中" },
-              { "id": "travel_sentences_00056", "en": "I’m just looking, thank you.", "ja": "見ているだけです、ありがとう。", "year": null, "category_main": "買い物", "category_sub": "店員", "priority": "高" },
-              { "id": "travel_sentences_00057", "en": "Could I pay by credit card?", "ja": "クレジットカードで支払えますか？", "year": null, "category_main": "買い物", "category_sub": "支払い", "priority": "高" },
-              { "id": "travel_sentences_00058", "en": "Can I get a receipt, please?", "ja": "レシートをもらえますか？", "year": null, "category_main": "買い物", "category_sub": "支払い", "priority": "中" },
-              { "id": "travel_sentences_00059", "en": "Is tax included in the price?", "ja": "この値段に税金は含まれていますか？", "year": null, "category_main": "買い物", "category_sub": "支払い", "priority": "中" },
-              { "id": "travel_sentences_00060", "en": "Could you wrap this as a gift, please?", "ja": "ギフト用に包んでもらえますか？", "year": null, "category_main": "買い物", "category_sub": "サービス", "priority": "低" },
-              { "id": "travel_sentences_00061", "en": "Call the police, please!", "ja": "警察を呼んでください！", "year": null, "category_main": "緊急", "category_sub": "トラブル", "priority": "高" },
-              { "id": "travel_sentences_00062", "en": "I need an ambulance!", "ja": "救急車を呼んでください！", "year": null, "category_main": "緊急", "category_sub": "病気", "priority": "高" },
-              { "id": "travel_sentences_00063", "en": "My wallet has been stolen.", "ja": "財布を盗まれました。", "year": null, "category_main": "緊急", "category_sub": "トラブル", "priority": "高" },
-              { "id": "travel_sentences_00064", "en": "I’ve lost my passport.", "ja": "パスポートをなくしました。", "year": null, "category_main": "緊急", "category_sub": "トラブル", "priority": "高" },
-              { "id": "travel_sentences_00065", "en": "I don’t feel well.", "ja": "気分が悪いです。", "year": null, "category_main": "緊急", "category_sub": "病気", "priority": "高" },
-              { "id": "travel_sentences_00066", "en": "Where is the nearest hospital?", "ja": "一番近い病院はどこですか？", "year": null, "category_main": "緊急", "category_sub": "病気", "priority": "高" },
-              { "id": "travel_sentences_00067", "en": "I need to see a doctor.", "ja": "医者に診てもらいたいです。", "year": null, "category_main": "緊急", "category_sub": "病気", "priority": "中" },
-              { "id": "travel_sentences_00068", "en": "Can you help me contact the embassy?", "ja": "大使館に連絡するのを手伝ってもらえますか？", "year": null, "category_main": "緊急", "category_sub": "トラブル", "priority": "中" },
-              { "id": "travel_sentences_00069", "en": "Someone is following me.", "ja": "誰かに後をつけられています。", "year": null, "category_main": "緊急", "category_sub": "トラブル", "priority": "中" },
-              { "id": "travel_sentences_00070", "en": "I need to report a theft.", "ja": "盗難を届け出たいです。", "year": null, "category_main": "緊急", "category_sub": "トラブル", "priority": "中" },
-              { "id": "travel_sentences_00071", "en": "Excuse me.", "ja": "すみません。／ちょっといいですか。", "year": null, "category_main": "汎用", "category_sub": "会話", "priority": "高" },
-              { "id": "travel_sentences_00072", "en": "Could you help me, please?", "ja": "手伝ってもらえますか？", "year": null, "category_main": "汎用", "category_sub": "依頼", "priority": "高" },
-              { "id": "travel_sentences_00073", "en": "I don’t understand.", "ja": "わかりません。", "year": null, "category_main": "汎用", "category_sub": "会話", "priority": "高" },
-              { "id": "travel_sentences_00074", "en": "Could you say that again, please?", "ja": "もう一度言ってもらえますか？", "year": null, "category_main": "汎用", "category_sub": "会話", "priority": "高" },
-              { "id": "travel_sentences_00075", "en": "Do you speak English?", "ja": "英語を話せますか？", "year": null, "category_main": "汎用", "category_sub": "会話", "priority": "高" },
-              { "id": "travel_sentences_00076", "en": "Could you write it down, please?", "ja": "書いてもらえますか？", "year": null, "category_main": "汎用", "category_sub": "依頼", "priority": "中" },
-              { "id": "travel_sentences_00077", "en": "That’s okay, thank you.", "ja": "大丈夫です、ありがとうございます。", "year": null, "category_main": "汎用", "category_sub": "会話", "priority": "中" },
-              { "id": "travel_sentences_00078", "en": "Where can I find this?", "ja": "これはどこにありますか？", "year": null, "category_main": "汎用", "category_sub": "道案内", "priority": "中" },
-              { "id": "travel_sentences_00079", "en": "I’m sorry, I’m not from around here.", "ja": "すみません、私はこの辺の者ではありません。", "year": null, "category_main": "汎用", "category_sub": "会話", "priority": "低" },
-              { "id": "travel_sentences_00080", "en": "Thank you so much!", "ja": "本当にありがとうございます！", "year": null, "category_main": "汎用", "category_sub": "会話", "priority": "高" }
-            ];
+            let dataPromise;
+            if (key === 'travel') {
+                 // ユーザー提供の travel_sentences.json を使用
+                const provided_json_content = [
+                  { "id": "travel_sentences_00001", "en": "I'd like to check in for my flight to New York.", "ja": "ニューヨーク行きのフライトのチェックインをしたいです。", "year": null, "category_main": "空港", "category_sub": "チェックイン", "priority": "高" },
+                  { "id": "travel_sentences_00002", "en": "Can I have a window seat, please?", "ja": "窓側の席をお願いします。", "year": null, "category_main": "空港", "category_sub": "チェックイン", "priority": "中" },
+                  { "id": "travel_sentences_00003", "en": "How many bags can I check in?", "ja": "預け荷物は何個までですか？", "year": null, "category_main": "空港", "category_sub": "チェックイン", "priority": "中" },
+                  { "id": "travel_sentences_00004", "en": "Do I need to take my laptop out?", "ja": "ノートパソコンを取り出す必要がありますか？", "year": null, "category_main": "空港", "category_sub": "セキュリティチェック", "priority": "中" },
+                  { "id": "travel_sentences_00005", "en": "Is this allowed in carry-on luggage?", "ja": "これは機内持ち込みできますか？", "year": null, "category_main": "空港", "category_sub": "セキュリティチェック", "priority": "中" },
+                  { "id": "travel_sentences_00006", "en": "Which gate is the flight to Los Angeles?", "ja": "ロサンゼルス行きのフライトはどのゲートですか？", "year": null, "category_main": "空港", "category_sub": "搭乗", "priority": "高" },
+                  { "id": "travel_sentences_00007", "en": "When does boarding start?", "ja": "搭乗はいつ始まりますか？", "year": null, "category_main": "空港", "category_sub": "搭乗", "priority": "高" },
+                  { "id": "travel_sentences_00008", "en": "Where is the transfer desk?", "ja": "乗り継ぎカウンターはどこですか？", "year": null, "category_main": "空港", "category_sub": "乗り継ぎ", "priority": "低" },
+                  { "id": "travel_sentences_00009", "en": "I’m here for sightseeing.", "ja": "観光で来ました。", "year": null, "category_main": "空港", "category_sub": "出入国審査", "priority": "高" },
+                  { "id": "travel_sentences_00010", "en": "My flight was delayed. What should I do?", "ja": "フライトが遅れたのですが、どうすればいいですか？", "year": null, "category_main": "空港", "category_sub": "トラブル", "priority": "中" },
+                  { "id": "travel_sentences_00011", "en": "How do I get to the train station?", "ja": "駅へはどう行けばいいですか？", "year": null, "category_main": "移動", "category_sub": "徒歩", "priority": "高" },
+                  { "id": "travel_sentences_00012", "en": "Could you take me to the airport, please?", "ja": "空港までお願いします。", "year": null, "category_main": "移動", "category_sub": "タクシー", "priority": "高" },
+                  { "id": "travel_sentences_00013", "en": "How much is the fare to downtown?", "ja": "中心街までの運賃はいくらですか？", "year": null, "category_main": "移動", "category_sub": "タクシー", "priority": "高" },
+                  { "id": "travel_sentences_00014", "en": "Where can I buy a bus ticket?", "ja": "バスのチケットはどこで買えますか？", "year": null, "category_main": "移動", "category_sub": "バス", "priority": "中" },
+                  { "id": "travel_sentences_00015", "en": "Does this bus go to the city center?", "ja": "このバスは市の中心部に行きますか？", "year": null, "category_main": "移動", "category_sub": "バス", "priority": "高" },
+                  { "id": "travel_sentences_00016", "en": "Which platform does the train leave from?", "ja": "その電車はどのホームから出ますか？", "year": null, "category_main": "移動", "category_sub": "電車", "priority": "中" },
+                  { "id": "travel_sentences_00017", "en": "How long does it take to get there?", "ja": "そこまでどのくらい時間がかかりますか？", "year": null, "category_main": "移動", "category_sub": "全般", "priority": "中" },
+                  { "id": "travel_sentences_00018", "en": "Could you drop me off here, please?", "ja": "ここで降ろしてもらえますか？", "year": null, "category_main": "移動", "category_sub": "タクシー", "priority": "中" },
+                  { "id": "travel_sentences_00019", "en": "Is it within walking distance?", "ja": "歩いて行ける距離ですか？", "year": null, "category_main": "移動", "category_sub": "徒歩", "priority": "低" },
+                  { "id": "travel_sentences_00020", "en": "I think I’m lost. Can you help me?", "ja": "道に迷いました。助けてもらえますか？", "year": null, "category_main": "移動", "category_sub": "徒歩", "priority": "高" },
+                  { "id": "travel_sentences_00021", "en": "I have a reservation under the name of Tanaka.", "ja": "田中の名前で予約しています。", "year": null, "category_main": "ホテル", "category_sub": "チェックイン", "priority": "高" },
+                  { "id": "travel_sentences_00022", "en": "Could I have your ID and credit card, please?", "ja": "身分証明書とクレジットカードをお願いします。（※ホテル側の質問例）", "year": null, "category_main": "ホテル", "category_sub": "チェックイン", "priority": "中" },
+                  { "id": "travel_sentences_00023", "en": "What time is check-out?", "ja": "チェックアウトは何時ですか？", "year": null, "category_main": "ホテル", "category_sub": "チェックイン", "priority": "高" },
+                  { "id": "travel_sentences_00024", "en": "Could I have a late check-out, please?", "ja": "レイトチェックアウトをお願いできますか？", "year": null, "category_main": "ホテル", "category_sub": "チェックアウト", "priority": "中" },
+                  { "id": "travel_sentences_00025", "en": "Is breakfast included?", "ja": "朝食は含まれていますか？", "year": null, "category_main": "ホテル", "category_sub": "サービス", "priority": "高" },
+                  { "id": "travel_sentences_00026", "en": "Could you bring some extra towels, please?", "ja": "タオルをもう少し持ってきてもらえますか？", "year": null, "category_main": "ホテル", "category_sub": "サービス", "priority": "中" },
+                  { "id": "travel_sentences_00027", "en": "The air conditioner isn’t working.", "ja": "エアコンが動きません。", "year": null, "category_main": "ホテル", "category_sub": "トラブル", "priority": "中" },
+                  { "id": "travel_sentences_00028", "en": "Where is the nearest convenience store?", "ja": "一番近いコンビニはどこですか？", "year": null, "category_main": "ホテル", "category_sub": "周辺情報", "priority": "低" },
+                  { "id": "travel_sentences_00029", "en": "I’d like to leave my luggage here until this afternoon.", "ja": "午後まで荷物を預かってもらえますか？", "year": null, "category_main": "ホテル", "category_sub": "サービス", "priority": "高" },
+                  { "id": "travel_sentences_00030", "en": "Could you call a taxi for me, please?", "ja": "タクシーを呼んでもらえますか？", "year": null, "category_main": "ホテル", "category_sub": "サービス", "priority": "高" },
+                  { "id": "travel_sentences_00031", "en": "Could you take a picture of me, please?", "ja": "写真を撮ってもらえますか？", "year": null, "category_main": "観光", "category_sub": "観光地", "priority": "高" },
+                  { "id": "travel_sentences_00032", "en": "What time does the museum open?", "ja": "博物館は何時に開きますか？", "year": null, "category_main": "観光", "category_sub": "施設", "priority": "高" },
+                  { "id": "travel_sentences_00033", "en": "How much is the entrance fee?", "ja": "入場料はいくらですか？", "year": null, "category_main": "観光", "category_sub": "施設", "priority": "高" },
+                  { "id": "travel_sentences_00034", "en": "Is there a guided tour available?", "ja": "ガイドツアーはありますか？", "year": null, "category_main": "観光", "category_sub": "観光ツアー", "priority": "中" },
+                  { "id": "travel_sentences_00035", "en": "Where can I buy tickets for the boat cruise?", "ja": "ボートクルーズのチケットはどこで買えますか？", "year": null, "category_main": "観光", "category_sub": "アクティビティ", "priority": "中" },
+                  { "id": "travel_sentences_00036", "en": "How long does the tour take?", "ja": "ツアーはどのくらい時間がかかりますか？", "year": null, "category_main": "観光", "category_sub": "観光ツアー", "priority": "中" },
+                  { "id": "travel_sentences_00037", "en": "Are there any famous restaurants around here?", "ja": "この近くに有名なレストランはありますか？", "year": null, "category_main": "観光", "category_sub": "周辺情報", "priority": "中" },
+                  { "id": "travel_sentences_00038", "en": "Can I get there on foot?", "ja": "そこへは歩いて行けますか？", "year": null, "category_main": "観光", "category_sub": "道案内", "priority": "低" },
+                  { "id": "travel_sentences_00039", "en": "Where is the nearest restroom?", "ja": "一番近いトイレはどこですか？", "year": null, "category_main": "観光", "category_sub": "周辺情報", "priority": "高" },
+                  { "id": "travel_sentences_00040", "en": "What’s the best way to get to the city center?", "ja": "市の中心部へ行く一番良い方法は何ですか？", "year": null, "category_main": "観光", "category_sub": "道案内", "priority": "高" },
+                  { "id": "travel_sentences_00041", "en": "Table for two, please.", "ja": "2人用の席をお願いします。", "year": null, "category_main": "食事", "category_sub": "入店・案内", "priority": "高" },
+                  { "id": "travel_sentences_00042", "en": "Could we see the menu, please?", "ja": "メニューを見せてもらえますか？", "year": null, "category_main": "食事", "category_sub": "注文前", "priority": "高" },
+                  { "id": "travel_sentences_00043", "en": "What do you recommend?", "ja": "おすすめは何ですか？", "year": null, "category_main": "食事", "category_sub": "注文前", "priority": "中" },
+                  { "id": "travel_sentences_00044", "en": "I’ll have this one, please.", "ja": "これをお願いします。", "year": null, "category_main": "食事", "category_sub": "注文", "priority": "高" },
+                  { "id": "travel_sentences_00045", "en": "Could I get some water, please?", "ja": "お水をいただけますか？", "year": null, "category_main": "食事", "category_sub": "注文", "priority": "高" },
+                  { "id": "travel_sentences_00046", "en": "Does this dish contain nuts or seafood?", "ja": "この料理にはナッツやシーフードが入っていますか？", "year": null, "category_main": "食事", "category_sub": "注文前", "priority": "中" },
+                  { "id": "travel_sentences_00047", "en": "Could we have the bill, please?", "ja": "お会計をお願いします。", "year": null, "category_main": "食事", "category_sub": "会計", "priority": "高" },
+                  { "id": "travel_sentences_00048", "en": "Is service charge included?", "ja": "サービス料は含まれていますか？", "year": null, "category_main": "食事", "category_sub": "会計", "priority": "中" },
+                  { "id": "travel_sentences_00049", "en": "Could you pack this to go?", "ja": "これを持ち帰りにしてもらえますか？", "year": null, "category_main": "食事", "category_sub": "持ち帰り", "priority": "中" },
+                  { "id": "travel_sentences_00050", "en": "Everything was delicious, thank you!", "ja": "すべてとても美味しかったです、ありがとうございました！", "year": null, "category_main": "食事", "category_sub": "その他", "priority": "低" },
+                  { "id": "travel_sentences_00051", "en": "How much is this?", "ja": "これはいくらですか？", "year": null, "category_main": "買い物", "category_sub": "価格", "priority": "高" },
+                  { "id": "travel_sentences_00052", "en": "Can I try this on?", "ja": "試着してもいいですか？", "year": null, "category_main": "買い物", "category_sub": "衣料品", "priority": "高" },
+                  { "id": "travel_sentences_00053", "en": "Do you have this in a different size?", "ja": "これの別のサイズはありますか？", "year": null, "category_main": "買い物", "category_sub": "衣料品", "priority": "中" },
+                  { "id": "travel_sentences_00054", "en": "Do you have this in another color?", "ja": "これの別の色はありますか？", "year": null, "category_main": "買い物", "category_sub": "衣料品", "priority": "中" },
+                  { "id": "travel_sentences_00055", "en": "Could you give me a discount?", "ja": "値引きしてもらえますか？", "year": null, "category_main": "買い物", "category_sub": "価格", "priority": "中" },
+                  { "id": "travel_sentences_00056", "en": "I’m just looking, thank you.", "ja": "見ているだけです、ありがとう。", "year": null, "category_main": "買い物", "category_sub": "店員", "priority": "高" },
+                  { "id": "travel_sentences_00057", "en": "Could I pay by credit card?", "ja": "クレジットカードで支払えますか？", "year": null, "category_main": "買い物", "category_sub": "支払い", "priority": "高" },
+                  { "id": "travel_sentences_00058", "en": "Can I get a receipt, please?", "ja": "レシートをもらえますか？", "year": null, "category_main": "買い物", "category_sub": "支払い", "priority": "中" },
+                  { "id": "travel_sentences_00059", "en": "Is tax included in the price?", "ja": "この値段に税金は含まれていますか？", "year": null, "category_main": "買い物", "category_sub": "支払い", "priority": "中" },
+                  { "id": "travel_sentences_00060", "en": "Could you wrap this as a gift, please?", "ja": "ギフト用に包んでもらえますか？", "year": null, "category_main": "買い物", "category_sub": "サービス", "priority": "低" },
+                  { "id": "travel_sentences_00061", "en": "Call the police, please!", "ja": "警察を呼んでください！", "year": null, "category_main": "緊急", "category_sub": "トラブル", "priority": "高" },
+                  { "id": "travel_sentences_00062", "en": "I need an ambulance!", "ja": "救急車を呼んでください！", "year": null, "category_main": "緊急", "category_sub": "病気", "priority": "高" },
+                  { "id": "travel_sentences_00063", "en": "My wallet has been stolen.", "ja": "財布を盗まれました。", "year": null, "category_main": "緊急", "category_sub": "トラブル", "priority": "高" },
+                  { "id": "travel_sentences_00064", "en": "I’ve lost my passport.", "ja": "パスポートをなくしました。", "year": null, "category_main": "緊急", "category_sub": "トラブル", "priority": "高" },
+                  { "id": "travel_sentences_00065", "en": "I don’t feel well.", "ja": "気分が悪いです。", "year": null, "category_main": "緊急", "category_sub": "病気", "priority": "高" },
+                  { "id": "travel_sentences_00066", "en": "Where is the nearest hospital?", "ja": "一番近い病院はどこですか？", "year": null, "category_main": "緊急", "category_sub": "病気", "priority": "高" },
+                  { "id": "travel_sentences_00067", "en": "I need to see a doctor.", "ja": "医者に診てもらいたいです。", "year": null, "category_main": "緊急", "category_sub": "病気", "priority": "中" },
+                  { "id": "travel_sentences_00068", "en": "Can you help me contact the embassy?", "ja": "大使館に連絡するのを手伝ってもらえますか？", "year": null, "category_main": "緊急", "category_sub": "トラブル", "priority": "中" },
+                  { "id": "travel_sentences_00069", "en": "Someone is following me.", "ja": "誰かに後をつけられています。", "year": null, "category_main": "緊急", "category_sub": "トラブル", "priority": "中" },
+                  { "id": "travel_sentences_00070", "en": "I need to report a theft.", "ja": "盗難を届け出たいです。", "year": null, "category_main": "緊急", "category_sub": "トラブル", "priority": "中" },
+                  { "id": "travel_sentences_00071", "en": "Excuse me.", "ja": "すみません。／ちょっといいですか。", "year": null, "category_main": "汎用", "category_sub": "会話", "priority": "高" },
+                  { "id": "travel_sentences_00072", "en": "Could you help me, please?", "ja": "手伝ってもらえますか？", "year": null, "category_main": "汎用", "category_sub": "依頼", "priority": "高" },
+                  { "id": "travel_sentences_00073", "en": "I don’t understand.", "ja": "わかりません。", "year": null, "category_main": "汎用", "category_sub": "会話", "priority": "高" },
+                  { "id": "travel_sentences_00074", "en": "Could you say that again, please?", "ja": "もう一度言ってもらえますか？", "year": null, "category_main": "汎用", "category_sub": "会話", "priority": "高" },
+                  { "id": "travel_sentences_00075", "en": "Do you speak English?", "ja": "英語を話せますか？", "year": null, "category_main": "汎用", "category_sub": "会話", "priority": "高" },
+                  { "id": "travel_sentences_00076", "en": "Could you write it down, please?", "ja": "書いてもらえますか？", "year": null, "category_main": "汎用", "category_sub": "依頼", "priority": "中" },
+                  { "id": "travel_sentences_00077", "en": "That’s okay, thank you.", "ja": "大丈夫です、ありがとうございます。", "year": null, "category_main": "汎用", "category_sub": "会話", "priority": "中" },
+                  { "id": "travel_sentences_00078", "en": "Where can I find this?", "ja": "これはどこにありますか？", "year": null, "category_main": "汎用", "category_sub": "道案内", "priority": "中" },
+                  { "id": "travel_sentences_00079", "en": "I’m sorry, I’m not from around here.", "ja": "すみません、私はこの辺の者ではありません。", "year": null, "category_main": "汎用", "category_sub": "会話", "priority": "低" },
+                  { "id": "travel_sentences_00080", "en": "Thank you so much!", "ja": "本当にありがとうございます！", "year": null, "category_main": "汎用", "category_sub": "会話", "priority": "高" }
+                ];
+                dataPromise = Promise.resolve(provided_json_content);
+            } else if (key === 'common_test_all' || key === 'common_test_2025') {
+                 // ユーザー提供の sentences_converted.json を使用
+                 const provided_json_content = [
+                    { "id": "sentence0003", "en": "So, I asked Kenji if he could do it instead of me", "ja": "そこで、私の代わりにそれをやってくれるかケンジに尋ねました", "year": "2006年度センター試験出題" },
+                    { "id": "sentence0004", "en": "I want to go to the National Museum", "ja": "国立博物館へ行きたいです", "year": "2006年度センター試験出題" },
+                    { "id": "sentence0008", "en": "I found a nice hotel in Paris that I liked very much", "ja": "パリで素敵なホテルを見つけて、とても気に入りました", "year": "2006年度センター試験出題" },
+                    { "id": "sentence0009", "en": "Yeah, Saturday looks bad ― cloudy and rainy.", "ja": "あぁ、土曜日は悪そうだ。曇り時々雨だよ。", "year": "2006年度センター試験出題" },
+                    { "id": "sentence0010", "en": "Could you have him call me back after four o'clock?", "ja": "四時以降に電話をかけ直すよう彼に言ってくれますか？", "year": "2007年度センター試験出題" },
+                    { "id": "sentence0399", "en": "In a survey of Americans, 76 percent said they thought regifting was all right, but in reality, many are reluctant to regift.", "ja": "アメリカ人への調査では、76％が「リギフティング（他人からのプレゼントを別の人にプレゼントすること）は問題ない」と答えましたが、実際には多くの人がそれをすることをためらっています。", "year": "2025年度共通テスト出題" },
+                    { "id": "sentence0400", "en": "It's interesting that many Americans think regifting is OK, but still hesitate to do it.", "ja": "多くのアメリカ人が「リギフティング（他人からのプレゼントを別の人にプレゼントすること）」は問題ないと思っているのに、それでもそれをためらうのは興味深い。", "year": "2025年度共通テスト出題" },
+                    { "id": "sentence0405", "en": "The waves are usually less than 1 meter high, so there are always lots of surfers in the water.", "ja": "波の高さは通常1メートル未満なので、海にはいつも多くのサーファーがいます。", "year": "2025年度共通テスト出題" },
+                    { "id": "sentence0406", "en": "I'll chew more, eat less, and then I'll feel healthier.", "ja": "もっと噛んで、食べる量を減らせば、もっと健康的に感じられるはず。", "year": "2025年度共通テスト出題" }
+                ];
 
-            ALL_DB = provided_json_content; 
+                let filtered_content = provided_json_content;
+                if (config.filter) {
+                    filtered_content = provided_json_content.filter(config.filter);
+                }
+                dataPromise = Promise.resolve(filtered_content);
+            }
+            
+            ALL_DB = await dataPromise; 
 
             if (ALL_DB.length === 0) {
                 englishTextEl.textContent = `${config.name} のデータがありません。`;
@@ -359,12 +417,20 @@
     }
     
     /**
-     * 使用場面フィルターの初期設定 (category_mainを使用)
+     * 使用場面フィルターの初期設定
      */
     function setupSceneFilter(data) {
-        // 'category_main'フィールドを「使用場面」として利用
-        const scenes = new Set(data.map(item => item.category_main).filter(c => c && c.trim() !== ''));
-        // 日本語でソート
+        let scenes;
+        if (currentCategoryKey.includes('common_test')) {
+             // 共通テストの場合は 'year' を使用
+            scenes = new Set(data.map(item => item.year).filter(c => c && c.trim() !== ''));
+            sceneFilterEl.querySelector('label').textContent = '出題年:';
+        } else {
+            // 旅行用英語の場合は 'category_main' を使用
+            scenes = new Set(data.map(item => item.category_main).filter(c => c && c.trim() !== ''));
+            sceneFilterEl.querySelector('label').textContent = '使用場面:';
+        }
+        
         const sortedScenes = Array.from(scenes).sort((a, b) => a.localeCompare(b, 'ja', { sensitivity: 'base' })); 
         
         sceneFilterEl.innerHTML = '';
@@ -372,7 +438,7 @@
         // 全ての場面 (デフォルト)
         const allOption = document.createElement('option');
         allOption.value = 'ALL';
-        allOption.textContent = '全ての使用場面';
+        allOption.textContent = currentCategoryKey.includes('common_test') ? '全ての出題年' : '全ての使用場面';
         sceneFilterEl.appendChild(allOption);
         
         // 各場面のオプションを追加
@@ -387,26 +453,29 @@
     }
     
     /**
-     * 使用場面フィルターによるDBの絞り込み (category_mainを使用)
+     * フィルターによるDBの絞り込み
      */
     function filterScenes(scene) {
         if (scene === 'ALL') {
             DB = [...ALL_DB];
         } else {
-            // 'category_main'フィールドでフィルタリング
-            DB = ALL_DB.filter(item => item.category_main === scene);
+            if (currentCategoryKey.includes('common_test')) {
+                // 共通テスト: yearでフィルタリング
+                DB = ALL_DB.filter(item => item.year === scene);
+            } else {
+                // 旅行用英語: category_mainでフィルタリング
+                DB = ALL_DB.filter(item => item.category_main === scene);
+            }
         }
         
         if (DB.length === 0) {
-            englishTextEl.textContent = '選択された場面に該当するデータがありません。';
+            englishTextEl.textContent = '選択された条件に該当するデータがありません。';
             showMessage('データが見つかりませんでした。', 'danger');
-            // 進捗表示をリセット
             progressIndicatorEl.textContent = '0/0'; 
             return;
         }
 
         currentSentenceIndex = 0;
-        // 現在のモード設定を維持したまま、最初の文をロード
         changeMode(modeSelectorEl.value); 
     }
 
@@ -415,7 +484,9 @@
      * 単語並べ替えのために英文を整形し、単語配列を生成する
      */
     function tokenizeSentence(sentence) {
-        const words = sentence.trim().replace(/\n/g, ' ').split(/\s+/).filter(w => w.length > 0);
+        // 句読点などを考慮し、より正確に単語に分割
+        const cleanedSentence = sentence.trim().replace(/[\n\u2018\u2019\u201c\u201d]/g, '').replace(/[.,!?:;—–"”'()]/g, ' $& ').replace(/-/g, ' - ').replace(/\s+/g, ' ');
+        const words = cleanedSentence.split(/\s+/).filter(w => w.length > 0);
         return words;
     }
 
@@ -435,14 +506,14 @@
         checkAnswerBtn.classList.add('hidden');
         resetScrambleBtn.classList.add('hidden');
         messageBoxEl.classList.add('hidden');
-
+        isTranslationVisible = false;
 
         // モード固有のUI設定
         if (currentMode === 1) { // 英文先行
             toggleTranslationBtn.textContent = '和訳を表示';
             toggleTranslationBtn.classList.remove('hidden');
         } else if (currentMode === 2) { // 音声先行
-            englishTextEl.classList.add('blur-strong'); // ③ 強いぼかしを適用
+            englishTextEl.classList.add('blur-strong'); // 強いぼかしを適用
             toggleTranslationBtn.textContent = '英文・和訳を表示';
             toggleTranslationBtn.classList.remove('hidden');
         } else if (currentMode === 3) { // 並べ替え
@@ -472,19 +543,16 @@
         englishTextEl.innerHTML = data.en.replace(/\n/g, '<br>');
         japaneseTextEl.innerHTML = data.ja.replace(/\n/g, '<br>');
 
-        // 和訳の表示状態を維持したまま更新
         updateTranslationVisibility();
 
         if (currentMode === 3) {
             setupScrambleMode();
         } else {
-            // モード1/2で和訳非表示の場合のぼかし状態を再設定
-            if (currentMode === 1 && !isTranslationVisible) {
-                englishTextEl.classList.remove('blur-strong');
-            } else if (currentMode === 2 && !isTranslationVisible) {
+             // モード1/2で和訳非表示の場合のぼかし状態を再設定
+            if (currentMode === 2 && !isTranslationVisible) {
                 englishTextEl.classList.add('blur-strong');
             } else {
-                 englishTextEl.classList.remove('blur-strong'); // 和訳表示時は英文のぼかしを解除
+                 englishTextEl.classList.remove('blur-strong');
             }
         }
         
@@ -503,6 +571,8 @@
      * 和訳の表示状態を更新し、トグルボタンのテキストを変更する
      */
     function updateTranslationVisibility() {
+        if (currentMode === 3) return; 
+
         if (isTranslationVisible) {
             translationCardEl.classList.remove('hidden');
             if (currentMode === 2) {
@@ -516,7 +586,7 @@
             translationCardEl.classList.add('hidden');
             if (currentMode === 2) {
                  toggleTranslationBtn.textContent = '英文・和訳を表示';
-                 englishTextEl.classList.add('blur-strong'); // ③ 音声先行で非表示なら強くぼかす
+                 englishTextEl.classList.add('blur-strong'); // 音声先行で非表示なら強くぼかす
             } else {
                 toggleTranslationBtn.textContent = '和訳を表示';
                  englishTextEl.classList.remove('blur-strong');
@@ -551,7 +621,7 @@
         if (currentMode === 2 && !isTranslationVisible) {
              showMessage("音声が再生されました。英文の構成を考えましょう。", 'secondary');
         } else if (currentMode === 3) {
-             showMessage("音声が再生されました。単語を並べ替えてください。", 'secondary');
+             showMessage("音声が再生されました。単語を並べ替えてください。", 'primary');
         }
     }
 
@@ -562,7 +632,10 @@
     function navigate(direction) {
         if (DB.length === 0) return;
         let newIndex = currentSentenceIndex + direction;
-        // 並べ替えモードのバグ修正: 文移動後、現在のモードを再適用し、setupScrambleMode()を強制的に実行させる
+        // 負のインデックスを修正
+        if (newIndex < 0) newIndex = DB.length - 1;
+        
+        isTranslationVisible = false;
         loadSentence(newIndex);
         changeMode(currentMode);
     }
@@ -590,10 +663,10 @@
         renderAnswerArea();
         hideMessage();
         
-        // 並べ替えモードでは和訳を非表示にする
+        // 並べ替えモードでは和訳を強制的に非表示にする
         translationCardEl.classList.add('hidden');
         
-        // 並べ替えUIを再表示（回答チェックで非表示になっている可能性があるため）
+        // 並べ替えUIを再表示
         scrambleUiEl.classList.remove('hidden');
     }
     
@@ -613,8 +686,9 @@
     function renderScrambledWords() {
         scrambledWordsAreaEl.innerHTML = '';
         scrambledWords.forEach((word, index) => {
+            // テーマ 1: Primaryカラーを使用
             const button = document.createElement('button');
-            button.className = 'word-button bg-primary text-white text-sm md:text-base font-medium px-3 py-1 rounded-full shadow-md hover:bg-indigo-600 transition-colors duration-200';
+            button.className = 'word-button bg-primary text-white text-sm md:text-base font-medium px-3 py-1 rounded-full shadow-md hover:bg-indigo-700 transition-colors duration-200';
             button.textContent = word;
             button.dataset.index = index;
             button.onclick = () => selectWord(word, index);
@@ -685,7 +759,7 @@
     }
 
     /**
-     * ④ 並べ替えモードの回答チェックと画面調整
+     * 並べ替えモードの回答チェックと画面調整
      */
     function checkScrambledAnswer() {
         if (answerSequence.length === 0) {
@@ -696,17 +770,17 @@
         const userSentence = answerSequence.map(item => item.word).join(' ');
         const correctSentence = correctWords.join(' ');
         
-        const normalizedUser = userSentence.replace(/\s+/g, ' ').trim();
-        const normalizedCorrect = correctSentence.replace(/\s+/g, ' ').trim();
-
-        if (normalizedUser === normalizedCorrect) {
+        // 空白文字、句読点の統一的な比較
+        const normalize = (text) => text.trim().toLowerCase().replace(/\s+/g, ' ').replace(/[.,!?:;]/g, '');
+        
+        if (normalize(userSentence) === normalize(correctSentence)) {
             showMessage("正解です！よくできました！", 'secondary');
         } else {
             // 不正解の場合は、正しい英文を確認するように促す
             showMessage("残念！不正解です。正しい英文を確認しましょう。", 'danger');
         }
         
-        // **正解・不正解にかかわらず、学習のため正しい英文と和訳を表示し、並べ替えUIを非表示にする** (スクロール回避)
+        // 正解・不正解にかかわらず、学習のため正しい英文と和訳を表示し、並べ替えUIを非表示にする
         
         // 1. 正しい英文を表示
         englishTextEl.textContent = correctSentence;
@@ -729,9 +803,9 @@
         
         let bgColor, textColor;
         switch (type) {
-            case 'secondary': bgColor = 'bg-green-200'; textColor = 'text-green-800'; break;
+            case 'secondary': bgColor = 'bg-green-200'; textColor = 'text-green-800'; break; // テーマ 1のSecondary (Emerald)
             case 'danger': bgColor = 'bg-red-200'; textColor = 'text-red-800'; break;
-            case 'primary': bgColor = 'bg-blue-200'; textColor = 'text-blue-800'; break;
+            case 'primary': bgColor = 'bg-indigo-200'; textColor = 'text-indigo-800'; break; // テーマ 1のPrimary (Indigo)
             case 'gray': bgColor = 'bg-gray-200'; textColor = 'text-gray-800'; break;
             default: bgColor = 'bg-yellow-200'; textColor = 'text-yellow-800'; break;
         }
