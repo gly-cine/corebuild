@@ -69,7 +69,7 @@
                 
                 <div class="text-center text-sm text-gray-500 mb-4 flex justify-between items-center">
                     
-                    <span id="current-category-name" class="px-2 py-1 rounded-md text-gray-600 font-semibold">カテゴリ: -</span>
+                    <span id="progress-indicator" class="px-2 py-1 rounded-md text-gray-600 font-semibold"></span>
 
                     <div class="flex items-center space-x-2">
                         <label for="scene-filter" class="text-sm font-medium text-gray-600">使用場面:</label>
@@ -188,7 +188,8 @@
     const commonTestSubGroupEl = document.getElementById('common-test-sub-group'); 
     const appHeaderEl = document.getElementById('app-header'); 
     const appFooterEl = document.getElementById('app-footer'); 
-    const currentCategoryNameEl = document.getElementById('current-category-name'); 
+    // 修正: カテゴリ名表示を削除し、進捗インジケーターを参照
+    const progressIndicatorEl = document.getElementById('progress-indicator'); 
     const selectionTitleEl = document.getElementById('selection-title');
     const mainCategoryButtonsEl = document.getElementById('main-category-buttons');
     const singleCategoryTransitionEl = document.getElementById('single-category-transition');
@@ -214,6 +215,8 @@
         
         selectionTitleEl.textContent = '学習コンテンツを選択してください'; 
         selectionTitleEl.classList.remove('hidden'); 
+        // 進捗表示をリセット
+        progressIndicatorEl.textContent = ''; 
     }
 
     /**
@@ -243,14 +246,12 @@
         appFooterEl.classList.remove('hidden');
 
         currentCategoryKey = key;
-        currentCategoryNameEl.textContent = `カテゴリ: ${config.name}`;
         
         try {
-            // ローカルファイルからデータを読み込む (今回はJSONファイルとしてアップロードされている体で進行)
             englishTextEl.textContent = `データの読み込み中です...`;
-            // NOTE: 通常はここで fetch を行うが、提供されたJSONデータは変数として扱う
             
             // provided_json_content には添付ファイルの内容を想定
+            // NOTE: ここで実際のファイル内容をシミュレーションします
             const provided_json_content = [
               { "id": "travel_sentences_00001", "en": "I'd like to check in for my flight to New York.", "ja": "ニューヨーク行きのフライトのチェックインをしたいです。", "year": null, "category_main": "空港", "category_sub": "チェックイン", "priority": "高" },
               { "id": "travel_sentences_00002", "en": "Can I have a window seat, please?", "ja": "窓側の席をお願いします。", "year": null, "category_main": "空港", "category_sub": "チェックイン", "priority": "中" },
@@ -356,7 +357,7 @@
     }
     
     /**
-     * ② 使用場面フィルターの初期設定 (category_mainを使用)
+     * 使用場面フィルターの初期設定 (category_mainを使用)
      */
     function setupSceneFilter(data) {
         // 'category_main'フィールドを「使用場面」として利用
@@ -384,7 +385,7 @@
     }
     
     /**
-     * ② 使用場面フィルターによるDBの絞り込み (category_mainを使用)
+     * 使用場面フィルターによるDBの絞り込み (category_mainを使用)
      */
     function filterScenes(scene) {
         if (scene === 'ALL') {
@@ -397,6 +398,8 @@
         if (DB.length === 0) {
             englishTextEl.textContent = '選択された場面に該当するデータがありません。';
             showMessage('データが見つかりませんでした。', 'danger');
+            // 進捗表示をリセット
+            progressIndicatorEl.textContent = '0/0'; 
             return;
         }
 
@@ -453,10 +456,16 @@
      * 現在の文のデータをUIに読み込む
      */
     function loadSentence(index) {
-        if (DB.length === 0) return; 
+        if (DB.length === 0) {
+             progressIndicatorEl.textContent = '0/0';
+             return; 
+        }
         
         currentSentenceIndex = (index + DB.length) % DB.length;
         const data = DB[currentSentenceIndex];
+
+        // 進捗状況を更新 (例: 21/100)
+        progressIndicatorEl.textContent = `${currentSentenceIndex + 1}/${DB.length}`;
 
         englishTextEl.innerHTML = data.en.replace(/\n/g, '<br>');
         japaneseTextEl.innerHTML = data.ja.replace(/\n/g, '<br>');
