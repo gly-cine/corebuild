@@ -33,17 +33,15 @@
     <div id="app" class="w-full max-w-4xl bg-white shadow-2xl rounded-xl flex flex-col h-full md:h-5/6 overflow-hidden">
 
         <header id="app-header" class="p-6 bg-primary text-white rounded-t-xl shadow-lg flex flex-col md:flex-row justify-between items-center hidden">
-            <h1 class="text-2xl font-bold tracking-tight">高頻度単語学習</h1>
-            <div id="mode-selector" class="flex space-x-2 mt-3 md:mt-0">
-                <button onclick="changeMode(1)" id="mode-1" class="mode-tab bg-primary border-2 border-white text-white px-4 py-2 rounded-lg font-medium text-sm transition duration-200 hover:bg-white hover:text-primary">
-                    ① 英文先行
-                </button>
-                <button onclick="changeMode(2)" id="mode-2" class="mode-tab bg-primary border-2 border-white text-white px-4 py-2 rounded-lg font-medium text-sm transition duration-200 hover:bg-white hover:text-primary">
-                    ② 音声先行
-                </button>
-                <button onclick="changeMode(3)" id="mode-3" class="mode-tab bg-primary border-2 border-white text-white px-4 py-2 rounded-lg font-medium text-sm transition duration-200 hover:bg-white hover:text-primary">
-                    ③ 並べ替え
-                </button>
+            <h1 class="text-2xl font-bold tracking-tight">海外旅行で便利なフレーズ</h1>
+            
+            <div class="flex items-center space-x-2 mt-3 md:mt-0">
+                <label for="mode-selector" class="text-sm font-medium">学習モード:</label>
+                <select id="mode-selector" onchange="changeMode(this.value)" class="text-gray-800 px-3 py-1 rounded-lg font-medium text-sm transition duration-200 focus:ring-indigo-500 focus:border-indigo-500">
+                    <option value="1">① 英文先行</option>
+                    <option value="2">② 音声先行</option>
+                    <option value="3">③ 並べ替え</option>
+                </select>
             </div>
         </header>
 
@@ -57,13 +55,12 @@
                         ✈️ 旅行用英語
                     </button>
 
-                    </div>
+                </div>
                 
                 <div id="common-test-sub-group" class="w-full max-w-md hidden">
                     <h2 id="common-test-sub-title" class="text-3xl font-extrabold text-gray-800 mb-4">
                         共通テスト：学習内容を選択
                     </h2>
-
                     <div id="common-test-sub">
                         <div class="flex space-x-4">
                             <button onclick="startLearning('common_test_listening')" class="flex-1 py-3 bg-red-500 text-white font-bold rounded-lg shadow hover:bg-red-600 transition-colors duration-200">
@@ -86,11 +83,16 @@
             
             <div id="learning-screen" class="hidden flex-grow flex flex-col space-y-4">
                 
-                <div class="text-center text-sm text-gray-500 mb-4">
-                    <span id="sentence-id" class="font-mono bg-gray-100 px-2 py-1 rounded-md">ID: -</span>
-                    <span id="sentence-year" class="ml-4 px-2 py-1 rounded-md text-primary font-semibold">出題年度: -</span>
-                    <span id="current-category-name" class="ml-4 px-2 py-1 rounded-md text-gray-600 font-semibold">カテゴリ: -</span>
-                </div>
+                <div class="text-center text-sm text-gray-500 mb-4 flex justify-between items-center">
+                    
+                    <span id="current-category-name" class="px-2 py-1 rounded-md text-gray-600 font-semibold">カテゴリ: -</span>
+
+                    <div class="flex items-center space-x-2">
+                        <label for="scene-filter" class="text-sm font-medium text-gray-600">使用場面:</label>
+                        <select id="scene-filter" onchange="filterScenes(this.value)" class="text-gray-800 px-3 py-1 rounded-lg font-medium text-sm transition duration-200 focus:ring-indigo-500 focus:border-indigo-500"></select>
+                    </div>
+
+                    </div>
     
                 <div id="english-display-card" class="bg-indigo-50 p-6 rounded-xl shadow-inner min-h-[100px] flex items-center justify-center transition-all duration-300">
                     <p id="english-text" class="text-xl md:text-2xl font-bold text-gray-800 text-center select-none">
@@ -99,8 +101,8 @@
                 </div>
     
                 <div id="translation-card" class="bg-white p-4 border border-gray-200 rounded-xl shadow min-h-[60px] transition-all duration-300 hidden">
-                    <p class="text-sm font-semibold text-gray-600 mb-1">和訳</p>
-                    <p id="japanese-text" class="text-lg text-gray-700">
+                    <p class="text-sm font-semibold text-gray-600 mb-1 text-center">和訳</p>
+                    <p id="japanese-text" class="text-lg text-gray-700 text-center">
                         -
                     </p>
                 </div>
@@ -144,7 +146,7 @@
             </div>
             
             <button onclick="showSelectionScreen()" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition-colors font-medium">
-                カテゴリ変更
+                TOP画面
             </button>
 
             <div class="flex space-x-3 mt-4 md:mt-0">
@@ -165,10 +167,11 @@
 
 <script>
     // --- グローバル変数と定数 ---
-    let DB = []; 
+    let ALL_DB = []; // 読み込んだ全データ
+    let DB = []; // 現在の学習データ (フィルタリング後)
     let currentMode = 1;
     let currentSentenceIndex = 0;
-    let isTranslationVisible = false;
+    let isTranslationVisible = false; // ⑥ 和訳表示の状態を維持
     let correctWords = []; 
     let scrambledWords = []; 
     let answerSequence = []; 
@@ -178,17 +181,17 @@
     const CATEGORY_MAP = {
         'travel': { 
             jsonPath: './data/travel_sentences.json', 
-            audioFolder: 'travel', // <--- travelフォルダを指定
+            audioFolder: 'travel', 
             name: '旅行用英語'
         },
         'high_school': { 
             jsonPath: './data/high_school_entrance_sentences.json', 
-            audioFolder: 'high_school', // <--- high_schoolフォルダを指定
+            audioFolder: 'high_school',
             name: '高校受験'
         },
         'common_test_listening': { 
             jsonPath: './data/common_test_listening_sentences.json', 
-            audioFolder: 'common_test', // <--- common_testフォルダを指定
+            audioFolder: 'common_test', 
             name: '共通テスト (リスニング)'
         },
         'common_test_reading': { 
@@ -199,6 +202,7 @@
     };
 
     // --- DOM要素の参照 ---
+    const modeSelectorEl = document.getElementById('mode-selector'); // ② プルダウン要素
     const englishTextEl = document.getElementById('english-text');
     const japaneseTextEl = document.getElementById('japanese-text');
     const translationCardEl = document.getElementById('translation-card');
@@ -218,6 +222,7 @@
     const selectionTitleEl = document.getElementById('selection-title');
     const mainCategoryButtonsEl = document.getElementById('main-category-buttons');
     const singleCategoryTransitionEl = document.getElementById('single-category-transition');
+    const sceneFilterEl = document.getElementById('scene-filter'); // ④ 新しい場面フィルター
 
     // --- アプリ初期化 ---
     window.onload = function() {
@@ -225,7 +230,7 @@
     };
     
     /**
-     * カテゴリ選択画面を表示し、学習画面を非表示にする（初期状態と「カテゴリ変更」ボタン用）
+     * カテゴリ選択画面を表示し、学習画面を非表示にする（初期状態と「TOP画面」ボタン用）
      */
     function showSelectionScreen() {
         selectionScreenEl.classList.remove('hidden');
@@ -233,60 +238,26 @@
         appHeaderEl.classList.add('hidden');
         appFooterEl.classList.add('hidden');
         
-        // メインカテゴリボタンを再表示
         mainCategoryButtonsEl.classList.remove('hidden');
-        // 他のサブ画面要素は非表示
         commonTestSubGroupEl.classList.add('hidden'); 
         singleCategoryTransitionEl.classList.add('hidden');
         
-        // メインタイトルをリセット (表示)
         selectionTitleEl.textContent = '学習コンテンツを選択してください'; 
         selectionTitleEl.classList.remove('hidden'); 
     }
 
     /**
-     * カテゴリボタンが押されたときの処理
-     * @param {string} category - 選択されたカテゴリキー ('travel', 'high_school', 'common_test_main')
+     * カテゴリボタンが押されたときの処理 (現在は travel のみ)
      */
     function selectCategory(category) {
-        // 現時点では「旅行用英語」のみをサポート
         if (category === 'travel') {
-            // 中間画面をスキップし、直接学習開始
             startLearning('travel');
             return;
         } 
-        
-        // 今後の拡張のために、既存のロジックは残しつつ非表示にしておく
-        
-        // メインボタンを非表示にする
-        mainCategoryButtonsEl.classList.add('hidden');
-        commonTestSubGroupEl.classList.add('hidden'); 
-        singleCategoryTransitionEl.classList.add('hidden');
-        
-        if (category === 'common_test_main') {
-            // 共通テストが選択された場合 (現在は削除済みだがロジックは残す)
-            selectionTitleEl.classList.add('hidden');
-            commonTestSubGroupEl.classList.remove('hidden');
-
-        } else {
-            // 高校受験などが選択された場合 (現在は削除済みだがロジックは残す)
-            const configKey = category;
-            const config = CATEGORY_MAP[configKey];
-            
-            selectionTitleEl.classList.remove('hidden');
-            selectionTitleEl.textContent = config.name + 'の学習を開始します';
-            
-            singleCategoryTransitionEl.classList.remove('hidden');
-            document.getElementById('single-category-title').textContent = `${config.name} の学習を開始しますか？`;
-            document.getElementById('single-category-start-btn').onclick = () => {
-                startLearning(configKey);
-            };
-        }
     }
     
     /**
      * 学習を開始し、DBをロードする
-     * @param {string} key - CATEGORY_MAPのキー
      */
     async function startLearning(key) {
         const config = CATEGORY_MAP[key];
@@ -301,39 +272,85 @@
         appHeaderEl.classList.remove('hidden');
         appFooterEl.classList.remove('hidden');
 
-        // サブ画面要素を非表示に戻す（念のため）
-        commonTestSubGroupEl.classList.add('hidden'); 
-        singleCategoryTransitionEl.classList.add('hidden');
-        selectionTitleEl.classList.remove('hidden'); 
-
         currentCategoryKey = key;
         currentCategoryNameEl.textContent = `カテゴリ: ${config.name}`;
         
         try {
             englishTextEl.textContent = `${config.name}のデータを読み込み中です...`;
 
-            // JSONファイルの読み込み
             const response = await fetch(config.jsonPath); 
             if (!response.ok) {
                 throw new Error(`ファイルが見つからない、またはエラーが発生しました。パス: ${config.jsonPath}`);
             }
             
-            // JSONを読み込み、グローバルDBに格納
-            DB = await response.json(); 
+            ALL_DB = await response.json(); 
 
-            if (DB.length === 0) {
+            if (ALL_DB.length === 0) {
                 englishTextEl.textContent = `${config.name} のデータがありません。`;
                 showMessage('JSONファイルにデータがありません。', 'danger');
                 return;
             }
             
-            currentSentenceIndex = 0; 
-            changeMode(1); // デフォルトの学習モード (英文先行) で開始
+            // ④ 場面フィルターを初期化
+            setupSceneFilter(ALL_DB); 
+            
+            // フィルタリングを適用し、最初の文をロード
+            filterScenes('ALL'); // デフォルトは全ての場面
+            
         } catch (error) {
             console.error("データの読み込み中にエラーが発生しました:", error);
             englishTextEl.textContent = `データの読み込みに失敗しました。\n${error.message}`;
             showMessage('データの読み込みに失敗しました。ローカルサーバーで実行しているか確認してください。', 'danger');
         }
+    }
+    
+    /**
+     * ④ 使用場面フィルターの初期設定
+     */
+    function setupSceneFilter(data) {
+        // 'year'フィールドを「使用場面」として利用
+        const scenes = new Set(data.map(item => item.year).filter(y => y && y.trim() !== ''));
+        const sortedScenes = Array.from(scenes).sort();
+        
+        sceneFilterEl.innerHTML = '';
+        
+        // 全ての場面 (デフォルト)
+        const allOption = document.createElement('option');
+        allOption.value = 'ALL';
+        allOption.textContent = '全ての使用場面';
+        sceneFilterEl.appendChild(allOption);
+        
+        // 各場面のオプションを追加
+        sortedScenes.forEach(scene => {
+            const option = document.createElement('option');
+            option.value = scene;
+            option.textContent = scene;
+            sceneFilterEl.appendChild(option);
+        });
+        
+        sceneFilterEl.classList.remove('hidden');
+    }
+    
+    /**
+     * ④ 使用場面フィルターによるDBの絞り込み
+     */
+    function filterScenes(scene) {
+        if (scene === 'ALL') {
+            DB = [...ALL_DB];
+        } else {
+            DB = ALL_DB.filter(item => item.year === scene);
+        }
+        
+        if (DB.length === 0) {
+            englishTextEl.textContent = '選択された場面に該当するデータがありません。';
+            showMessage('データが見つかりませんでした。', 'danger');
+            return;
+        }
+
+        currentSentenceIndex = 0;
+        // 現在のモード設定を維持したまま、最初の文をロード
+        // モード選択プルダウンの値を使用
+        changeMode(modeSelectorEl.value); 
     }
 
 
@@ -346,13 +363,15 @@
     }
 
     /**
-     * モードを切り替える
+     * ② モードを切り替える
      */
     function changeMode(mode) {
         if (DB.length === 0) return;
 
-        currentMode = mode;
-        isTranslationVisible = false;
+        currentMode = parseInt(mode, 10);
+        
+        // 和訳表示の状態は維持 (⑥)
+        // isTranslationVisible = false; // ⑥ 削除
 
         translationCardEl.classList.add('hidden');
         toggleTranslationBtn.classList.add('hidden');
@@ -361,26 +380,17 @@
         resetScrambleBtn.classList.add('hidden');
         messageBoxEl.classList.add('hidden');
         
-        // タブのアクティブ状態を更新
-        document.querySelectorAll('.mode-tab').forEach(btn => {
-            btn.classList.remove('bg-white', 'text-primary');
-            btn.classList.add('bg-primary', 'text-white');
-        });
-        document.getElementById(`mode-${mode}`).classList.remove('bg-primary', 'text-white');
-        document.getElementById(`mode-${mode}`).classList.add('bg-white', 'text-primary');
-
-
         // モード固有のUI設定
-        if (mode === 1) {
+        if (currentMode === 1) {
             englishTextEl.classList.remove('blur-sm', 'italic', 'text-gray-400');
             toggleTranslationBtn.textContent = '和訳を表示';
             toggleTranslationBtn.classList.remove('hidden');
-        } else if (mode === 2) {
+        } else if (currentMode === 2) {
             englishTextEl.classList.add('blur-sm'); 
             englishTextEl.classList.remove('italic', 'text-gray-400');
             toggleTranslationBtn.textContent = '英文・和訳を表示';
             toggleTranslationBtn.classList.remove('hidden');
-        } else if (mode === 3) {
+        } else if (currentMode === 3) {
             scrambleUiEl.classList.remove('hidden');
             checkAnswerBtn.classList.remove('hidden');
             resetScrambleBtn.classList.remove('hidden');
@@ -398,24 +408,25 @@
         currentSentenceIndex = (index + DB.length) % DB.length;
         const data = DB[currentSentenceIndex];
 
-        document.getElementById('sentence-id').textContent = `ID: ${data.id}`;
-        document.getElementById('sentence-year').textContent = `出題年度: ${data.year || 'N/A'}`; 
+        // ③ ID/年度情報は削除
+        // document.getElementById('sentence-id').textContent = `ID: ${data.id}`;
+        // document.getElementById('sentence-year').textContent = `出題年度: ${data.year || 'N/A'}`; 
 
         englishTextEl.innerHTML = data.en.replace(/\n/g, '<br>');
         japaneseTextEl.innerHTML = data.ja.replace(/\n/g, '<br>');
 
-        if (currentMode === 1 || currentMode === 2) {
-            isTranslationVisible = false;
-            updateTranslationVisibility();
-        }
+        // ⑥ 和訳の表示状態を維持したまま更新
+        updateTranslationVisibility();
 
         if (currentMode === 3) {
             setupScrambleMode();
         } else {
-            if (currentMode === 1) {
+            if (currentMode === 1 && !isTranslationVisible) {
                 englishTextEl.classList.remove('blur-sm');
-            } else if (currentMode === 2) {
+            } else if (currentMode === 2 && !isTranslationVisible) {
                 englishTextEl.classList.add('blur-sm');
+            } else {
+                 englishTextEl.classList.remove('blur-sm'); // 和訳表示時は英文のぼかしを解除
             }
         }
         
@@ -428,29 +439,29 @@
     function toggleTranslation() {
         isTranslationVisible = !isTranslationVisible;
         updateTranslationVisibility();
-
-        if (currentMode === 2 && isTranslationVisible) {
-            englishTextEl.classList.remove('blur-sm');
-        }
     }
     
     /**
-     * 和訳の表示状態を更新し、トグルボタンのテキストを変更する
+     * ⑥ 和訳の表示状態を更新し、トグルボタンのテキストを変更する
      */
     function updateTranslationVisibility() {
         if (isTranslationVisible) {
             translationCardEl.classList.remove('hidden');
             if (currentMode === 2) {
-                 document.getElementById('toggle-translation-btn').textContent = '英文・和訳を非表示';
+                 toggleTranslationBtn.textContent = '英文・和訳を非表示';
             } else {
-                document.getElementById('toggle-translation-btn').textContent = '和訳を非表示';
+                toggleTranslationBtn.textContent = '和訳を非表示';
             }
+            // 英文をはっきり表示
+            englishTextEl.classList.remove('blur-sm'); 
         } else {
             translationCardEl.classList.add('hidden');
             if (currentMode === 2) {
-                 document.getElementById('toggle-translation-btn').textContent = '英文・和訳を表示';
+                 toggleTranslationBtn.textContent = '英文・和訳を表示';
+                 englishTextEl.classList.add('blur-sm');
             } else {
-                document.getElementById('toggle-translation-btn').textContent = '和訳を表示';
+                toggleTranslationBtn.textContent = '和訳を表示';
+                 englishTextEl.classList.remove('blur-sm');
             }
         }
     }
@@ -517,6 +528,9 @@
         renderScrambledWords();
         renderAnswerArea();
         hideMessage();
+        
+        // 並べ替えモードでは和訳を非表示にする
+        translationCardEl.classList.add('hidden');
     }
     
     /**
@@ -626,6 +640,7 @@
             englishTextEl.textContent = correctSentence;
             englishTextEl.classList.remove('italic', 'text-gray-400');
             
+            // 正解時のみ和訳を表示
             translationCardEl.classList.remove('hidden');
 
         } else {
