@@ -162,7 +162,7 @@
                         <button id="choice-A" onclick="checkGrammarAnswer('A')" class="choice-button py-2 px-3 rounded-lg text-base text-left bg-gray-100 border border-gray-300 transition duration-150"></button> 
                         <button id="choice-B" onclick="checkGrammarAnswer('B')" class="choice-button py-2 px-3 rounded-lg text-base text-left bg-gray-100 border border-gray-300 transition duration-150"></button>
                         <button id="choice-C" onclick="checkGrammarAnswer('C')" class="choice-button py-2 px-3 rounded-lg text-base text-left bg-gray-100 border border-gray-300 transition duration-150"></button>
-                        <button id="choice-D" onclick="checkGrammarAnswer('D')" class="choice-button py-2 px-3 rounded-lg text-base text-left bg-gray-100 border border-gray-300 transition duration-150"></button>
+                        <button id="choice-D" onclick="checkGrammarAnswer('D')" onclick="checkGrammarAnswer('D')" class="choice-button py-2 px-3 rounded-lg text-base text-left bg-gray-100 border border-gray-300 transition duration-150"></button>
                     </div>
 
                     <div id="grammar-answer-explanation" class="hidden mt-4 p-3 rounded-xl shadow-xl bg-white border-2 border-green-500 max-w-xl mx-auto w-full flex-shrink-0">
@@ -510,7 +510,8 @@
         modeSelectorEl.value = currentMode;
         isTranslationVisible = false; 
         
-        translationCardEl.classList.add('hidden');
+        // モード変更時は和訳カードを必ず非表示にリセット
+        translationCardEl.classList.add('hidden'); 
         englishTextEl.classList.remove('blur-strong', 'italic', 'text-gray-400');
         
         const isGrammarMode = currentMode === 4;
@@ -552,7 +553,8 @@
 
         // 英文/和訳表示エリアのクリアとリセット
         englishTextEl.classList.remove('italic', 'text-gray-400', 'blur-strong');
-        translationCardEl.classList.add('hidden');
+        // loadSentence開始時に和訳カードを非表示にリセット
+        translationCardEl.classList.add('hidden'); 
         isTranslationVisible = false;
         
         // 回答エリアを隠し、スクロールを許可する
@@ -578,6 +580,7 @@
                 englishTextEl.classList.add('blur-strong');
             }
             
+            // 修正：isTranslationVisibleがfalseなので、updateTranslationVisibility()で非表示が維持されます
             updateTranslationVisibility(); 
             updateLearnedButtonUI(data.isLearned);
         }
@@ -591,8 +594,9 @@
         // 共通要素の非表示/表示
         englishDisplayCard.classList.add('hidden');
         
-        // ★ 決定的な修正: setupGrammarModeの冒頭で和訳カードを確実に隠す
+        // ★ 決定的な修正: setupGrammarModeの冒頭で和訳カードと和訳テキストを確実に隠す
         translationCardEl.classList.add('hidden'); 
+        japaneseTextEl.textContent = ' '; // 和訳テキストの内容もクリア
         
         grammarQuestionUiEl.classList.remove('hidden');
 
@@ -668,8 +672,8 @@
         
         // 和訳カードを正しく表示する (内容を現在のデータに合わせる)
         japaneseTextEl.textContent = currentQuestion.ja.replace(/\n/g, '<br>');
-        translationCardEl.classList.remove('hidden'); 
-
+        translationCardEl.classList.remove('hidden'); // 解答後に和訳を表示
+        
         // 解答エリア表示のため、メインコンテンツのレイアウトを変更し、スクロールを制御
         mainContentEl.classList.add('grammar-layout-answered');
         mainContentEl.classList.remove('overflow-y-auto');
@@ -679,7 +683,7 @@
         grammarAnswerExplanationEl.classList.remove('hidden');
     }
     
-    // --- 共通ロジック (変更なし) ---
+    // --- 共通ロジック ---
     function toggleTranslation() {
         if (currentMode === 4) return;
         isTranslationVisible = !isTranslationVisible;
@@ -690,12 +694,14 @@
         if (currentMode === 4) return;
         
         if (isTranslationVisible) {
+            // ★ 修正: translationCardEl を表示
             translationCardEl.classList.remove('hidden');
             toggleTranslationBtn.textContent = (currentMode === 2) ? '英文・和訳を非表示' : '和訳を非表示';
             englishTextEl.classList.remove('blur-strong'); 
         } else {
+            // ★ 修正: translationCardEl を非表示
             translationCardEl.classList.add('hidden');
-            toggleTranslationBtn.textContent = (currentMode === 2) ? '英文・和訳を表示' : '和訳を非表示';
+            toggleTranslationBtn.textContent = (currentMode === 2) ? '英文・和訳を表示' : '和訳を表示';
             if (currentMode === 2) {
                  englishTextEl.classList.add('blur-strong'); 
             } else {
