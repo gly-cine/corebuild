@@ -474,8 +474,13 @@
         // UIの表示/非表示を切り替え
         englishDisplayCard.classList.toggle('hidden', isGrammarMode);
         
-        // 通常の和訳カードも文法モードでは非表示にする (再確認)
-        translationCardEl.classList.add('hidden'); 
+        // 【修正】通常の和訳カードも文法モードでは確実に非表示
+        translationCardEl.classList.add('hidden');
+        if (isGrammarMode) {
+            translationCardEl.style.display = 'none'; // CSSでも非表示
+        } else {
+            translationCardEl.style.display = ''; // 通常モードでは表示可能に戻す
+        }
         
         grammarQuestionUiEl.classList.toggle('hidden', !isGrammarMode);
         toggleLearnedBtn.classList.toggle('hidden', isGrammarMode);
@@ -504,9 +509,10 @@
         modeSelectorEl.value = currentMode;
         isTranslationVisible = false; 
         
-        // 【再修正ポイント】モード切り替え時、通常モードの和訳カードを**強制的に**非表示にする
+        // 【修正】モード切り替え時、通常モードの和訳カードを強制的に非表示
         translationCardEl.classList.add('hidden');
-        grammarTranslationCardEl.classList.add('hidden'); 
+        translationCardEl.style.display = 'none'; // CSSでも確実に非表示
+        grammarTranslationCardEl.classList.add('hidden');
         
         japaneseTextEl.textContent = ''; 
         grammarJapaneseTextEl.textContent = ''; 
@@ -544,9 +550,10 @@
             // 文法問題のUIリセット
             resetGrammarUI(data);
             
-            // 通常の和訳カードは常に非表示
+            // 【修正】通常の和訳カードを確実に非表示にする
             translationCardEl.classList.add('hidden');
-            grammarTranslationCardEl.classList.add('hidden'); 
+            translationCardEl.style.display = 'none'; // CSSでも確実に非表示
+            grammarTranslationCardEl.classList.add('hidden');
             isTranslationVisible = false;
             japaneseTextEl.textContent = ''; 
             grammarJapaneseTextEl.textContent = ''; 
@@ -717,13 +724,14 @@
      * 文法問題のUIをリセットする
      */
     function resetGrammarUI(data) {
-        grammarQuestionTextEl.textContent = '（空欄に当てはまる語句を選んでください）'; 
+        grammarQuestionTextEl.textContent = '(空欄に当てはまる語句を選んでください)'; 
         grammarAnswerExplanationEl.classList.add('hidden');
         mainContentEl.classList.remove('grammar-layout-answered');
         mainContentEl.classList.add('overflow-y-auto');
         
-        // 通常の和訳カードは非表示
+        // 【修正】通常の和訳カードを確実に非表示
         translationCardEl.classList.add('hidden');
+        translationCardEl.style.display = 'none'; // CSSでも非表示
         grammarTranslationCardEl.classList.add('hidden'); 
         japaneseTextEl.textContent = '';
         grammarJapaneseTextEl.textContent = ''; 
