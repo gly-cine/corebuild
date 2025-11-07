@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>共通テスト英語学習アプリ</title>
+    <title>英語学習サイト</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         /* カスタムフォントとして日本語表示に適したInterを設定 */
@@ -13,26 +13,55 @@
         .word-button { transition: all 0.2s; }
         .word-button:hover { transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1); }
         .selected { opacity: 0.5; pointer-events: none; }
+        /* 音声先行モード用の強いぼかし */
+        .blur-strong { filter: blur(8px); }
         
-        /* モード切替時のアクティブタブの色を定義 */
-        .mode-tab { 
-            border: 2px solid white;
-            background-color: #4f46e5; /* primary */
-            color: white; 
+        /* 文法問題の選択肢のホバー効果 */
+        .choice-button:not(:disabled):hover { 
+            background-color: #f3f4f6; /* gray-100 */
+            border-color: #4f46e5; /* primary-600 */
         }
-        .mode-tab.active-mode-tab {
-            background-color: white;
-            color: #4f46e5; /* primary */
+
+        /* ① 修正: 和訳カードの内容を垂直方向に中央揃えにするためのFlexbox設定 */
+        #translation-card { 
+            display: flex;
+            flex-direction: column; 
+            padding: 12px 16px; /* p-4からp-3へ調整 */
         }
+        #translation-card .flex-content-center { 
+            display: flex;
+            align-items: center; /* 垂直方向の中央揃え */
+            justify-content: center; /* 水平方向の中央揃え */
+            flex-grow: 1; 
+        }
+        #translation-card .translation-label {
+            /* ラベル自体をコンテンツと切り離して上部に配置する */
+            align-self: flex-start;
+            margin-bottom: 4px; /* ラベルと内容の間に少しスペース */
+        }
+        #translation-card #japanese-text {
+            /* テキストが中央に位置するように確保 */
+            min-height: 1.5rem; /* 1行分の最低高さを保証 */
+        }
+
+        /* 文法問題モードの回答後のレイアウト調整 */
+        .grammar-layout-answered {
+            display: flex;
+            flex-direction: column;
+            gap: 12px; /* gapを少し削減 (space-y-4/16px から 12px へ) */
+            overflow-y: auto; 
+            height: 100%; 
+        }
+
     </style>
     <script>
-        // Tailwindの設定をカスタマイズ (色定義)
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        'primary': '#4f46e5',
-                        'secondary': '#10b981',
+                        // スタイリッシュテーマのカラー定義
+                        'primary': '#4f46e5', // Indigo-600
+                        'secondary': '#10b981', // Emerald-500
                         'danger': '#ef4444',
                     }
                 }
@@ -44,71 +73,94 @@
 
     <div id="app" class="w-full max-w-4xl bg-white shadow-2xl rounded-xl flex flex-col h-full md:h-5/6 overflow-hidden">
 
-        <header class="p-6 bg-primary text-white rounded-t-xl shadow-lg flex flex-col justify-between items-center space-y-4">
-            <h1 class="text-2xl font-bold tracking-tight">共通テスト英語学習アプリ</h1>
+        <header id="app-header" class="p-6 bg-primary text-white rounded-t-xl shadow-lg flex flex-col md:flex-row justify-between items-center hidden">
+            <h1 class="text-2xl font-bold tracking-tight mb-3 md:mb-0">海外旅行で便利なフレーズ</h1>
             
-            <div id="main-selector" class="flex space-x-4 w-full justify-center">
-                <button onclick="setLearningType('listening')" id="type-listening" class="bg-white text-primary px-6 py-2 rounded-xl font-bold text-lg transition duration-200 shadow-lg hover:bg-gray-100">
-                    👂 リスニング学習
-                </button>
-                <button onclick="setLearningType('reading')" id="type-reading" class="bg-primary border-2 border-white text-white px-6 py-2 rounded-xl font-bold text-lg transition duration-200 shadow-lg hover:bg-white hover:text-primary">
-                    📖 リーディング学習
-                </button>
-            </div>
-            
-            <div id="mode-selector" class="flex space-x-2 mt-3 md:mt-0 w-full justify-center">
+            <div class="flex flex-wrap justify-center items-center space-x-4 mt-3 md:mt-0">
+                
+                <div class="flex items-center space-x-2">
+                    <label for="filter-mode-selector" class="text-sm font-medium">表示:</label>
+                    <select id="filter-mode-selector" onchange="applyAllFilters()" class="text-gray-800 px-3 py-1 rounded-lg font-medium text-sm transition duration-200 focus:ring-primary focus:border-primary">
+                        <option value="ALL">全ての英文</option>
+                        <option value="UNLEARNED">未学習のみ</option>
+                        <option value="LEARNED">学習済のみ</option>
+                    </select>
                 </div>
-            
+
+                <div class="flex items-center space-x-2 mt-2 md:mt-0">
+                    <label for="mode-selector" class="text-sm font-medium">学習モード:</label>
+                    <select id="mode-selector" onchange="changeMode(this.value)" class="text-gray-800 px-3 py-1 rounded-lg font-medium text-sm transition duration-200 focus:ring-primary focus:border-primary">
+                        <option value="1">① 英文先行</option>
+                        <option value="2">② 音声先行</option>
+                        <option value="4">③ 文法問題</option>
+                    </select>
+                </div>
+                
+                <div class="flex items-center space-x-2 mt-2 md:mt-0">
+                    <label for="grammar-type-selector" class="text-sm font-medium">文法類型:</label>
+                    <select id="grammar-type-selector" onchange="filterByType(this.value)" class="text-gray-800 px-3 py-1 rounded-lg font-medium text-sm transition duration-200 focus:ring-primary focus:border-primary">
+                        </select>
+                </div>
+            </div>
         </header>
 
-        <main class="flex-grow p-6 flex flex-col space-y-4 overflow-y-auto">
-
-            <div class="text-center text-sm text-gray-500 mb-4">
-                <span id="sentence-id" class="font-mono bg-gray-100 px-2 py-1 rounded-md">ID: -</span>
-                <span id="sentence-year" class="ml-4 px-2 py-1 rounded-md text-primary font-semibold">出題年度: -</span>
-            </div>
-
-            <div id="english-display-card" class="bg-indigo-50 p-6 rounded-xl shadow-inner min-h-[100px] flex items-center justify-center transition-all duration-300">
-                <p id="english-text" class="text-xl md:text-2xl font-bold text-gray-800 text-center select-none">
-                    学習モードを選択してください
-                </p>
-            </div>
-
-            <div id="translation-card" class="bg-white p-4 border border-gray-200 rounded-xl shadow min-h-[60px] transition-all duration-300 hidden">
-                <p class="text-sm font-semibold text-gray-600 mb-1">和訳</p>
-                <p id="japanese-text" class="text-lg text-gray-700">
-                    -
-                </p>
-            </div>
-
-            <div id="scramble-ui" class="space-y-4 hidden">
-                <div class="p-4 bg-yellow-100 rounded-xl border-dashed border-2 border-yellow-300 min-h-[80px]">
-                    <p class="text-sm font-semibold text-yellow-700 mb-1">解答構築エリア</p>
-                    <div id="answer-area" class="flex flex-wrap gap-2">
-                        </div>
-                </div>
-
-                <div class="p-4 bg-white rounded-xl shadow-md border-t border-gray-200">
-                    <p class="text-sm font-semibold text-gray-600 mb-2">単語を選択して正しい英文を完成させよう</p>
-                    <div id="scrambled-words-area" class="flex flex-wrap gap-2">
-                        </div>
-                </div>
-
-                <div class="flex justify-center space-x-4 pt-2">
-                    <button id="check-answer-btn" onclick="checkScrambledAnswer()" class="px-6 py-2 bg-secondary text-white font-bold rounded-lg hover:bg-green-600 transition-colors shadow-md hidden">
-                        解答チェック
+        <main id="main-content" class="flex-grow p-6 flex flex-col space-y-3 overflow-y-auto"> <div id="selection-screen" class="p-12 flex flex-col items-center justify-center h-full text-center">
+                <h2 id="selection-title" class="text-3xl font-extrabold text-gray-800 mb-8">学習コンテンツを選択してください</h2>
+                
+                <div id="main-category-buttons" class="space-y-6 w-full max-w-md">
+                    <button id="btn-travel" onclick="selectCategory('travel')" class="w-full py-4 bg-primary text-white text-xl font-bold rounded-xl shadow-lg hover:bg-indigo-700 transition-colors duration-200 transform hover:scale-[1.02]">
+                        ✈️ 旅行用英語
                     </button>
-                    <button id="reset-scramble-btn" onclick="resetScramble()" class="px-6 py-2 bg-gray-500 text-white font-bold rounded-lg hover:bg-gray-600 transition-colors shadow-md hidden">
-                        リセット
-                    </button>
-                </div>
+                    </div>
             </div>
+            
+            <div id="learning-screen" class="hidden flex-grow flex flex-col space-y-3"> <div class="text-center text-sm text-gray-500 mb-2 flex justify-between items-center"> <span id="progress-indicator" class="px-2 py-1 rounded-md text-gray-600 font-semibold"></span>
 
-            <div id="message-box" class="text-center py-2 text-lg font-semibold hidden rounded-lg"></div>
+                    <div class="flex items-center space-x-2">
+                        <label for="scene-filter" class="text-sm font-medium text-gray-600">使用場面:</label>
+                        <select id="scene-filter" onchange="filterScenes(this.value)" class="text-gray-800 px-3 py-1 rounded-lg font-medium text-sm transition duration-200 focus:ring-primary focus:border-primary"></select>
+                    </div>
+
+                </div>
+    
+                <div id="english-display-card" class="bg-indigo-50 p-6 rounded-xl shadow-inner min-h-[100px] flex items-center justify-center transition-all duration-300">
+                    <p id="english-text" class="text-xl md:text-2xl font-bold text-gray-800 text-center select-none w-full">
+                        </p>
+                </div>
+    
+                
+                <div id="grammar-question-ui" class="hidden flex-col space-y-3 pt-2 flex-grow"> <div id="grammar-sentence-card" class="bg-indigo-50 p-6 rounded-xl shadow-inner min-h-[80px] flex items-center justify-center transition-all duration-300">
+                        <p id="grammar-target-sentence" class="text-xl md:text-2xl font-bold text-gray-800 text-center select-none">
+                            </p>
+                    </div>
+                    
+                    <div id="translation-card" class="bg-white border border-gray-200 rounded-xl shadow min-h-[60px] transition-all duration-300 hidden">
+                        <p class="translation-label text-sm font-semibold text-gray-600">和訳</p>
+                        <div id="translation-content" class="flex-content-center">
+                            <p id="japanese-text" class="text-lg text-gray-700 text-center w-full">
+                                -
+                            </p>
+                        </div>
+                    </div>
+
+                    <p id="grammar-question-text" class="text-xl font-bold text-gray-800 text-center px-4"></p>
+
+
+                    <div id="grammar-choices" class="flex flex-wrap justify-center gap-2 pt-2 mx-auto w-full"> <button id="choice-A" onclick="checkGrammarAnswer('A')" class="choice-button flex-grow md:flex-grow-0 py-2 px-3 rounded-lg text-base text-left bg-gray-100 border border-gray-300 transition duration-150 min-w-[45%]"></button> <button id="choice-B" onclick="checkGrammarAnswer('B')" class="choice-button flex-grow md:flex-grow-0 py-2 px-3 rounded-lg text-base text-left bg-gray-100 border border-gray-300 transition duration-150 min-w-[45%]"></button>
+                        <button id="choice-C" onclick="checkGrammarAnswer('C')" class="choice-button flex-grow md:flex-grow-0 py-2 px-3 rounded-lg text-base text-left bg-gray-100 border border-gray-300 transition duration-150 min-w-[45%]"></button>
+                        <button id="choice-D" onclick="checkGrammarAnswer('D')" class="choice-button flex-grow md:flex-grow-0 py-2 px-3 rounded-lg text-base text-left bg-gray-100 border border-gray-300 transition duration-150 min-w-[45%]"></button>
+                    </div>
+
+                    <div id="grammar-answer-explanation" class="hidden mt-4 p-3 rounded-xl shadow-xl bg-white border-2 border-green-500 max-w-xl mx-auto w-full flex-shrink-0"> <p class="font-bold text-green-700 mb-1 border-b border-green-200 pb-1">【正解】<span id="grammar-correct-answer" class="font-extrabold"></span></p>
+                        <p class="font-bold text-gray-700 mt-2 mb-1">【解説】</p> <p id="grammar-explanation-text" class="text-gray-600 text-sm"></p> </div>
+                </div>
+
+                <div id="message-box" class="text-center py-2 text-lg font-semibold hidden rounded-lg"></div>
+            </div>
 
         </main>
 
-        <footer class="p-6 bg-gray-100 rounded-b-xl border-t border-gray-200 flex justify-between items-center flex-wrap">
+        <footer id="app-footer" class="p-6 bg-gray-100 rounded-b-xl border-t border-gray-200 flex justify-between items-center flex-wrap hidden">
             <div class="flex space-x-2">
                 <button onclick="navigate(-1)" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition-colors font-medium">
                     &lt; 前の文
@@ -117,15 +169,24 @@
                     次の文 &gt;
                 </button>
             </div>
+            
+            <button onclick="showSelectionScreen()" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition-colors font-medium mt-4 md:mt-0">
+                TOP画面
+            </button>
 
             <div class="flex space-x-3 mt-4 md:mt-0">
-                <button id="toggle-translation-btn" onclick="toggleTranslation()" class="px-6 py-2 bg-indigo-500 text-white font-bold rounded-lg hover:bg-indigo-600 transition-colors shadow-md hidden">
+                
+                <button id="toggle-learned-btn" onclick="toggleLearnedStatus()" class="px-6 py-2 bg-secondary text-white font-bold rounded-lg hover:bg-emerald-600 transition-colors shadow-md flex items-center hidden">
+                    ✓ 覚えた
+                </button>
+                
+                <button id="toggle-translation-btn" onclick="toggleTranslation()" class="px-6 py-2 bg-primary text-white font-bold rounded-lg hover:bg-indigo-700 transition-colors shadow-md hidden">
                     和訳を表示
                 </button>
 
-                <button id="play-audio-btn" onclick="playAudio()" class="px-6 py-2 bg-red-500 text-white font-bold rounded-lg hover:bg-red-600 transition-colors shadow-md flex items-center hidden">
+                <button id="play-audio-btn" onclick="playAudio()" class="px-6 py-2 bg-red-500 text-white font-bold rounded-lg hover:bg-red-600 transition-colors shadow-md flex items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 108 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd" />
                     </svg>
                     音声再生
                 </button>
@@ -136,1132 +197,593 @@
 
 <script>
     // --- グローバル変数と定数 ---
-    let DB = []; 
-    
-    let currentLearningType = 'listening'; 
-    let currentMode = 1; 
+    let ALL_DB = []; // 読み込んだ全データ
+    let DB = []; // 現在の学習データ (フィルタリング後)
+    let currentMode = 1; // 1:英文先行, 2:音声先行, 4:文法問題 (デフォルトは1)
     let currentSentenceIndex = 0;
-    let isTranslationVisible = false;
-    let correctWords = []; 
-    let scrambledWords = []; 
-    let answerSequence = []; 
+    let isTranslationVisible = false; 
+    let currentCategoryKey = ''; 
+    const LEARNED_STATUS_KEY = 'learning_app_learned_status'; 
     
-    // --- モード定義 ---
-    const MODES = {
-        listening: [
-            { id: 1, name: '① 英文先行' },
-            { id: 2, name: '② 音声先行' },
-            { id: 3, name: '③ 並べ替え' },
-        ],
-        reading: [
-            { id: 101, name: '① 英文先読み' },
-            { id: 102, name: '② 和訳先行' },
-        ]
+    let messageTimeoutId = null; 
+    let currentGrammarType = 'ALL'; 
+
+    // JSONパスと対応する音声フォルダを定義
+    const CATEGORY_MAP = {
+        'travel': { 
+            jsonPath: './data/travel_sentences.json', 
+            audioFolder: 'travel', 
+            name: '旅行用英語',
+        },
     };
 
     // --- DOM要素の参照 ---
+    const filterModeSelectorEl = document.getElementById('filter-mode-selector'); 
+    const toggleLearnedBtn = document.getElementById('toggle-learned-btn'); 
+    const modeSelectorEl = document.getElementById('mode-selector'); 
     const englishTextEl = document.getElementById('english-text');
     const japaneseTextEl = document.getElementById('japanese-text');
-    const translationCardEl = document.getElementById('translation-card');
+    const translationCardEl = document.getElementById('translation-card'); 
     const toggleTranslationBtn = document.getElementById('toggle-translation-btn');
-    const scrambledWordsAreaEl = document.getElementById('scrambled-words-area');
-    const answerAreaEl = document.getElementById('answer-area');
-    const scrambleUiEl = document.getElementById('scramble-ui');
-    const playAudioBtn = document.getElementById('play-audio-btn');
     const messageBoxEl = document.getElementById('message-box');
-    const checkAnswerBtn = document.getElementById('check-answer-btn');
-    const resetScrambleBtn = document.getElementById('reset-scramble-btn');
-    const modeSelectorEl = document.getElementById('mode-selector');
-    const typeListeningBtn = document.getElementById('type-listening');
-    const typeReadingBtn = document.getElementById('type-reading');
+    const selectionScreenEl = document.getElementById('selection-screen'); 
+    const learningScreenEl = document.getElementById('learning-screen'); 
+    const appHeaderEl = document.getElementById('app-header'); 
+    const appFooterEl = document.getElementById('app-footer'); 
+    const progressIndicatorEl = document.getElementById('progress-indicator'); 
+    const sceneFilterEl = document.getElementById('scene-filter'); 
+    const englishDisplayCard = document.getElementById('english-display-card'); 
 
-    // --- JSONデータを直接埋め込み ---
-    // (データ量が多いため、省略せずに全量を含めます)
-    const EMBEDDED_JSON_DATA = [
-        {
-            "id": "sentence0003",
-            "en": "So, I asked Kenji if he could do it instead of me",
-            "ja": "そこで、私の代わりにそれをやってくれるかケンジに尋ねました",
-            "year": "2006年度センター試験出題"
-        },
-        {
-            "id": "sentence0004",
-            "en": "I want to go to the National Museum",
-            "ja": "国立博物館へ行きたいです",
-            "year": "2006年度センター試験出題"
-        },
-        {
-            "id": "sentence0008",
-            "en": "I found a nice hotel in Paris that I liked very much",
-            "ja": "パリで素敵なホテルを見つけて、とても気に入りました",
-            "year": "2006年度センター試験出題"
-        },
-        {
-            "id": "sentence0009",
-            "en": "Yeah, Saturday looks bad ― cloudy and rainy.",
-            "ja": "あぁ、土曜日は悪そうだ。曇り時々雨だよ。",
-            "year": "2006年度センター試験出題"
-        },
-        {
-            "id": "sentence0010",
-            "en": "Could you have him call me back after four o'clock?",
-            "ja": "四時以降に電話をかけ直すよう彼に言ってくれますか？",
-            "year": "2007年度センター試験出題"
-        },
-        {
-            "id": "sentence0013",
-            "en": "But it's closed because today's a holiday, remember?",
-            "ja": "けど、今日は祝日だから閉まってるよ。覚えてない？",
-            "year": "2007年度センター試験出題"
-        },
-        {
-            "id": "sentence0017",
-            "en": "Why don't you keep a diary in Japanese?\nBut I don't like writing to myself.",
-            "ja": "日本語で日記を書いてみたらどう？\nけど、自分に対して書くのは好きじゃないの",
-            "year": "2007年度センター試験出題"
-        },
-        {
-            "id": "sentence0019",
-            "en": "I'm worried about the dog.\nYeah, she hasn't eaten anything for two days.",
-            "ja": "犬のことが心配だ\nええ、二日も何も食べてないわ",
-            "year": "2007年度センター試験出題"
-        },
-        {
-            "id": "sentence0022",
-            "en": "Thank you for calling the Southeast Coast Weather Center.",
-            "ja": "サウスイースト沿岸気象センターにお電話いただきありがとうございます。",
-            "year": "2007年度センター試験出題"
-        },
-        {
-            "id": "sentence0024",
-            "en": "That's Sue, who used to live on Pine Street.",
-            "ja": "それは昔パイン・ストリートに住んでいたスーよ。",
-            "year": "2008年度センター試験出題"
-        },
-        {
-            "id": "sentence0027",
-            "en": "You didn't finish your book report yet?\nWell, it's only Tuesday. I still have three days.",
-            "ja": "まだ書評を書き終えてないの？\nああ、今日はまだ火曜日だろ。まだ三日あるよ。",
-            "year": "2008年度センター試験出題"
-        },
-        {
-            "id": "sentence0028",
-            "en": "I left the bottle on the kitchen table and went to bed.",
-            "ja": "キッチンのテーブルにそのボトルを置いて寝ました。",
-            "year": "2008年度センター試験出題"
-        },
-        {
-            "id": "sentence0033",
-            "en": "The shrimp were playing around in the bottle.",
-            "ja": "エビはボトルの中で泳いでいました。",
-            "year": "2008年度センター試験出題"
-        },
-        {
-            "id": "sentence0034",
-            "en": "Sorry to bother you, but I've got a problem.",
-            "ja": "厄介で申し訳ないけど、困ったことがあるの。",
-            "year": "2009年度センター試験出題"
-        },
-        {
-            "id": "sentence0036",
-            "en": "your name was the most popular in the 70s.",
-            "ja": "あなたの名前は70年代に最も人気がありました。",
-            "year": "2009年度センター試験出題"
-        },
-        {
-            "id": "sentence0037",
-            "en": "The south entrance has a big picture of a monkey on it.",
-            "ja": "南口には大きな猿の絵があります。",
-            "year": "2009年度センター試験出題"
-        },
-        {
-            "id": "sentence0038",
-            "en": "I don't like the Red Line because it only runs every 30 minutes.",
-            "ja": "レッド線は30分毎にしか来ないから好きじゃないんだ。",
-            "year": "2009年度センター試験出題"
-        },
-        {
-            "id": "sentence0043",
-            "en": "You mean you don't need to replace it so often?",
-            "ja": "そんなに頻繁にそれを交換しなくていいってこと？",
-            "year": "2010年度センター試験出題"
-        },
-        {
-            "id": "sentence0044",
-            "en": "I'm afraid we might be lost.\nDoesn't Ken live across from a school and a bank?",
-            "ja": "もしかしたら道に迷ったかもしれない。\nケンは学校と銀行の向かいに住んでなかったっけ？",
-            "year": "2010年度センター試験出題"
-        },
-        {
-            "id": "sentence0047",
-            "en": "Here's some important information.",
-            "ja": "いくつか大事な情報があります。",
-            "year": "2010年度センター試験出題"
-        },
-        {
-            "id": "sentence0049",
-            "en": "Do you know what reflects the pace of life of a country?",
-            "ja": "国の生活ペースを反映してるものが何か知ってる？",
-            "year": "2011年度センター試験出題"
-        },
-        {
-            "id": "sentence0050",
-            "en": "Now I understand how complex American society is.",
-            "ja": "アメリカ社会がどれほど複雑か理解したよ",
-            "year": "2011年度センター試験出題"
-        },
-        {
-            "id": "sentence0052",
-            "en": "Moving to a new home with your pet can be difficult.",
-            "ja": "ペットを連れて新居に引っ越すことは難しいこともある。",
-            "year": "2011年度センター試験出題"
-        },
-        {
-            "id": "sentence0053",
-            "en": "You know, my favorite actor's mother is Irish",
-            "ja": "知っての通り、僕の好きな俳優の母親はアイルランド系なんだ。",
-            "year": "2011年度センター試験出題"
-        },
-        {
-            "id": "sentence0056",
-            "en": "When you arrive at your new home, it may be a good idea to put your cat in a quiet room, if possible.",
-            "ja": "新しい家に着いたとき、可能であれば猫を静かな部屋に入れてあげるといいかもしれません。",
-            "year": "2011年度センター試験出題"
-        },
-        {
-            "id": "sentence0057",
-            "en": "I saved something on this computer yesterday, but it's gone.",
-            "ja": "昨日このコンピューターに保存したんだけど、なくなってるんだ。",
-            "year": "2011年度センター試験出題"
-        },
-        {
-            "id": "sentence0058",
-            "en": "What's wrong with wearing glasses?",
-            "ja": "眼鏡をかけるのは何か問題があるの？",
-            "year": "2012年度センター試験出題"
-        },
-        {
-            "id": "sentence0063",
-            "en": "Do you think you'll get a main role?",
-            "ja": "君が主役に選ばれると思う？",
-            "year": "2012年度センター試験出題"
-        },
-        {
-            "id": "sentence0065",
-            "en": "How about having some chocolate cake?\nWell, I really have been trying to cut down.",
-            "ja": "チョコケーキを食べない？\nえーと、私は頑張って減量してるとこなの",
-            "year": "2012年度センター試験出題"
-        },
-        {
-            "id": "sentence0066",
-            "en": "Are you training for tomorrow's competition?\nYeah, I've got to do better. Last time I came in second.",
-            "ja": "明日の競技のために練習してるの？\nああ、もっと上手くやらないと。前回は二位だった。",
-            "year": "2012年度センター試験出題"
-        },
-        {
-            "id": "sentence0068",
-            "en": "Winter has its own appeal.",
-            "ja": "冬には冬の魅力がある",
-            "year": "2012年度センター試験出題"
-        },
-        {
-            "id": "sentence0072",
-            "en": "Our business hours are Monday through Friday, 8 am to 6 pm.",
-            "ja": "営業時間は月曜から金曜の午前8時から午後6時までです。",
-            "year": "2012年度センター試験出題"
-        },
-        {
-            "id": "sentence0074",
-            "en": "Let me look it up in the database first to see if we have it.",
-            "ja": "それがあるかどうか、まずデータベースで調べてみます。",
-            "year": "2012年度センター試験出題"
-        },
-        {
-            "id": "sentence0075",
-            "en": "One place they became popular was France.",
-            "ja": "人気になった場所の一つがフランスだった。",
-            "year": "2013年度センター試験出題"
-        },
-        {
-            "id": "sentence0076",
-            "en": "Look! Forty dollars a pair for all kids' shoes.",
-            "ja": "見て！子供用の靴はどれも1足40ドルだ！",
-            "year": "2013年度センター試験出題"
-        },
-        {
-            "id": "sentence0077",
-            "en": "You heard that Carla is in the hospital, right?\nYes. I'm thinking of seeing her tomorrow.",
-            "ja": "カーラが入院してるってあなたは聞いたよね？\nああ、明日彼女のお見舞いに行こうと思ってる。",
-            "year": "2013年度センター試験出題"
-        },
-        {
-            "id": "sentence0078",
-            "en": "Why do you need another new phone?",
-            "ja": "なんでまた新しい携帯が必要なの？",
-            "year": "2013年度センター試験出題"
-        },
-        {
-            "id": "sentence0080",
-            "en": "Oh, we have to put some paper in it.",
-            "ja": "ああ、それに紙を入れないといけない。",
-            "year": "2013年度センター試験出題"
-        },
-        {
-            "id": "sentence0082",
-            "en": "Almost the same number as from the UK and Canada.",
-            "ja": "イギリスやカナダからの数とほとんど同じ。",
-            "year": "2013年度センター試験出題"
-        },
-        {
-            "id": "sentence0084",
-            "en": "Look how many international students come from China!",
-            "ja": "中国から来ている留学生の多さを見てごらん！",
-            "year": "2013年度センター試験出題"
-        },
-        {
-            "id": "sentence0086",
-            "en": "Young children learn about their family history",
-            "ja": "小さな子供達は家族の歴史を学ぶ",
-            "year": "2014年度センター試験出題"
-        },
-        {
-            "id": "sentence0087",
-            "en": "OK. I'm off to school, Mom. See you later.",
-            "ja": "よし、学校に行くよママ。じゃあね。",
-            "year": "2014年度センター試験出題"
-        },
-        {
-            "id": "sentence0088",
-            "en": "It's already 2:05.\nOh, ten minutes before the meeting!",
-            "ja": "もう2時5分だ。\nまぁ、会議まであと10分よ！",
-            "year": "2014年度センター試験出題"
-        },
-        {
-            "id": "sentence0089",
-            "en": "Do you want to go shopping at the mall?\nThat place is kind of boring, if you ask me.",
-            "ja": "ショッピングモールに買い物に行かない？\n僕に言わせれば、あそこはちょっと退屈だよ。",
-            "year": "2014年度センター試験出題"
-        },
-        {
-            "id": "sentence0093",
-            "en": "Excuse me. I'm looking for Central Bus Station.",
-            "ja": "すみません、セントラル・バス・ステーションを探しているのですが。",
-            "year": "2014年度センター試験出題"
-        },
-        {
-            "id": "sentence0094",
-            "en": "Where are you going in such a hurry?\nI'm taking a DVD back to the rental shop.",
-            "ja": "そんなに急いでどこに行くの？\nレンタルショップにDVDを返しに行くの。",
-            "year": "2015年度センター試験出題"
-        },
-        {
-            "id": "sentence0097",
-            "en": "I'm sorry. What did you order?",
-            "ja": "すみません、何を注文されましたか？",
-            "year": "2015年度センター試験出題"
-        },
-        {
-            "id": "sentence0098",
-            "en": "Where else have you lived in Japan?",
-            "ja": "日本では他にどこに住んだことがありますか？",
-            "year": "2015年度センター試験出題"
-        },
-        {
-            "id": "sentence0100",
-            "en": "I thought it was coming out next week.",
-            "ja": "それは来週発売だと思ってたんだけど。",
-            "year": "2016年度センター試験出題"
-        },
-        {
-            "id": "sentence0101",
-            "en": "Summer vacation will be over soon.",
-            "ja": "夏休みがもうすぐ終わる。",
-            "year": "2016年度センター試験出題"
-        },
-        {
-            "id": "sentence0104",
-            "en": "How are your classes going?\nWell, I love math, and music is also fun.",
-            "ja": "授業はどんな感じ？\nえーと、数学は大好きで、音楽も面白いわ。",
-            "year": "2016年度センター試験出題"
-        },
-        {
-            "id": "sentence0105",
-            "en": "Well, those are all great ideas, Reina.\nI especially like putting a roof over the bicycles.",
-            "ja": "うん、それはどれも良いアイデアだ、レイナ。\n特に自転車の上に屋根を設置するというのが気に入ったよ。",
-            "year": "2016年度センター試験出題"
-        },
-        {
-            "id": "sentence0106",
-            "en": "You bought one with the same pattern last month.\nBut this one has long sleeves.",
-            "ja": "先月も同じ模様のものを買ったでしょ。\nでもこれは長袖だよ。",
-            "year": "2016年度センター試験出題"
-        },
-        {
-            "id": "sentence0108",
-            "en": "I think it'd be better if we had free Wi-Fi everywhere in the school.",
-            "ja": "学校のどこでも無料でWi-Fiが使えたらいいと思うな。",
-            "year": "2016年度センター試験出題"
-        },
-        {
-            "id": "sentence0110",
-            "en": "This program would be a good chance to learn about the local history",
-            "ja": "このプログラムは地域の歴史を学ぶ良い機会になるだろう。",
-            "year": "2017年度センター試験出題"
-        },
-        {
-            "id": "sentence0113",
-            "en": "How many times have I told you not to run there?",
-            "ja": "あそこを走るなって何回言ったと思ってるの？",
-            "year": "2017年度センター試験出題"
-        },
-        {
-            "id": "sentence0120",
-            "en": "It's too hot to stay home. Let's go to the mountains.\nSounds great, but Jim's called in sick.",
-            "ja": "家にいるには暑すぎるわ。山に行きましょう。\nいいね、でもジムから病気で休むって電話があったんだ。",
-            "year": "2017年度センター試験出題"
-        },
-        {
-            "id": "sentence0121",
-            "en": "Can I do it online?\nSure, but only once for online extensions.",
-            "ja": "それはオンラインで出来ますか？\nはい、ただオンラインでの延長は一度だけです。",
-            "year": "2018年度センター試験出題"
-        },
-        {
-            "id": "sentence0128",
-            "en": "I think many dogs in shelters are well-trained",
-            "ja": "保護施設の犬の多くはちゃんと躾けられていると思う。",
-            "year": "2019年度センター試験出題"
-        },
-        {
-            "id": "sentence0130",
-            "en": "Then, I guess I'll check out the Greek sculptures first.",
-            "ja": "じゃあ、まずギリシャ彫刻を見てみようかな。",
-            "year": "2019年度センター試験出題"
-        },
-        {
-            "id": "sentence0132",
-            "en": "You're walking so slowly! We'll be late for the game!\nBut the traffic light has started to flash.",
-            "ja": "君は歩くのが遅すぎる！試合に遅れるよ！\nけど、信号が点滅し始めたわ。",
-            "year": "2019年度センター試験出題"
-        },
-        {
-            "id": "sentence0140",
-            "en": "Where's the salt we took on the picnic?\nMaybe on the kitchen table, or by the toaster?",
-            "ja": "ピクニックに持って行った塩はどこ？\nキッチンのテーブルの上か、トースターのそばかな？",
-            "year": "2019年度センター試験出題"
-        },
-        {
-            "id": "sentence0141",
-            "en": "They're really cute when they're young.",
-            "ja": "彼らが小さい時は本当にかわいい。",
-            "year": "2019年度センター試験出題"
-        },
-        {
-            "id": "sentence0149",
-            "en": "Both countries have a tea culture.",
-            "ja": "どちらの国にもお茶の文化がある。",
-            "year": "2020年度センター試験出題"
-        },
-        {
-            "id": "sentence0151",
-            "en": "But even more than that, they're so boring!",
-            "ja": "けどそれ以上に、それらはとてもつまらないんだ！",
-            "year": "2020年度センター試験出題"
-        },
-        {
-            "id": "sentence0152",
-            "en": "Does it take you long to come to school?\nYeah, about an hour by train.",
-            "ja": "学校にくるのに時間かかる？\nええ、電車で大体一時間くらい。",
-            "year": "2020年度センター試験出題"
-        },
-        {
-            "id": "sentence0153",
-            "en": "Thanks for your great ideas! How about lunch?\nI wish I could, but I've got an important meeting.",
-            "ja": "素晴らしい案をありがとう！昼食でもどう？\nそうしたいけど、重要な会議があるんです。",
-            "year": "2020年度センター試験出題"
-        },
-        {
-            "id": "sentence0156",
-            "en": "Don't worry, there's a connecting bridge on this floor.",
-            "ja": "ご心配なく、この階には連絡通路があります。",
-            "year": "2020年度センター試験出題"
-        },
-        {
-            "id": "sentence0160",
-            "en": "He's lying on his stomach like he's sleeping.",
-            "ja": "彼はうつ伏せになって、寝ているみたい。",
-            "year": "2020年度センター試験出題"
-        },
-        {
-            "id": "sentence0168",
-            "en": "Hey, take a look at these ads for part-time jobs.",
-            "ja": "ねえ、このバイト広告を見てみて。",
-            "year": "2020年度センター試験出題"
-        },
-        {
-            "id": "sentence0172",
-            "en": "On the other hand, their views of time are quite different.",
-            "ja": "一方で、時間に対する彼らの考え方はかなり違っている。",
-            "year": "2020年度センター試験出題"
-        },
-        {
-            "id": "sentence0179",
-            "en": "That way, I can practice what I learn from my teacher.",
-            "ja": "それなら、僕は先生から学んだことを実践できる。",
-            "year": "2020年度センター試験出題"
-        },
-        {
-            "id": "sentence0189",
-            "en": "I wanted to experience real spoken French.",
-            "ja": "本場のフランス語の会話を経験したかった。",
-            "year": "2021年度共通テスト出題"
-        },
-        {
-            "id": "sentence0192",
-            "en": "Titles that were released between 2001 and 2010 are 20% off.",
-            "ja": "2001年から2010年の間に発売された作品は20%割引です。",
-            "year": "2021年度共通テスト出題"
-        },
-        {
-            "id": "sentence0201",
-            "en": "I won't give David any more ice cream today. I gave him some after lunch.",
-            "ja": "今日はもうデイビッドにアイスクリームをあげないよ。昼食後にいくらかあげたんだ。",
-            "year": "2021年度共通テスト出題"
-        },
-        {
-            "id": "sentence0204",
-            "en": "Do you actually use those? It's so wasteful.",
-            "ja": "あなたは本当にそれを使ってるの？　とっても無駄よ。",
-            "year": "2021年度共通テスト出題"
-        },
-        {
-            "id": "sentence0224",
-            "en": "To start working in Hiroshima next week, Yuji moved from Chiba the day after graduation.",
-            "ja": "来週から広島で働き始めるために、ユウジは卒業の翌日に千葉から引っ越した。",
-            "year": "2021年度共通テスト出題"
-        },
-        {
-            "id": "sentence0225",
-            "en": "I've decided to visit you next March.",
-            "ja": "来年の3月に君を訪ねることにしたよ。",
-            "year": "2021年度共通テスト出題"
-        },
-        {
-            "id": "sentence0234",
-            "en": "In Denmark, for example, leisure time is often spent with others.",
-            "ja": "例えばデンマークでは、余暇の時間は他人と一緒に過ごすことが多い。",
-            "year": "2021年度共通テスト出題"
-        },
-        {
-            "id": "sentence0237",
-            "en": "It's a romance with a few comedy scenes.",
-            "ja": "それは、いくつかのコメディシーンがある恋愛ものです。",
-            "year": "2021年度共通テスト出題"
-        },
-        {
-            "id": "sentence0245",
-            "en": "Well, the rain won't last long anyway.",
-            "ja": "まぁ、どうせ雨はそんなに長く降らないでしょう。",
-            "year": "2022年度共通テスト出題"
-        },
-        {
-            "id": "sentence0250",
-            "en": "I learned a lot when I read it several years ago.",
-            "ja": "それを数年前に読んだとき、沢山のことを学びました。",
-            "year": "2022年度共通テスト出題"
-        },
-        {
-            "id": "sentence0251",
-            "en": "Please help me sort them into the proper boxes.",
-            "ja": "それらを適切な箱に分けるのを手伝ってください。",
-            "year": "2022年度共通テスト出題"
-        },
-        {
-            "id": "sentence0255",
-            "en": "So, how are they going to make money?",
-            "ja": "それでは、彼らはどうやってお金を稼ぐんですか？",
-            "year": "2022年度共通テスト出題"
-        },
-        {
-            "id": "sentence0261",
-            "en": "You can't get to the train station before it starts raining.",
-            "ja": "雨が降り出す前に駅に着くのは無理よ。",
-            "year": "2022年度共通テスト出題"
-        },
-        {
-            "id": "sentence0262",
-            "en": "Which picture shows what they are looking at?",
-            "ja": "どの絵が、彼らが見ているものを表していますか？",
-            "year": "2022年度共通テスト出題"
-        },
-        {
-            "id": "sentence0278",
-            "en": "These workers are called gig workers, who do individual jobs, or gigs, on short-term contracts.",
-            "ja": "これらの労働者は「ギグワーカー」と呼ばれ、短期契約で個別の仕事、ギグをしています。",
-            "year": "2022年度共通テスト出題"
-        },
-        {
-            "id": "sentence0286",
-            "en": "Shoes and bags should be put into Box 4.",
-            "ja": "靴と鞄は4番の箱に入れてください。",
-            "year": "2022年度共通テスト出題"
-        },
-        {
-            "id": "sentence0290",
-            "en": "Let's look at some benefits of the gig work model.",
-            "ja": "ギグワークの仕組みの利点をいくつか見てみましょう。",
-            "year": "2022年度共通テスト出題"
-        },
-        {
-            "id": "sentence0311",
-            "en": "Wild elephants have long been killed for ivory.",
-            "ja": "野生の象は象牙のために昔から殺されています。",
-            "year": "2023年度共通テスト出題"
-        },
-        {
-            "id": "sentence0313",
-            "en": "People always say you should never go hiking alone.",
-            "ja": "一人でハイキングに行ってはいけないとみんないつも言っている。",
-            "year": "2023年度共通テスト出題"
-        },
-        {
-            "id": "sentence0314",
-            "en": "Why not wait until next weekend when you're ready?",
-            "ja": "準備ができる来週末まで待ったら？",
-            "year": "2023年度共通テスト出題"
-        },
-        {
-            "id": "sentence0316",
-            "en": "I can't find my dictionary!\nWhen did you use it last?",
-            "ja": "僕の辞書が見つからない！\nあなたが最後に使ったのはいつ？",
-            "year": "2023年度共通テスト出題"
-        },
-        {
-            "id": "sentence0319",
-            "en": "Each group will give its report to the class.",
-            "ja": "各グループはクラスに報告をします。",
-            "year": "2023年度共通テスト出題"
-        },
-        {
-            "id": "sentence0324",
-            "en": "You should leave the office early.\nYes, I think I'll leave now.",
-            "ja": "あなたはオフィスを早めに出た方がいいわよ。\nああ、もう出ようと思う。",
-            "year": "2023年度共通テスト出題"
-        },
-        {
-            "id": "sentence0330",
-            "en": "First, the top team in Stage A will be awarded medals.",
-            "ja": "まず、ステージAで一位のチームにメダルが授与されます。",
-            "year": "2023年度共通テスト出題"
-        },
-        {
-            "id": "sentence0340",
-            "en": "We should enjoy the city life while we're young.",
-            "ja": "若い間は都市での生活を僕達は楽しむべき。",
-            "year": "2023年度共通テスト出題"
-        },
-        {
-            "id": "sentence0342",
-            "en": "There are so many things to do downtown.",
-            "ja": "繁華街ではやることがたくさんある。",
-            "year": "2023年度共通テスト出題"
-        },
-        {
-            "id": "sentence0345",
-            "en": "I'm putting everything here in the living room into boxes.",
-            "ja": "リビングにあるものを全部箱に入れてます。",
-            "year": "2024年度共通テスト出題"
-        },
-        {
-            "id": "sentence0348",
-            "en": "I'd like to buy a jacket this afternoon.",
-            "ja": "今日の午後、ジャケットを買いたい。",
-            "year": "2024年度共通テスト出題"
-        },
-        {
-            "id": "sentence0356",
-            "en": "This pasta I made isn't enough for five people.",
-            "ja": "私が作ったこのパスタは五人分には足りない。",
-            "year": "2024年度共通テスト出題"
-        },
-        {
-            "id": "sentence0359",
-            "en": "Glass-making began in Mesopotamia roughly 4,500 years ago.",
-            "ja": "ガラス作りは約4,500年前にメソポタミアで始まりました。",
-            "year": "2024年度共通テスト出題"
-        },
-        {
-            "id": "sentence0362",
-            "en": "Chris, why don't we walk in the morning together?",
-            "ja": "クリス、一緒に朝、散歩しない？",
-            "year": "2024年度共通テスト出題"
-        },
-        {
-            "id": "sentence0378",
-            "en": "You bought me lunch yesterday, Ken. So, shall I buy our movie tickets tonight?",
-            "ja": "昨日は昼食をごちそうしてくれたね、ケン。だから、今夜の映画のチケットは私が買おうか？",
-            "year": "2024年度共通テスト出題"
-        },
-        {
-            "id": "sentence0386",
-            "en": "The show will be less than 20 minutes.",
-            "ja": "そのショーは20分もかからない。",
-            "year": "2024年度共通テスト出題"
-        },
-        {
-            "id": "sentence0391",
-            "en": "I have my notebook, but I forgot my pencil.",
-            "ja": "ノートはあるけど、鉛筆を忘れちゃった。",
-            "year": "2024年度共通テスト出題"
-        },
-        {
-            "id": "sentence0398",
-            "en": "For food like that, I just chew 10 times per bite.",
-            "ja": "そういう食べ物は、一口につき10回しか噛まないんです。",
-            "year": "2025年度共通テスト出題"
-        },
-        {
-            "id": "sentence0399",
-            "en": "In a survey of Americans, 76 percent said they thought regifting was all right, but in reality, many are reluctant to regift.",
-            "ja": "アメリカ人への調査では、76％が「リギフティング（他人からのプレゼントを別の人にプレゼントすること）は問題ない」と答えましたが、実際には多くの人がそれをすることをためらっています。",
-            "year": "2025年度共通テスト出題"
-        },
-        {
-            "id": "sentence0400",
-            "en": "It's interesting that many Americans think regifting is OK, but still hesitate to do it.",
-            "ja": "多くのアメリカ人が「リギフティング（他人からのプレゼントを別の人にプレゼントすること）」は問題ないと思っているのに、それでもそれをためらうのは興味深い。",
-            "year": "2025年度共通テスト出題"
-        },
-        {
-            "id": "sentence0405",
-            "en": "The waves are usually less than 1 meter high, so there are always lots of surfers in the water.",
-            "ja": "波の高さは通常1メートル未満なので、海にはいつも多くのサーファーがいます。",
-            "year": "2025年度共通テスト出題"
-        },
-        {
-            "id": "sentence0406",
-            "en": "I'll chew more, eat less, and then I'll feel healthier.",
-            "ja": "もっと噛んで、食べる量を減らせば、もっと健康的に感じられるはず。",
-            "year": "2025年度共通テスト出題"
-        },
-        {
-            "id": "sentence0411",
-            "en": "However, no one cleans up the beach, so it's not as beautiful as others.",
-            "ja": "しかし、誰もそのビーチを掃除しないので、他のビーチほどきれいではありません。",
-            "year": "2025年度共通テスト出題"
-        },
-        {
-            "id": "sentence0416",
-            "en": "Do you know that in the US, millions of Christmas gifts are given each year?",
-            "ja": "アメリカでは毎年、何百万ものクリスマスプレゼントが贈られていることを知っていますか？",
-            "year": "2025年度共通テスト出題"
+    const grammarTypeSelectorEl = document.getElementById('grammar-type-selector'); 
+    const grammarQuestionUiEl = document.getElementById('grammar-question-ui');
+    const grammarQuestionTextEl = document.getElementById('grammar-question-text');
+    const grammarTargetSentenceEl = document.getElementById('grammar-target-sentence');
+    const grammarChoicesEl = document.getElementById('grammar-choices');
+    const grammarAnswerExplanationEl = document.getElementById('grammar-answer-explanation');
+    const grammarCorrectAnswerEl = document.getElementById('grammar-correct-answer');
+    const grammarExplanationTextEl = document.getElementById('grammar-explanation-text');
+    const mainContentEl = document.getElementById('main-content'); 
+
+    // --- Persistence (学習済ステータスの保存/読み込み) ---
+
+    function loadLearnedStatus() {
+        try {
+            const stored = localStorage.getItem(LEARNED_STATUS_KEY);
+            return stored ? JSON.parse(stored) : {};
+        } catch (e) {
+            console.error("Failed to load learned status from localStorage", e);
+            return {};
         }
-    ];
+    }
+
+    function saveLearnedStatus(statusMap) {
+        try {
+            localStorage.setItem(LEARNED_STATUS_KEY, JSON.stringify(statusMap));
+        } catch (e) {
+            console.error("Failed to save learned status to localStorage", e);
+        }
+    }
 
     // --- アプリ初期化 ---
     window.onload = function() {
-        DB = EMBEDDED_JSON_DATA; // データを直接代入
+        const savedMode = localStorage.getItem('lastLearningMode');
+        if (savedMode) {
+            currentMode = parseInt(savedMode, 10);
+            modeSelectorEl.value = currentMode;
+        }
+        showSelectionScreen(); 
+    };
+    
+    function showSelectionScreen() {
+        selectionScreenEl.classList.remove('hidden');
+        learningScreenEl.classList.add('hidden');
+        appHeaderEl.classList.add('hidden');
+        appFooterEl.classList.add('hidden');
+        
+        progressIndicatorEl.textContent = ''; 
+        toggleLearnedBtn.classList.add('hidden');
+        grammarQuestionUiEl.classList.add('hidden');
+        
+        mainContentEl.classList.remove('grammar-layout-answered');
+        mainContentEl.classList.add('overflow-y-auto');
+        
+        // 和訳カードを初期位置に戻すために非表示にする
+        translationCardEl.classList.add('hidden');
+    }
 
-        if (DB.length === 0) {
-            englishTextEl.textContent = 'JSONデータがロードされていません。';
+    function selectCategory(category) {
+        if (category === 'travel') {
+            startLearning('travel');
+            return;
+        } 
+    }
+    
+    /**
+     * 選択されたカテゴリのJSONファイルを非同期で読み込み、学習を開始する
+     */
+    async function startLearning(key) {
+        const config = CATEGORY_MAP[key];
+        if (!config) {
+            showMessage('エラー: 不正なカテゴリが選択されました！', 'danger');
             return;
         }
         
-        // 初期学習タイプとモードを設定
-        setLearningType('listening'); 
-    };
+        // UIの切り替え
+        selectionScreenEl.classList.add('hidden');
+        learningScreenEl.classList.remove('hidden');
+        appHeaderEl.classList.remove('hidden');
+        appFooterEl.classList.remove('hidden');
+        document.getElementById('app-header').querySelector('h1').textContent = config.name;
 
-    /**
-     * 学習タイプ（リスニング or リーディング）を切り替える
-     * @param {string} type - 'listening' or 'reading'
-     */
-    function setLearningType(type) {
-        if (DB.length === 0) return;
-
-        currentLearningType = type;
+        currentCategoryKey = key;
         
-        // メインセレクターのアクティブ状態を更新
-        [typeListeningBtn, typeReadingBtn].forEach(btn => {
-            btn.classList.remove('bg-primary', 'border-2', 'border-white', 'text-white');
-            btn.classList.add('bg-white', 'text-primary');
-        });
+        // データを読み込み中であることをすぐに表示
+        englishTextEl.textContent = 'データを読み込み中です...'; 
+        englishDisplayCard.classList.remove('hidden'); 
 
-        const activeBtn = type === 'listening' ? typeListeningBtn : typeReadingBtn;
-        activeBtn.classList.remove('bg-white', 'text-primary');
-        activeBtn.classList.add('bg-primary', 'border-2', 'border-white', 'text-white');
+        try {
+            // 1. JSONファイルの読み込み
+            const response = await fetch(config.jsonPath);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status} for ${config.jsonPath}`);
+            }
+            
+            const rawData = await response.json(); // 2. JSONパース
+            
+            // 3. データ処理とフィルタリング
+            const learnedStatusMap = loadLearnedStatus();
+            ALL_DB = rawData.map(item => ({
+                ...item,
+                isLearned: !!learnedStatusMap[item.id]
+            })); 
 
+            if (ALL_DB.length === 0) {
+                englishTextEl.textContent = `${config.name} のデータがありません。`;
+                showMessage('データがありません。', 'danger');
+                grammarQuestionUiEl.classList.add('hidden');
+                return;
+            }
+            
+            // 場面フィルターを初期化
+            setupSceneFilter(ALL_DB); 
+            // 文法類型フィルターを初期化
+            setupGrammarTypeFilter(ALL_DB);
+            
+            // モードを適用
+            applyAllFilters(); 
+            
+            if (currentMode === 4) {
+                mainContentEl.classList.remove('grammar-layout-answered');
+                mainContentEl.classList.add('overflow-y-auto'); 
+            }
 
-        if (type === 'listening') {
-            renderModeButtons(MODES.listening);
-            changeMode(1); // リスニングモードのデフォルトはモード1
-        } else {
-            renderModeButtons(MODES.reading);
-            changeMode(101); // リーディングモードのデフォルトはモード101
+        } catch (error) {
+            console.error("データの読み込みまたは初期化に失敗しました:", error);
+            englishTextEl.textContent = `エラーが発生しました: ${config.jsonPath} の読み込みまたはデータ初期化に失敗しました。詳細をブラウザのコンソールで確認してください。`;
+            showMessage('データファイルの読み込みまたは初期化エラー。', 'danger');
+            return;
         }
     }
-
-    /**
-     * モード選択ボタンをレンダリングする
-     * @param {Array} modes - 表示するモードオブジェクトの配列
-     */
-    function renderModeButtons(modes) {
-        modeSelectorEl.innerHTML = '';
-        modes.forEach(mode => {
-            const button = document.createElement('button');
-            button.onclick = () => changeMode(mode.id);
-            button.id = `mode-${mode.id}`;
-            button.className = 'mode-tab bg-primary border-2 border-white text-white px-4 py-2 rounded-lg font-medium text-sm transition duration-200 hover:bg-white hover:text-primary';
-            button.textContent = mode.name;
-            modeSelectorEl.appendChild(button);
+    
+    function setupSceneFilter(data) {
+        // category_mainの件数をカウント
+        const categoryCounts = {};
+        data.forEach(item => {
+            const scene = item.category_main || 'その他';
+            categoryCounts[scene] = (categoryCounts[scene] || 0) + 1;
         });
+
+        const scenes = new Set(data.map(item => item.category_main).filter(c => c && c.trim() !== ''));
+        const sortedScenes = Array.from(scenes).sort((a, b) => a.localeCompare(b, 'ja', { sensitivity: 'base' })); 
+        
+        sceneFilterEl.innerHTML = '';
+        
+        const allOption = document.createElement('option');
+        allOption.value = 'ALL';
+        allOption.textContent = `全ての使用場面 (${data.length}件)`; 
+        sceneFilterEl.appendChild(allOption);
+        
+        sortedScenes.forEach(scene => {
+            const option = document.createElement('option');
+            option.value = scene;
+            option.textContent = `${scene} (${categoryCounts[scene]}件)`;
+            sceneFilterEl.appendChild(option);
+        });
+        
+        sceneFilterEl.classList.remove('hidden');
     }
 
-    /**
-     * モードを切り替える (リスニング: 1, 2, 3 / リーディング: 101, 102...)
-     * @param {number} modeId - 選択されたモードID
-     */
-    function changeMode(modeId) {
-        if (DB.length === 0) return;
+    function setupGrammarTypeFilter(data) {
+        // 文法問題データのみに絞り込む
+        const grammarData = data.filter(item => item.grammar_question);
 
-        currentMode = modeId;
-        isTranslationVisible = false;
-
-        // 共通要素の表示/非表示リセット
-        translationCardEl.classList.add('hidden');
-        toggleTranslationBtn.classList.add('hidden');
-        scrambleUiEl.classList.add('hidden');
-        checkAnswerBtn.classList.add('hidden');
-        resetScrambleBtn.classList.add('hidden');
-        messageBoxEl.classList.add('hidden');
-        playAudioBtn.classList.add('hidden'); 
-        englishTextEl.classList.remove('blur-sm', 'italic', 'text-gray-400');
-        englishTextEl.style.fontSize = '2rem'; 
-
-        // タブのアクティブ状態を更新
-        document.querySelectorAll('.mode-tab').forEach(btn => {
-            btn.classList.remove('active-mode-tab', 'bg-white', 'text-primary');
-            btn.classList.add('bg-primary', 'text-white');
+        // grammar_typeの件数をカウント
+        const typeCounts = {};
+        grammarData.forEach(item => {
+            const type = item.grammar_type || '未分類';
+            typeCounts[type] = (typeCounts[type] || 0) + 1;
         });
-        const activeTab = document.getElementById(`mode-${modeId}`);
-        if (activeTab) {
-            activeTab.classList.remove('bg-primary', 'text-white');
-            activeTab.classList.add('active-mode-tab', 'bg-white', 'text-primary');
+
+        const types = new Set(grammarData.map(item => item.grammar_type).filter(t => t && t.trim() !== ''));
+        const sortedTypes = Array.from(types).sort((a, b) => a.localeCompare(b, 'ja', { sensitivity: 'base' })); 
+        
+        grammarTypeSelectorEl.innerHTML = ''; 
+
+        // 1. 全て (ALL) オプションを追加
+        const allOption = document.createElement('option');
+        allOption.value = 'ALL';
+        allOption.textContent = `全ての類型 (${grammarData.length}件)`;
+        grammarTypeSelectorEl.appendChild(allOption);
+
+        // 2. 各類型オプションを追加
+        sortedTypes.forEach(type => {
+            const option = document.createElement('option');
+            option.value = type;
+            option.textContent = `${type} (${typeCounts[type]}件)`;
+            grammarTypeSelectorEl.appendChild(option);
+        });
+        
+        grammarTypeSelectorEl.value = currentGrammarType; 
+    }
+    
+    function filterByType(type) {
+        currentGrammarType = type;
+        applyAllFilters();
+    }
+    
+    function filterScenes(scene) {
+        applyAllFilters();
+    }
+
+
+    function applyAllFilters() {
+        if (ALL_DB.length === 0) return;
+        
+        // 1. 場面フィルターの適用
+        const scene = sceneFilterEl.value;
+        let tempDB = (scene === 'ALL') 
+            ? ALL_DB 
+            : ALL_DB.filter(item => item.category_main === scene);
+            
+        // 2. 学習済フィルターの適用
+        const learnedFilter = filterModeSelectorEl.value;
+        if (learnedFilter === 'LEARNED') {
+            tempDB = tempDB.filter(item => item.isLearned);
+        } else if (learnedFilter === 'UNLEARNED') {
+            tempDB = tempDB.filter(item => !item.isLearned);
+        }
+        
+        // 3. モード固有のフィルターを適用
+        if (currentMode === 4) { // 文法問題モード
+            let grammarDB = tempDB.filter(item => item.grammar_question);
+            // 文法類型フィルターの適用を追加
+            if (currentGrammarType !== 'ALL') {
+                grammarDB = grammarDB.filter(item => item.grammar_type === currentGrammarType);
+            }
+            DB = grammarDB;
+        } else { // 英文先行/音声先行モード
+            DB = tempDB;
         }
 
+        // ③ 修正: モードに応じて表示エリアを切り替え
+        const isGrammarMode = currentMode === 4;
+        englishDisplayCard.classList.toggle('hidden', isGrammarMode);
+        grammarQuestionUiEl.classList.toggle('hidden', !isGrammarMode);
 
-        // モード固有のUI設定
-        if (currentMode === 1) {
-            // リスニング: 英文先行
-            toggleTranslationBtn.textContent = '和訳を表示';
-            toggleTranslationBtn.classList.remove('hidden');
-            playAudioBtn.classList.remove('hidden');
-        } else if (currentMode === 2) {
-            // リスニング: 音声先行
-            englishTextEl.classList.add('blur-sm'); // 英文をぼかして隠す
-            toggleTranslationBtn.textContent = '英文・和訳を表示';
-            toggleTranslationBtn.classList.remove('hidden');
-            playAudioBtn.classList.remove('hidden');
-        } else if (currentMode === 3) {
-            // リスニング: 並べ替え
-            scrambleUiEl.classList.remove('hidden');
-            checkAnswerBtn.classList.remove('hidden');
-            resetScrambleBtn.classList.remove('hidden');
-            playAudioBtn.classList.remove('hidden');
-            setupScrambleMode();
-            loadSentence(currentSentenceIndex); 
-            return; 
-        } else if (currentMode === 101) {
-            // リーディング: 英文先読み (リーディングのデフォルト)
-            toggleTranslationBtn.textContent = '和訳を表示';
-            toggleTranslationBtn.classList.remove('hidden');
-        } else if (currentMode === 102) {
-            // リーディング: 和訳先行
-            englishTextEl.classList.add('blur-sm'); // 英文をぼかして隠す
-            toggleTranslationBtn.textContent = '英文を表示';
-            toggleTranslationBtn.classList.remove('hidden');
-            translationCardEl.classList.remove('hidden'); // 和訳を最初から表示
-            isTranslationVisible = true; // 和訳表示状態をtrueにする
+        if (DB.length === 0) {
+             englishTextEl.textContent = '選択された条件に該当するデータがありません。';
+             showMessage('データが見つかりませんでした。', 'danger');
+             progressIndicatorEl.textContent = '0/0'; 
+             toggleLearnedBtn.classList.add('hidden');
+             englishTextEl.classList.remove('italic', 'text-gray-400', 'blur-strong');
+             translationCardEl.classList.add('hidden');
+             return;
         }
 
+        currentSentenceIndex = 0;
         loadSentence(currentSentenceIndex);
+    }
+    
+    /**
+     * モードを切り替える
+     */
+    function changeMode(mode) {
+        currentMode = parseInt(mode, 10);
+        localStorage.setItem('lastLearningMode', currentMode);
+        modeSelectorEl.value = currentMode;
+        isTranslationVisible = false; 
+        
+        translationCardEl.classList.add('hidden');
+        englishTextEl.classList.remove('blur-strong', 'italic', 'text-gray-400');
+        
+        const isGrammarMode = currentMode === 4;
+        
+        // ③ 修正: モード切り替え時に表示エリアをリセット
+        englishDisplayCard.classList.toggle('hidden', isGrammarMode);
+        grammarQuestionUiEl.classList.toggle('hidden', !isGrammarMode);
+        
+        toggleLearnedBtn.classList.toggle('hidden', isGrammarMode);
+        toggleTranslationBtn.classList.toggle('hidden', isGrammarMode); 
+        
+        if (currentMode === 1) { // 英文先行
+            toggleTranslationBtn.textContent = '和訳を表示';
+        } else if (currentMode === 2) { // 音声先行
+            toggleTranslationBtn.textContent = '英文・和訳を表示';
+        } 
+        
+        // ⑤ 修正: モード切り替え時にレイアウトをリセット
+        mainContentEl.classList.remove('grammar-layout-answered');
+        mainContentEl.classList.add('overflow-y-auto');
+
+        applyAllFilters(); 
     }
 
     /**
      * 現在の文のデータをUIに読み込む
-     * @param {number} index - DB配列のインデックス
      */
     function loadSentence(index) {
-        if (DB.length === 0) return; 
+        if (DB.length === 0) {
+             progressIndicatorEl.textContent = '0/0';
+             return; 
+        }
         
         currentSentenceIndex = (index + DB.length) % DB.length;
         const data = DB[currentSentenceIndex];
 
-        document.getElementById('sentence-id').textContent = `ID: ${data.id}`;
-        document.getElementById('sentence-year').textContent = `出題年度: ${data.year}`;
+        // 進捗状況を更新
+        progressIndicatorEl.textContent = `${currentSentenceIndex + 1}/${DB.length}`;
 
-        // モード3以外の場合のみ、英文と和訳を更新
-        if (currentMode !== 3) {
-            englishTextEl.innerHTML = data.en.replace(/\n/g, '<br>');
-            japaneseTextEl.innerHTML = data.ja.replace(/\n/g, '<br>');
-        }
+        // 英文/和訳表示エリアのクリアとリセット
+        englishTextEl.classList.remove('italic', 'text-gray-400', 'blur-strong');
+        translationCardEl.classList.add('hidden');
+        isTranslationVisible = false;
         
-        // 和訳の表示をリセット
-        if (currentMode === 1 || currentMode === 101) {
-            isTranslationVisible = false;
-        } else if (currentMode === 2) {
-            isTranslationVisible = false;
-        } else if (currentMode === 102) {
-            isTranslationVisible = true; // 和訳先行モードは和訳が表示された状態で開始
-            translationCardEl.classList.remove('hidden');
-            toggleTranslationBtn.textContent = '英文を表示';
-        }
-        
-        updateTranslationVisibility();
-        
-        // モード2, 102では、初期状態で英文をぼかす
-        if (currentMode === 2 || currentMode === 102) {
-            englishTextEl.classList.add('blur-sm');
+        // ⑤ 修正: 回答エリアを隠し、スクロールを許可する
+        grammarAnswerExplanationEl.classList.add('hidden');
+        mainContentEl.classList.remove('grammar-layout-answered');
+        mainContentEl.classList.add('overflow-y-auto');
+
+        // モードによる表示の分岐
+        if (currentMode === 4) {
+            setupGrammarMode(data);
         } else {
-            englishTextEl.classList.remove('blur-sm');
-        }
-        
-        hideMessage();
-    }
-
-
-    /**
-     * 和訳の表示/非表示を切り替える (モード 1, 2, 101, 102)
-     */
-    function toggleTranslation() {
-        // 和訳先行モード(102)の場合、トグルは和訳ではなく英文の表示を操作する
-        if (currentMode === 102) {
-            if (englishTextEl.classList.contains('blur-sm')) {
-                // 英文が隠れている -> 表示する
-                englishTextEl.classList.remove('blur-sm'); 
-                toggleTranslationBtn.textContent = '英文を非表示';
-            } else {
-                // 英文が表示されている -> 隠す
-                englishTextEl.classList.add('blur-sm'); 
-                toggleTranslationBtn.textContent = '英文を表示';
-            }
-        } else {
-            // リスニングモード(1, 2)と英文先読み(101)の通常のトグル
-            isTranslationVisible = !isTranslationVisible;
-            updateTranslationVisibility();
-
-            if (currentMode === 2 && isTranslationVisible) {
-                // 音声先行モードで和訳が表示されたら、英文のぼかしも解除
-                englishTextEl.classList.remove('blur-sm');
-            } else if (currentMode === 2 && !isTranslationVisible) {
-                 // 非表示にしたら、英文のぼかしを再適用
-                englishTextEl.classList.add('blur-sm');
-            }
-        }
-    }
-    
-    /**
-     * 和訳の表示状態を更新し、トグルボタンのテキストを変更する (102モード以外)
-     */
-    function updateTranslationVisibility() {
-        if (currentMode === 102) {
-            return; 
-        }
-
-        if (isTranslationVisible) {
-            translationCardEl.classList.remove('hidden');
-            if (currentMode === 2) {
-                 toggleTranslationBtn.textContent = '英文・和訳を非表示';
-            } else {
-                toggleTranslationBtn.textContent = '和訳を非表示';
-            }
-        } else {
-            translationCardEl.classList.add('hidden');
-            if (currentMode === 2) {
-                 toggleTranslationBtn.textContent = '英文・和訳を表示';
-            } else {
-                toggleTranslationBtn.textContent = '和訳を表示';
-            }
-        }
-    }
-
-
-    /**
-     * 音声ファイルを再生する（この環境ではダミー）
-     */
-    function playAudio() {
-        if (DB.length === 0 || currentLearningType === 'reading') return; 
-        
-        showMessage("音声再生ボタンが押されました。(このプレビュー環境では音声は流れません)", 'primary');
-    }
-
-    /**
-     * 次または前の文へ移動する
-     */
-    function navigate(direction) {
-        if (DB.length === 0) return;
-        let newIndex = (currentSentenceIndex + direction + DB.length) % DB.length;
-        // モード3の時はセットアップをやり直す必要がある
-        if (currentMode === 3) {
-            currentSentenceIndex = newIndex;
-            setupScrambleMode(); 
-        } else {
-            loadSentence(newIndex);
-        }
-    }
-    
-    /**
-     * 単語並べ替えのために英文を整形し、単語配列を生成する
-     */
-    function tokenizeSentence(sentence) {
-        // 句読点や改行をスペースに置換してから単語に分割
-        const cleanedSentence = sentence
-            .replace(/\n/g, ' ')
-            .replace(/[.,!?;:"—]/g, ' ')
-            .replace(/’/g, "'"); 
-        
-        const words = cleanedSentence.trim().split(/\s+/).filter(w => w.length > 0);
-        return words;
-    }
-
-    // --- モード 3 (並べ替え) のロジック ---
-
-    function setupScrambleMode() {
-        const data = DB[currentSentenceIndex];
-        
-        englishTextEl.textContent = '並べ替えモード：以下の単語を正しい順番に組み替えてください。';
-        englishTextEl.classList.add('italic', 'text-gray-400');
-        englishTextEl.style.fontSize = '1.25rem'; 
-        
-        correctWords = tokenizeSentence(data.en);
-        scrambledWords = [...correctWords];
-        shuffleArray(scrambledWords);
-        
-        answerSequence = []; 
-        
-        renderScrambledWords();
-        renderAnswerArea();
-        hideMessage();
-        
-        japaneseTextEl.innerHTML = data.ja.replace(/\n/g, '<br>');
-        translationCardEl.classList.add('hidden'); 
-    }
-    
-    function shuffleArray(array) {
-        for (let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];
-        }
-    }
-
-    function renderScrambledWords() {
-        scrambledWordsAreaEl.innerHTML = '';
-        const buttons = scrambledWords.map((word, index) => {
-            const button = document.createElement('button');
-            button.className = 'word-button bg-primary text-white text-sm md:text-base font-medium px-3 py-1 rounded-full shadow-md hover:bg-indigo-600 transition-colors duration-200';
-            button.textContent = word;
-            button.dataset.index = index;
-            button.onclick = () => selectWord(word, index);
             
-            // answerSequenceに既に使用されている単語は無効化
-            if (answerSequence.some(item => item.originalIndex === index)) {
-                 button.classList.add('selected');
+            englishTextEl.textContent = data.en.replace(/\n/g, '<br>');
+            japaneseTextEl.textContent = data.ja.replace(/\n/g, '<br>');
+
+            if (currentMode === 2) {
+                englishTextEl.classList.add('blur-strong');
             }
-            return button;
-        });
-        buttons.forEach(btn => scrambledWordsAreaEl.appendChild(btn));
-    }
-
-    function renderAnswerArea() {
-        answerAreaEl.innerHTML = '';
-        answerSequence.forEach((item, index) => {
-            const span = document.createElement('span');
-            span.className = 'answer-word bg-white text-gray-800 text-sm md:text-base px-3 py-1 rounded-full shadow border border-gray-300 cursor-pointer';
-            span.textContent = item.word;
-            span.dataset.originalIndex = item.originalIndex; 
-            span.onclick = () => deselectWord(index);
-            answerAreaEl.appendChild(span);
-        });
-        
-        // 英文表示エリアに現在の解答を表示
-        if (answerSequence.length === 0) {
-            englishTextEl.textContent = '並べ替えモード：単語を選択してください';
-        } else {
-            englishTextEl.textContent = answerSequence.map(item => item.word).join(' ');
+            
+            updateTranslationVisibility(); 
+            updateLearnedButtonUI(data.isLearned);
         }
-    }
-
-    function selectWord(word, originalIndex) {
-        answerSequence.push({ word, originalIndex });
-        renderAnswerArea();
-        renderScrambledWords(); // ボタンの状態を更新
-        hideMessage();
-    }
-    
-    function deselectWord(answerIndex) {
-        const removedItem = answerSequence.splice(answerIndex, 1)[0];
         
-        renderAnswerArea();
-        renderScrambledWords(); // ボタンの状態を更新
         hideMessage();
     }
     
-    function resetScramble() {
-        setupScrambleMode(); 
-        showMessage("並べ替えがリセットされました。", 'gray');
-    }
+    // --- モード 4 (文法問題) のロジック ---
 
-    function checkScrambledAnswer() {
-        if (answerSequence.length === 0) {
-            showMessage("単語を選択して英文を構築してください。", 'danger');
+    function setupGrammarMode(data) {
+        // 共通要素の非表示/表示
+        englishDisplayCard.classList.add('hidden');
+        translationCardEl.classList.add('hidden'); // 回答前は非表示
+        grammarQuestionUiEl.classList.remove('hidden');
+
+        grammarAnswerExplanationEl.classList.add('hidden');
+        
+        document.querySelectorAll('.choice-button').forEach(button => {
+            button.disabled = false;
+            button.classList.remove('bg-red-400', 'text-white', 'bg-green-400', 'bg-green-200', 'text-green-800', 'bg-secondary', 'opacity-50', 'pointer-events-none');
+            button.classList.add('bg-gray-100', 'border-gray-300');
+        });
+        
+        if (!data.grammar_question) {
+            grammarQuestionTextEl.textContent = '【文法問題】問題データがありません。次の文へ進んでください。';
+            grammarTargetSentenceEl.textContent = '問題データがありません。';
+            grammarTargetSentenceEl.classList.add('italic', 'text-gray-400');
+            grammarChoicesEl.classList.add('hidden');
             return;
         }
 
-        const userSentence = answerSequence.map(item => item.word).join(' ');
+        // ② 修正: 指示文を削除
+        grammarQuestionTextEl.textContent = ''; 
         
-        // 句読点などを取り除いた単語の並び順のみを比較
-        const normalizedCorrect = correctWords.join(' ').replace(/\s+/g, ' ').trim();
-        const normalizedUser = userSentence.replace(/\s+/g, ' ').trim();
+        grammarTargetSentenceEl.textContent = data.grammar_question; // 問題となる英文 (空欄あり)
+        grammarTargetSentenceEl.classList.remove('italic', 'text-gray-400');
+        grammarChoicesEl.classList.remove('hidden');
+        
+        // 選択肢テキストの調整 (A. B. などを付与)
+        document.getElementById('choice-A').textContent = `A. ${data.grammar_choice_a.substring(3).trim()}`;
+        document.getElementById('choice-B').textContent = `B. ${data.grammar_choice_b.substring(3).trim()}`;
+        document.getElementById('choice-C').textContent = `C. ${data.grammar_choice_c.substring(3).trim()}`;
+        document.getElementById('choice-D').textContent = `D. ${data.grammar_choice_d.substring(3).trim()}`;
 
-        if (normalizedUser === normalizedCorrect) {
-            showMessage("正解です！よくできました！", 'secondary');
-            
-            // 元の英文を復元し、スタイルをリセット
-            englishTextEl.textContent = DB[currentSentenceIndex].en.replace(/\n/g, ' ');
-            englishTextEl.classList.remove('italic', 'text-gray-400');
-            englishTextEl.style.fontSize = '2rem';
-            
-            translationCardEl.classList.remove('hidden'); // 和訳を表示
-            
-            // 正解したら単語ボタンを無効化
-            document.querySelectorAll('.word-button').forEach(btn => btn.classList.add('selected'));
+    }
 
+    function checkGrammarAnswer(choiceLetter) {
+        const currentQuestion = DB[currentSentenceIndex];
+        const userAnswerText = currentQuestion['grammar_choice_' + choiceLetter.toLowerCase()].substring(3).trim();
+        const userAnswer = `${choiceLetter}. ${userAnswerText}`;
+        const correctAnswer = currentQuestion.grammar_answer;
+        
+        const isCorrect = userAnswer === correctAnswer;
+
+        document.querySelectorAll('.choice-button').forEach(button => {
+            button.disabled = true;
+            button.classList.add('opacity-50', 'pointer-events-none'); // 選択肢を無効化
+        });
+
+        const selectedButton = document.getElementById(`choice-${choiceLetter}`);
+        selectedButton.classList.remove('bg-gray-100', 'border-gray-300', 'opacity-50', 'pointer-events-none');
+
+        if (isCorrect) {
+            showMessage('正解です！', 'secondary');
+            selectedButton.classList.add('bg-secondary', 'text-white');
         } else {
-            showMessage("残念！まだ間違っています。もう一度音声を聴いて考えてみましょう。", 'danger');
+            showMessage('残念！不正解です。', 'danger');
+            selectedButton.classList.add('bg-danger', 'text-white');
+            
+            const correctChoiceLetter = correctAnswer.substring(0, 1);
+            const correctButton = document.getElementById(`choice-${correctChoiceLetter}`);
+            correctButton.classList.remove('bg-gray-100', 'border-gray-300', 'opacity-50', 'pointer-events-none');
+            correctButton.classList.add('bg-green-200', 'text-green-800'); 
+        }
+        
+        // 正しい英文と和訳の表示
+        grammarTargetSentenceEl.textContent = currentQuestion.en; // 問題英文カードに正解の英文を表示
+        grammarTargetSentenceEl.classList.remove('italic', 'text-gray-400');
+        
+        // 和訳カードを正しく表示する 
+        japaneseTextEl.textContent = currentQuestion.ja;
+        translationCardEl.classList.remove('hidden'); 
+
+        // 解答エリア表示のため、メインコンテンツのレイアウトを変更し、スクロールを制御
+        mainContentEl.classList.add('grammar-layout-answered');
+        mainContentEl.classList.remove('overflow-y-auto');
+        
+        grammarCorrectAnswerEl.textContent = correctAnswer;
+        grammarExplanationTextEl.textContent = currentQuestion.grammar_explanation;
+        grammarAnswerExplanationEl.classList.remove('hidden');
+    }
+    
+    // --- 共通ロジック (変更なし) ---
+    function toggleTranslation() {
+        if (currentMode === 4) return;
+        isTranslationVisible = !isTranslationVisible;
+        updateTranslationVisibility();
+    }
+    
+    function updateTranslationVisibility() {
+        if (currentMode === 4) return;
+        
+        if (isTranslationVisible) {
+            translationCardEl.classList.remove('hidden');
+            toggleTranslationBtn.textContent = (currentMode === 2) ? '英文・和訳を非表示' : '和訳を非表示';
+            englishTextEl.classList.remove('blur-strong'); 
+        } else {
+            translationCardEl.classList.add('hidden');
+            toggleTranslationBtn.textContent = (currentMode === 2) ? '英文・和訳を表示' : '和訳を表示';
+            if (currentMode === 2) {
+                 englishTextEl.classList.add('blur-strong'); 
+            } else {
+                englishTextEl.classList.remove('blur-strong');
+            }
+        }
+        toggleTranslationBtn.classList.remove('hidden'); 
+    }
+
+    function toggleLearnedStatus() {
+        if (DB.length === 0 || currentMode === 4) return; 
+
+        const currentData = DB[currentSentenceIndex];
+        const sentenceId = currentData.id;
+        
+        currentData.isLearned = !currentData.isLearned; 
+        
+        const learnedStatusMap = loadLearnedStatus();
+        if (currentData.isLearned) {
+            learnedStatusMap[sentenceId] = true;
+            showMessage("「学習済」にチェックしました！", 'secondary');
+        } else {
+            delete learnedStatusMap[sentenceId]; 
+            showMessage("「未学習」に戻しました。", 'gray');
+        }
+        saveLearnedStatus(learnedStatusMap);
+
+        updateLearnedButtonUI(currentData.isLearned);
+        
+        const learnedFilter = filterModeSelectorEl.value;
+        if ((learnedFilter === 'LEARNED' && !currentData.isLearned) || 
+            (learnedFilter === 'UNLEARNED' && currentData.isLearned)) {
+            
+            applyAllFilters();
+        }
+    }
+    
+    function updateLearnedButtonUI(isLearned) {
+        if (DB.length === 0 || currentMode === 4) {
+             toggleLearnedBtn.classList.add('hidden');
+             return;
+        }
+        
+        if (isLearned) {
+            toggleLearnedBtn.textContent = '✅ 解除'; 
+            toggleLearnedBtn.classList.remove('bg-secondary', 'hover:bg-emerald-600');
+            toggleLearnedBtn.classList.add('bg-gray-500', 'hover:bg-gray-600');
+        } else {
+            toggleLearnedBtn.textContent = '✓ 覚えた'; 
+            toggleLearnedBtn.classList.add('bg-secondary', 'hover:bg-emerald-600');
+            toggleLearnedBtn.classList.remove('bg-gray-500', 'hover:bg-gray-600');
+        }
+        toggleLearnedBtn.classList.remove('hidden');
+    }
+
+    function playAudio() {
+        if (DB.length === 0 || !currentCategoryKey) return;
+        
+        const data = DB[currentSentenceIndex];
+        const config = CATEGORY_MAP[currentCategoryKey];
+        
+        if (!config || !config.audioFolder) {
+             showMessage("エラー: 音声フォルダ設定がありません。", 'danger');
+             return;
+        }
+
+        const audioPath = `./audio/${config.audioFolder}/${data.id}.mp3`;
+        
+        const audio = new Audio(audioPath);
+        audio.play().catch(e => {
+            console.error("音声ファイルの再生に失敗しました。ファイルパスを確認してください: ", audioPath, e);
+            showMessage("音声ファイルの読み込みまたは再生に失敗しました。パスを確認してください。", 'danger');
+        });
+
+        if (currentMode === 2 && !isTranslationVisible) {
+             showMessage("音声が再生されました。英文の構成を考えましょう。", 'secondary');
+        } else if (currentMode === 4) {
+             showMessage("問題文の音声が再生されました。", 'primary');
         }
     }
 
-    // --- メッセージ関数 ---
-
+    function navigate(direction) {
+        if (DB.length === 0) return;
+        let newIndex = currentSentenceIndex + direction;
+        if (newIndex < 0) newIndex = DB.length - 1;
+        
+        isTranslationVisible = false; 
+        loadSentence(newIndex);
+    }
+    
+    /**
+     * メッセージボックスを表示し、3秒後に非表示にする
+     */
     function showMessage(text, type) {
+        if (messageTimeoutId) {
+            clearTimeout(messageTimeoutId);
+        }
+        
         messageBoxEl.textContent = text;
         messageBoxEl.className = `text-center py-2 px-4 text-lg font-semibold rounded-lg shadow-sm mt-4`;
         
         let bgColor, textColor;
         switch (type) {
-            case 'secondary': bgColor = 'bg-green-200'; textColor = 'text-green-800'; break;
+            case 'secondary': bgColor = 'bg-emerald-200'; textColor = 'text-emerald-800'; break; // Secondaryカラー (Emerald)
             case 'danger': bgColor = 'bg-red-200'; textColor = 'text-red-800'; break;
-            case 'primary': bgColor = 'bg-indigo-200'; textColor = 'text-indigo-800'; break;
+            case 'primary': bgColor = 'bg-indigo-200'; textColor = 'text-indigo-800'; break; // Primaryカラー (Indigo)
             case 'gray': bgColor = 'bg-gray-200'; textColor = 'text-gray-800'; break;
             default: bgColor = 'bg-yellow-200'; textColor = 'text-yellow-800'; break;
         }
         messageBoxEl.classList.add(bgColor, textColor);
         messageBoxEl.classList.remove('hidden');
+        
+        // 3秒後に非表示にするタイマーを設定
+        messageTimeoutId = setTimeout(hideMessage, 3000); 
     }
 
     function hideMessage() {
         messageBoxEl.classList.add('hidden');
+        messageTimeoutId = null;
     }
-
 
 </script>
 </body>
