@@ -38,13 +38,25 @@
         <header id="app-header" class="p-6 bg-primary text-white rounded-t-xl shadow-lg flex flex-col md:flex-row justify-between items-center hidden">
             <h1 class="text-2xl font-bold tracking-tight">海外旅行で便利なフレーズ</h1>
             
-            <div class="flex items-center space-x-2 mt-3 md:mt-0">
-                <label for="mode-selector" class="text-sm font-medium">学習モード:</label>
-                <select id="mode-selector" onchange="changeMode(this.value)" class="text-gray-800 px-3 py-1 rounded-lg font-medium text-sm transition duration-200 focus:ring-primary focus:border-primary">
-                    <option value="1">① 英文先行</option>
-                    <option value="2">② 音声先行</option>
-                    <option value="3">③ 並べ替え</option>
-                </select>
+            <div class="flex flex-wrap justify-center items-center space-x-4 mt-3 md:mt-0">
+                
+                <div class="flex items-center space-x-2">
+                    <label for="filter-mode-selector" class="text-sm font-medium">表示:</label>
+                    <select id="filter-mode-selector" onchange="applyAllFilters()" class="text-gray-800 px-3 py-1 rounded-lg font-medium text-sm transition duration-200 focus:ring-primary focus:border-primary">
+                        <option value="ALL">全ての英文</option>
+                        <option value="UNLEARNED">未学習のみ</option>
+                        <option value="LEARNED">学習済のみ</option>
+                    </select>
+                </div>
+
+                <div class="flex items-center space-x-2 mt-2 md:mt-0">
+                    <label for="mode-selector" class="text-sm font-medium">学習モード:</label>
+                    <select id="mode-selector" onchange="changeMode(this.value)" class="text-gray-800 px-3 py-1 rounded-lg font-medium text-sm transition duration-200 focus:ring-primary focus:border-primary">
+                        <option value="1">① 英文先行</option>
+                        <option value="2">② 音声先行</option>
+                        <option value="3">③ 並べ替え</option>
+                    </select>
+                </div>
             </div>
         </header>
 
@@ -137,6 +149,11 @@
             </button>
 
             <div class="flex space-x-3 mt-4 md:mt-0">
+                
+                <button id="toggle-learned-btn" onclick="toggleLearnedStatus()" class="px-6 py-2 bg-secondary text-white font-bold rounded-lg hover:bg-emerald-600 transition-colors shadow-md flex items-center hidden">
+                    ◻️ 学習済にする
+                </button>
+                
                 <button id="toggle-translation-btn" onclick="toggleTranslation()" class="px-6 py-2 bg-primary text-white font-bold rounded-lg hover:bg-indigo-700 transition-colors shadow-md hidden">
                     和訳を表示
                 </button>
@@ -163,6 +180,10 @@
     let scrambledWords = []; 
     let answerSequence = []; 
     let currentCategoryKey = ''; 
+    const LEARNED_STATUS_KEY = 'learning_app_learned_status'; // localStorageのキー
+    
+    // ★追加: メッセージ自動非表示用のタイマーID
+    let messageTimeoutId = null; 
 
     // JSONパスと対応する音声フォルダを定義
     const CATEGORY_MAP = {
@@ -175,6 +196,8 @@
     };
 
     // --- DOM要素の参照 ---
+    const filterModeSelectorEl = document.getElementById('filter-mode-selector'); // 新規追加
+    const toggleLearnedBtn = document.getElementById('toggle-learned-btn'); // 新規追加
     const modeSelectorEl = document.getElementById('mode-selector'); 
     const englishTextEl = document.getElementById('english-text');
     const japaneseTextEl = document.getElementById('japanese-text');
@@ -196,6 +219,34 @@
     const mainCategoryButtonsEl = document.getElementById('main-category-buttons');
     const singleCategoryTransitionEl = document.getElementById('single-category-transition');
     const sceneFilterEl = document.getElementById('scene-filter'); 
+    
+    // --- Persistence (学習済ステータスの保存/読み込み) ---
+
+    /**
+     * localStorageから学習済ステータスをロードする
+     * @returns {Object<string, boolean>} 文IDをキーとする学習済フラグのマップ
+     */
+    function loadLearnedStatus() {
+        try {
+            const stored = localStorage.getItem(LEARNED_STATUS_KEY);
+            return stored ? JSON.parse(stored) : {};
+        } catch (e) {
+            console.error("Failed to load learned status from localStorage", e);
+            return {};
+        }
+    }
+
+    /**
+     * 学習済ステータスをlocalStorageに保存する
+     * @param {Object<string, boolean>} statusMap - 文IDをキーとする学習済フラグのマップ
+     */
+    function saveLearnedStatus(statusMap) {
+        try {
+            localStorage.setItem(LEARNED_STATUS_KEY, JSON.stringify(statusMap));
+        } catch (e) {
+            console.error("Failed to save learned status to localStorage", e);
+        }
+    }
 
     // --- アプリ初期化 ---
     window.onload = function() {
@@ -219,6 +270,7 @@
         selectionTitleEl.classList.remove('hidden'); 
         // 進捗表示をリセット
         progressIndicatorEl.textContent = ''; 
+        toggleLearnedBtn.classList.add('hidden'); // 学習済ボタンも非表示
     }
 
     /**
@@ -254,7 +306,7 @@
         try {
             englishTextEl.textContent = `データの読み込み中です...`;
             
-            // 外部ファイル読み込みの代わりに、旅行用英語のデータ配列を直接使用
+            // 埋め込みデータ
             const provided_json_content = [
               { "id": "travel_sentences_00001", "en": "I'd like to check in for my flight to New York.", "ja": "ニューヨーク行きのフライトのチェックインをしたいです。", "year": null, "category_main": "空港", "category_sub": "チェックイン", "priority": "高" },
               { "id": "travel_sentences_00002", "en": "Can I have a window seat, please?", "ja": "窓側の席をお願いします。", "year": null, "category_main": "空港", "category_sub": "チェックイン", "priority": "中" },
@@ -338,7 +390,14 @@
               { "id": "travel_sentences_00080", "en": "Thank you so much!", "ja": "本当にありがとうございます！", "year": null, "category_main": "汎用", "category_sub": "会話", "priority": "高" }
             ];
 
-            ALL_DB = provided_json_content; 
+            // ローカルストレージから学習済ステータスを読み込む
+            const learnedStatusMap = loadLearnedStatus();
+
+            // 全データに学習済ステータスを付与
+            ALL_DB = provided_json_content.map(item => ({
+                ...item,
+                isLearned: !!learnedStatusMap[item.id] // IDをキーに学習済フラグを設定
+            })); 
 
             if (ALL_DB.length === 0) {
                 englishTextEl.textContent = `${config.name} のデータがありません。`;
@@ -350,7 +409,8 @@
             setupSceneFilter(ALL_DB); 
             
             // フィルタリングを適用し、最初の文をロード
-            filterScenes('ALL'); // デフォルトは全ての場面
+            // 全てのフィルター（場面、学習済）を適用
+            applyAllFilters(); 
             
         } catch (error) {
             console.error("データの読み込み中にエラーが発生しました:", error);
@@ -388,27 +448,48 @@
     }
     
     /**
-     * 使用場面フィルターによるDBの絞り込み (category_mainを使用)
+     * 全てのフィルター（場面・学習済）を適用し、DBを再構築する
      */
-    function filterScenes(scene) {
-        if (scene === 'ALL') {
-            DB = [...ALL_DB];
-        } else {
-            // 'category_main'フィールドでフィルタリング
-            DB = ALL_DB.filter(item => item.category_main === scene);
-        }
+    function applyAllFilters() {
+        if (ALL_DB.length === 0) return;
         
+        // 1. 場面フィルターの適用
+        const scene = sceneFilterEl.value;
+        let tempDB = (scene === 'ALL') 
+            ? ALL_DB 
+            : ALL_DB.filter(item => item.category_main === scene);
+            
+        // 2. 学習済フィルターの適用
+        const learnedFilter = filterModeSelectorEl.value;
+        if (learnedFilter === 'LEARNED') {
+            DB = tempDB.filter(item => item.isLearned);
+        } else if (learnedFilter === 'UNLEARNED') {
+            DB = tempDB.filter(item => !item.isLearned);
+        } else { // ALL
+            DB = tempDB;
+        }
+
         if (DB.length === 0) {
-            englishTextEl.textContent = '選択された場面に該当するデータがありません。';
-            showMessage('データが見つかりませんでした。', 'danger');
-            // 進捗表示をリセット
-            progressIndicatorEl.textContent = '0/0'; 
-            return;
+             englishTextEl.textContent = '選択された条件に該当するデータがありません。';
+             showMessage('データが見つかりませんでした。', 'danger');
+             progressIndicatorEl.textContent = '0/0'; 
+             // 学習済ボタンを隠す
+             toggleLearnedBtn.classList.add('hidden');
+             return;
         }
 
         currentSentenceIndex = 0;
         // 現在のモード設定を維持したまま、最初の文をロード
-        changeMode(modeSelectorEl.value); 
+        changeMode(modeSelectorEl.value);
+    }
+    
+    /**
+     * 使用場面フィルターによるDBの絞り込み (category_mainを使用)
+     * (実際は applyAllFilters を呼び出すだけ)
+     */
+    function filterScenes(scene) {
+        // sceneFilterEl.value はこの時点で更新されているため、そのまま applyAllFilters を呼ぶ
+        applyAllFilters();
     }
 
 
@@ -477,6 +558,9 @@
 
         // 和訳の表示状態を維持したまま更新
         updateTranslationVisibility();
+        
+        // 学習済ボタンのUIを更新
+        updateLearnedButtonUI(data.isLearned);
 
         if (currentMode === 3) {
             setupScrambleMode();
@@ -525,6 +609,70 @@
                  englishTextEl.classList.remove('blur-strong');
             }
         }
+    }
+
+    /**
+     * 学習済ステータスを切り替える
+     */
+    function toggleLearnedStatus() {
+        if (DB.length === 0) return;
+
+        const currentData = DB[currentSentenceIndex];
+        const sentenceId = currentData.id;
+        
+        // 1. ALL_DBを更新 (DBはALL_DBの要素への参照を持っているため、両方が更新される)
+        currentData.isLearned = !currentData.isLearned; 
+        
+        // 2. localStorageを更新
+        const learnedStatusMap = loadLearnedStatus();
+        if (currentData.isLearned) {
+            learnedStatusMap[sentenceId] = true;
+            // メッセージも短縮
+            showMessage("「学習済」にチェックしました！", 'secondary'); // ★修正: showMessageを呼び出し
+        } else {
+            delete learnedStatusMap[sentenceId]; // 未学習に戻す
+            // メッセージも短縮
+            showMessage("「未学習」に戻しました。", 'gray'); // ★修正: showMessageを呼び出し
+        }
+        saveLearnedStatus(learnedStatusMap);
+
+        // 3. UIを更新
+        updateLearnedButtonUI(currentData.isLearned);
+        
+        // 4. フィルタリングモードの場合、次の文へ自動的に移動する（またはリストから削除）
+        const learnedFilter = filterModeSelectorEl.value;
+        if ((learnedFilter === 'LEARNED' && !currentData.isLearned) || 
+            (learnedFilter === 'UNLEARNED' && currentData.isLearned)) {
+            
+            // 現在のフィルターモードに合致しなくなったため、DBを再構築し、次の文へ
+            applyAllFilters();
+        }
+    }
+    
+    /**
+     * 学習済ボタンの表示とテキストを更新する
+     * @param {boolean} isLearned - 現在の英文が学習済か
+     */
+    function updateLearnedButtonUI(isLearned) {
+        if (DB.length === 0) {
+             toggleLearnedBtn.classList.add('hidden');
+             return;
+        }
+        
+        if (isLearned) {
+            // **修正: テキストを「✅ 解除」に短縮**
+            toggleLearnedBtn.textContent = '✅ 解除'; 
+            // チェック済はPrimaryからGrayへ色を変更
+            toggleLearnedBtn.classList.remove('bg-secondary', 'hover:bg-emerald-600');
+            toggleLearnedBtn.classList.add('bg-gray-500', 'hover:bg-gray-600');
+        } else {
+            // **修正: テキストを「✓ 覚えた」に短縮**
+            toggleLearnedBtn.textContent = '✓ 覚えた'; 
+            // 未チェックはSecondaryカラー
+            toggleLearnedBtn.classList.add('bg-secondary', 'hover:bg-emerald-600');
+            toggleLearnedBtn.classList.remove('bg-gray-500', 'hover:bg-gray-600');
+        }
+        toggleLearnedBtn.classList.remove('hidden');
     }
 
 
@@ -729,9 +877,16 @@
 
 
     /**
-     * メッセージボックスを表示する
+     * メッセージボックスを表示し、3秒後に非表示にする
+     * @param {string} text - 表示するメッセージ
+     * @param {string} type - 'secondary', 'danger', 'primary', 'gray' など
      */
     function showMessage(text, type) {
+        // ★変更点: 既存のタイマーがあればクリア
+        if (messageTimeoutId) {
+            clearTimeout(messageTimeoutId);
+        }
+        
         messageBoxEl.textContent = text;
         messageBoxEl.className = `text-center py-2 px-4 text-lg font-semibold rounded-lg shadow-sm mt-4`;
         
@@ -745,6 +900,9 @@
         }
         messageBoxEl.classList.add(bgColor, textColor);
         messageBoxEl.classList.remove('hidden');
+        
+        // ★変更点: 3秒後に非表示にするタイマーを設定
+        messageTimeoutId = setTimeout(hideMessage, 3000); 
     }
 
     /**
@@ -752,6 +910,8 @@
      */
     function hideMessage() {
         messageBoxEl.classList.add('hidden');
+        // ★変更点: タイマーIDをリセット
+        messageTimeoutId = null;
     }
 
 </script>
