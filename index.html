@@ -219,158 +219,118 @@
     let currentSentenceIndex = 0;
     let isTranslationVisible = false; 
     let currentCategoryKey = ''; 
-    const LEARNED_STATUS_KEY = 'learning_app_learned_status'; 
+    const LEARNED_STATUS_KEY = 'learning_app_learned_status';
+    let messageTimeoutId = null;
+    let currentGrammarType = 'ALL';
     
-    let messageTimeoutId = null; 
-    let currentGrammarType = 'ALL'; 
-
     // JSONパスと対応する音声フォルダを定義
     const CATEGORY_MAP = {
-        'travel': { 
-            jsonPath: './data/travel_sentences.json', 
-            audioFolder: 'travel', 
+        'travel': {
+            jsonPath: './data/travel_sentences.json',
+            audioFolder: 'travel',
             name: '旅行用英語',
         },
+        // 他のカテゴリもここに追加
     };
 
     // --- DOM要素の参照 ---
-    const filterModeSelectorEl = document.getElementById('filter-mode-selector'); 
-    const toggleLearnedBtn = document.getElementById('toggle-learned-btn'); 
-    const modeSelectorEl = document.getElementById('mode-selector'); 
+    const appHeaderEl = document.getElementById('app-header');
+    const appFooterEl = document.getElementById('app-footer');
+    const selectionScreenEl = document.getElementById('selection-screen');
+    const learningScreenEl = document.getElementById('learning-screen');
+    const mainContentEl = document.getElementById('main-content');
+    
+    const filterModeSelectorEl = document.getElementById('filter-mode-selector');
+    const toggleLearnedBtn = document.getElementById('toggle-learned-btn');
+    const toggleTranslationBtn = document.getElementById('toggle-translation-btn');
+    const modeSelectorEl = document.getElementById('mode-selector');
+    const englishDisplayCard = document.getElementById('english-display-card');
     const englishTextEl = document.getElementById('english-text');
     const japaneseTextEl = document.getElementById('japanese-text');
-    const translationCardEl = document.getElementById('translation-card'); 
-    const toggleTranslationBtn = document.getElementById('toggle-translation-btn');
-    const messageBoxEl = document.getElementById('message-box');
-    const selectionScreenEl = document.getElementById('selection-screen'); 
-    const learningScreenEl = document.getElementById('learning-screen'); 
-    const appHeaderEl = document.getElementById('app-header'); 
-    const appFooterEl = document.getElementById('app-footer'); 
-    const progressIndicatorEl = document.getElementById('progress-indicator'); 
-    const sceneFilterEl = document.getElementById('scene-filter'); 
-    const englishDisplayCard = document.getElementById('english-display-card'); 
-
-    const grammarTypeSelectorEl = document.getElementById('grammar-type-selector'); 
+    const translationCardEl = document.getElementById('translation-card');
     const grammarQuestionUiEl = document.getElementById('grammar-question-ui');
-    const grammarQuestionTextEl = document.getElementById('grammar-question-text');
     const grammarTargetSentenceEl = document.getElementById('grammar-target-sentence');
+    const grammarQuestionTextEl = document.getElementById('grammar-question-text');
     const grammarChoicesEl = document.getElementById('grammar-choices');
     const grammarAnswerExplanationEl = document.getElementById('grammar-answer-explanation');
     const grammarCorrectAnswerEl = document.getElementById('grammar-correct-answer');
     const grammarExplanationTextEl = document.getElementById('grammar-explanation-text');
-    const mainContentEl = document.getElementById('main-content'); 
-
-    // --- Persistence (学習済ステータスの保存/読み込み) ---
-
-    function loadLearnedStatus() {
-        try {
-            const stored = localStorage.getItem(LEARNED_STATUS_KEY);
-            return stored ? JSON.parse(stored) : {};
-        } catch (e) {
-            console.error("Failed to load learned status from localStorage", e);
-            return {};
-        }
-    }
-
-    function saveLearnedStatus(statusMap) {
-        try {
-            localStorage.setItem(LEARNED_STATUS_KEY, JSON.stringify(statusMap));
-        } catch (e) {
-            console.error("Failed to save learned status to localStorage", e);
-        }
-    }
-
-    // --- アプリ初期化 ---
-    window.onload = function() {
-        const savedMode = localStorage.getItem('lastLearningMode');
-        if (savedMode) {
-            currentMode = parseInt(savedMode, 10);
-            modeSelectorEl.value = currentMode;
-        }
-        showSelectionScreen(); 
-    };
+    const progressIndicatorEl = document.getElementById('progress-indicator');
+    const messageBoxEl = document.getElementById('message-box');
+    const sceneFilterEl = document.getElementById('scene-filter');
+    const grammarTypeSelectorEl = document.getElementById('grammar-type-selector');
     
+    // --- 初期化処理 ---
+    
+    // 最後に学習していたモードを読み込み、適用する
+    const lastMode = parseInt(localStorage.getItem('lastLearningMode') || '1', 10);
+    changeMode(lastMode);
+
+    /**
+     * TOP画面（カテゴリ選択画面）を表示する
+     */
     function showSelectionScreen() {
         selectionScreenEl.classList.remove('hidden');
         learningScreenEl.classList.add('hidden');
         appHeaderEl.classList.add('hidden');
         appFooterEl.classList.add('hidden');
-        
-        progressIndicatorEl.textContent = ''; 
-        toggleLearnedBtn.classList.add('hidden');
-        grammarQuestionUiEl.classList.add('hidden');
-        
-        mainContentEl.classList.remove('grammar-layout-answered');
-        mainContentEl.classList.add('overflow-y-auto');
-        
-        // 和訳カードを初期位置に戻すために非表示にする
-        translationCardEl.classList.add('hidden');
     }
 
-    function selectCategory(category) {
-        if (category === 'travel') {
-            startLearning('travel');
-            return;
-        } 
-    }
-    
     /**
-     * 選択されたカテゴリのJSONファイルを非同期で読み込み、学習を開始する
+     * カテゴリを選択して学習画面へ遷移し、データを読み込む
      */
-    async function startLearning(key) {
+    async function selectCategory(key) {
         const config = CATEGORY_MAP[key];
         if (!config) {
             showMessage('エラー: 不正なカテゴリが選択されました！', 'danger');
             return;
         }
-        
+
         // UIの切り替え
         selectionScreenEl.classList.add('hidden');
         learningScreenEl.classList.remove('hidden');
         appHeaderEl.classList.remove('hidden');
         appFooterEl.classList.remove('hidden');
         document.getElementById('app-header').querySelector('h1').textContent = config.name;
-
         currentCategoryKey = key;
-        
-        // データを読み込み中であることをすぐに表示
-        englishTextEl.textContent = 'データを読み込み中です...'; 
-        englishDisplayCard.classList.remove('hidden'); 
 
+        // データを読み込み中であることをすぐに表示
+        englishTextEl.textContent = 'データを読み込み中です...';
+        englishDisplayCard.classList.remove('hidden');
+        
         try {
             // 1. JSONファイルの読み込み
             const response = await fetch(config.jsonPath);
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status} for ${config.jsonPath}`);
             }
+            const rawData = await response.json();
             
-            const rawData = await response.json(); // 2. JSONパース
+            // 2. JSONパース
             
             // 3. データ処理とフィルタリング
             const learnedStatusMap = loadLearnedStatus();
-            ALL_DB = rawData.map(item => ({
-                ...item,
-                isLearned: !!learnedStatusMap[item.id]
-            })); 
-
+            ALL_DB = rawData.map(item => ({ ...item, isLearned: !!learnedStatusMap[item.id] }));
+            
             if (ALL_DB.length === 0) {
                 englishTextEl.textContent = `${config.name} のデータがありません。`;
                 showMessage('データがありません。', 'danger');
                 grammarQuestionUiEl.classList.add('hidden');
                 return;
             }
-            
+
             // 場面フィルターを初期化
-            setupSceneFilter(ALL_DB); 
+            setupSceneFilter(ALL_DB);
+            
             // 文法類型フィルターを初期化
             setupGrammarTypeFilter(ALL_DB);
-            
+
             // モードを適用
-            applyAllFilters(); 
+            applyAllFilters();
             
             if (currentMode === 4) {
                 mainContentEl.classList.remove('grammar-layout-answered');
-                mainContentEl.classList.add('overflow-y-auto'); 
+                mainContentEl.classList.add('overflow-y-auto');
             }
 
         } catch (error) {
@@ -380,7 +340,10 @@
             return;
         }
     }
-    
+
+    /**
+     * 場面フィルターをセットアップする
+     */
     function setupSceneFilter(data) {
         // category_mainの件数をカウント
         const categoryCounts = {};
@@ -390,85 +353,89 @@
         });
 
         const scenes = new Set(data.map(item => item.category_main).filter(c => c && c.trim() !== ''));
-        const sortedScenes = Array.from(scenes).sort((a, b) => a.localeCompare(b, 'ja', { sensitivity: 'base' })); 
-        
+        const sortedScenes = Array.from(scenes).sort((a, b) => a.localeCompare(b, 'ja', { sensitivity: 'base' }));
+
         sceneFilterEl.innerHTML = '';
         
         const allOption = document.createElement('option');
         allOption.value = 'ALL';
-        allOption.textContent = `全ての使用場面 (${data.length}件)`; 
+        allOption.textContent = `全ての使用場面 (${data.length}件)`;
         sceneFilterEl.appendChild(allOption);
-        
+
         sortedScenes.forEach(scene => {
             const option = document.createElement('option');
             option.value = scene;
-            option.textContent = `${scene} (${categoryCounts[scene]}件)`;
+            option.textContent = `${scene} (${categoryCounts[scene] || 0}件)`;
             sceneFilterEl.appendChild(option);
         });
-        
-        sceneFilterEl.classList.remove('hidden');
     }
 
+    /**
+     * 文法類型フィルターをセットアップする
+     */
     function setupGrammarTypeFilter(data) {
-        // 文法問題データのみに絞り込む
-        const grammarData = data.filter(item => item.grammar_question);
-
         // grammar_typeの件数をカウント
-        const typeCounts = {};
-        grammarData.forEach(item => {
-            const type = item.grammar_type || '未分類';
-            typeCounts[type] = (typeCounts[type] || 0) + 1;
+        const grammarTypeCounts = {};
+        data.filter(item => item.grammar_question).forEach(item => {
+            const type = item.grammar_type || 'その他';
+            grammarTypeCounts[type] = (grammarTypeCounts[type] || 0) + 1;
         });
 
-        const types = new Set(grammarData.map(item => item.grammar_type).filter(t => t && t.trim() !== ''));
-        const sortedTypes = Array.from(types).sort((a, b) => a.localeCompare(b, 'ja', { sensitivity: 'base' })); 
-        
-        grammarTypeSelectorEl.innerHTML = ''; 
+        const grammarTypes = new Set(data.map(item => item.grammar_type).filter(c => c && c.trim() !== ''));
+        const sortedTypes = Array.from(grammarTypes).sort((a, b) => a.localeCompare(b, 'ja', { sensitivity: 'base' }));
 
-        // 1. 全て (ALL) オプションを追加
+        grammarTypeSelectorEl.innerHTML = '';
+        
         const allOption = document.createElement('option');
         allOption.value = 'ALL';
-        allOption.textContent = `全ての類型 (${grammarData.length}件)`;
+        allOption.textContent = `全ての文法類型`;
         grammarTypeSelectorEl.appendChild(allOption);
 
-        // 2. 各類型オプションを追加
         sortedTypes.forEach(type => {
             const option = document.createElement('option');
             option.value = type;
-            option.textContent = `${type} (${typeCounts[type]}件)`;
+            option.textContent = `${type} (${grammarTypeCounts[type] || 0}件)`;
             grammarTypeSelectorEl.appendChild(option);
         });
-        
-        grammarTypeSelectorEl.value = currentGrammarType; 
     }
-    
+
+    /**
+     * 場面フィルターを適用し、学習データを更新する
+     */
+    function filterScenes(scene) {
+        sceneFilterEl.value = scene;
+        applyAllFilters();
+    }
+
+    /**
+     * 文法類型フィルターを適用し、学習データを更新する
+     */
     function filterByType(type) {
         currentGrammarType = type;
-        applyAllFilters();
-    }
-    
-    function filterScenes(scene) {
+        grammarTypeSelectorEl.value = type;
         applyAllFilters();
     }
 
-
+    /**
+     * 全てのフィルターを適用してDBを更新し、最初の文を読み込む
+     */
     function applyAllFilters() {
-        if (ALL_DB.length === 0) return;
+        let tempDB = ALL_DB;
         
         // 1. 場面フィルターの適用
-        const scene = sceneFilterEl.value;
-        let tempDB = (scene === 'ALL') 
-            ? ALL_DB 
-            : ALL_DB.filter(item => item.category_main === scene);
-            
-        // 2. 学習済フィルターの適用
+        const sceneFilter = sceneFilterEl.value;
+        if (sceneFilter !== 'ALL') {
+            tempDB = tempDB.filter(item => item.category_main === sceneFilter);
+        }
+        
+        // 2. 学習状況フィルターの適用
         const learnedFilter = filterModeSelectorEl.value;
         if (learnedFilter === 'LEARNED') {
             tempDB = tempDB.filter(item => item.isLearned);
         } else if (learnedFilter === 'UNLEARNED') {
             tempDB = tempDB.filter(item => !item.isLearned);
         }
-        
+
         // 3. モード固有のフィルターを適用
         if (currentMode === 4) { // 文法問題モード
             let grammarDB = tempDB.filter(item => item.grammar_question);
@@ -477,29 +444,31 @@
                 grammarDB = grammarDB.filter(item => item.grammar_type === currentGrammarType);
             }
             DB = grammarDB;
+            grammarTypeSelectorEl.closest('div').classList.remove('hidden');
         } else { // 英文先行/音声先行モード
             DB = tempDB;
+            grammarTypeSelectorEl.closest('div').classList.add('hidden');
         }
 
         // モードに応じて表示エリアを切り替え
         const isGrammarMode = currentMode === 4;
         englishDisplayCard.classList.toggle('hidden', isGrammarMode);
         grammarQuestionUiEl.classList.toggle('hidden', !isGrammarMode);
-
+        
         if (DB.length === 0) {
-             englishTextEl.textContent = '選択された条件に該当するデータがありません。';
-             showMessage('データが見つかりませんでした。', 'danger');
-             progressIndicatorEl.textContent = '0/0'; 
-             toggleLearnedBtn.classList.add('hidden');
-             englishTextEl.classList.remove('italic', 'text-gray-400', 'blur-strong');
-             translationCardEl.classList.add('hidden');
-             return;
+            englishTextEl.textContent = '選択された条件に該当するデータがありません。';
+            showMessage('データが見つかりませんでした。', 'danger');
+            progressIndicatorEl.textContent = '0/0';
+            toggleLearnedBtn.classList.add('hidden');
+            englishTextEl.classList.remove('italic', 'text-gray-400', 'blur-strong');
+            translationCardEl.classList.add('hidden');
+            return;
         }
 
         currentSentenceIndex = 0;
         loadSentence(currentSentenceIndex);
     }
-    
+
     /**
      * モードを切り替える
      */
@@ -507,10 +476,9 @@
         currentMode = parseInt(mode, 10);
         localStorage.setItem('lastLearningMode', currentMode);
         modeSelectorEl.value = currentMode;
-        isTranslationVisible = false; 
-        
+        isTranslationVisible = false;
         // モード変更時は和訳カードを必ず非表示にリセット
-        translationCardEl.classList.add('hidden'); 
+        translationCardEl.classList.add('hidden');
         englishTextEl.classList.remove('blur-strong', 'italic', 'text-gray-400');
         
         const isGrammarMode = currentMode === 4;
@@ -518,21 +486,20 @@
         // モード切り替え時に表示エリアをリセット
         englishDisplayCard.classList.toggle('hidden', isGrammarMode);
         grammarQuestionUiEl.classList.toggle('hidden', !isGrammarMode);
-        
         toggleLearnedBtn.classList.toggle('hidden', isGrammarMode);
-        toggleTranslationBtn.classList.toggle('hidden', isGrammarMode); 
-        
+        toggleTranslationBtn.classList.toggle('hidden', isGrammarMode);
+
         if (currentMode === 1) { // 英文先行
             toggleTranslationBtn.textContent = '和訳を表示';
         } else if (currentMode === 2) { // 音声先行
             toggleTranslationBtn.textContent = '英文・和訳を表示';
-        } 
-        
+        }
+
         // モード切り替え時にレイアウトをリセット
         mainContentEl.classList.remove('grammar-layout-answered');
         mainContentEl.classList.add('overflow-y-auto');
 
-        applyAllFilters(); 
+        applyAllFilters();
     }
 
     /**
@@ -540,114 +507,187 @@
      */
     function loadSentence(index) {
         if (DB.length === 0) {
-             progressIndicatorEl.textContent = '0/0';
-             return; 
+            progressIndicatorEl.textContent = '0/0';
+            return;
         }
-        
         currentSentenceIndex = (index + DB.length) % DB.length;
         const data = DB[currentSentenceIndex];
 
         // 進捗状況を更新
         progressIndicatorEl.textContent = `${currentSentenceIndex + 1}/${DB.length}`;
 
-        // 英文/和訳表示エリアのクリアとリセット
-        englishTextEl.classList.remove('italic', 'text-gray-400', 'blur-strong');
-        // loadSentence開始時に和訳カードを非表示にリセット
-        translationCardEl.classList.add('hidden'); 
-        isTranslationVisible = false;
+        // 英文/和訳表示エリアの切り替えとデータ設定
+        if (currentMode === 4) {
+            // 文法問題モード
+            mainContentEl.classList.remove('grammar-layout-answered');
+            grammarTargetSentenceEl.textContent = data.grammar_question; // 空欄あり英文
+            
+            // 文法問題のUIリセット
+            resetGrammarUI(data);
+
+            // 文法問題モードでは和訳カードを常に非表示（解答前）
+            translationCardEl.classList.add('hidden');
+
+        } else {
+            // 英文先行(1) / 音声先行(2) モード
+            grammarQuestionUiEl.classList.add('hidden');
+            
+            // 英文カードの設定
+            englishTextEl.textContent = data.en;
+            if (currentMode === 2) { // 音声先行モード
+                englishTextEl.classList.add('blur-strong');
+                englishTextEl.classList.remove('italic', 'text-gray-400');
+            } else { // 英文先行モード (currentMode === 1)
+                englishTextEl.classList.remove('blur-strong', 'italic', 'text-gray-400');
+            }
+            
+            // 和訳カードの設定 (isTranslationVisibleの状態を維持)
+            if (isTranslationVisible) {
+                japaneseTextEl.textContent = data.ja;
+                translationCardEl.classList.remove('hidden');
+                
+                // 和訳表示時の英文のぼかし解除/スタイル適用
+                if (currentMode === 2) { 
+                    englishTextEl.classList.remove('blur-strong');
+                    englishTextEl.classList.add('italic', 'text-gray-400');
+                } else {
+                    englishTextEl.classList.remove('blur-strong', 'italic', 'text-gray-400');
+                }
+            } else {
+                translationCardEl.classList.add('hidden');
+            }
+            
+            // 音声再生
+            playAudio();
+        }
+
+        // Learned statusの更新
+        updateLearnedButton(data.isLearned);
+    }
+
+    /**
+     * 前後の文に移動する
+     */
+    function navigate(direction) {
+        if (DB.length === 0) return;
+        let newIndex = currentSentenceIndex + direction;
         
-        // 回答エリアを隠し、スクロールを許可する
+        // 周回
+        if (newIndex < 0) newIndex = DB.length - 1;
+        if (newIndex >= DB.length) newIndex = 0;
+        
+        isTranslationVisible = false; 
+        loadSentence(newIndex);
+    }
+
+    /**
+     * 和訳表示を切り替える
+     */
+    function toggleTranslation() {
+        if (currentMode === 4) return; // 文法問題モードでは動作させない
+
+        isTranslationVisible = !isTranslationVisible;
+        const data = DB[currentSentenceIndex];
+
+        if (isTranslationVisible) {
+            // 表示処理
+            translationCardEl.classList.remove('hidden');
+            japaneseTextEl.textContent = data.ja;
+            
+            // モードに応じた英文表示の調整 (ぼかし解除)
+            if (currentMode === 1) { // 英文先行
+                englishTextEl.classList.remove('blur-strong', 'italic', 'text-gray-400');
+            } else if (currentMode === 2) { // 音声先行
+                englishTextEl.classList.remove('blur-strong');
+                englishTextEl.classList.add('italic', 'text-gray-400');
+            }
+            
+            toggleTranslationBtn.textContent = '和訳を非表示';
+            
+        } else {
+            // 非表示処理
+            translationCardEl.classList.add('hidden');
+            
+            // モードに応じた英文表示の調整 (再度のマスキング)
+            if (currentMode === 1) { // 英文先行
+                // 英文先行では和訳非表示時に英文はそのまま表示（変更なし）
+                englishTextEl.classList.remove('blur-strong', 'italic', 'text-gray-400'); 
+            } else if (currentMode === 2) { // 音声先行
+                englishTextEl.classList.add('blur-strong'); // 英文をぼかす
+                englishTextEl.classList.remove('italic', 'text-gray-400');
+            }
+            
+            toggleTranslationBtn.textContent = currentMode === 1 ? '和訳を表示' : '英文・和訳を表示';
+        }
+    }
+
+    /**
+     * 音声ファイルを再生する
+     */
+    function playAudio() {
+        const data = DB[currentSentenceIndex];
+        const config = CATEGORY_MAP[currentCategoryKey];
+        if (!data || !config) return;
+
+        // IDから音声ファイル名を作成 (例: travel_sentences_00001 -> travel_sentences_00001.mp3)
+        const audioFileName = data.id + '.mp3';
+        const audioPath = `./audio/${config.audioFolder}/${audioFileName}`;
+        
+        const audio = new Audio(audioPath);
+        audio.play().catch(error => {
+            console.error("音声再生エラー:", error, audioPath);
+            showMessage('音声ファイルの再生に失敗しました。ファイルが存在しないか、ブラウザの制限です。', 'danger');
+        });
+    }
+
+    /**
+     * 文法問題のUIをリセットする
+     */
+    function resetGrammarUI(data) {
+        grammarQuestionTextEl.textContent = '（空欄に当てはまる語句を選んでください）';
+        grammarChoicesEl.innerHTML = '';
         grammarAnswerExplanationEl.classList.add('hidden');
         mainContentEl.classList.remove('grammar-layout-answered');
         mainContentEl.classList.add('overflow-y-auto');
 
-        // モードによる表示の分岐
-        if (currentMode === 4) {
-            
-            // 文法問題モードでは、前回の和訳と解答結果を完全にクリアする
-            japaneseTextEl.textContent = ' '; 
-            grammarAnswerExplanationEl.classList.add('hidden');
-            
-            setupGrammarMode(data);
-        } else {
-            // 通常モードの処理
-            
-            englishTextEl.textContent = data.en.replace(/\n/g, '<br>');
-            japaneseTextEl.textContent = data.ja.replace(/\n/g, '<br>'); 
+        const choices = ['a', 'b', 'c', 'd'].map(key => data['grammar_choice_' + key]).filter(c => c !== undefined);
 
-            if (currentMode === 2) {
-                englishTextEl.classList.add('blur-strong');
-            }
-            
-            // 修正：isTranslationVisibleがfalseなので、updateTranslationVisibility()で非表示が維持されます
-            updateTranslationVisibility(); 
-            updateLearnedButtonUI(data.isLearned);
-        }
-        
-        hideMessage();
-    }
-    
-    // --- モード 4 (文法問題) のロジック ---
-
-    function setupGrammarMode(data) {
-        // 共通要素の非表示/表示
-        englishDisplayCard.classList.add('hidden');
-        
-        // ★ 決定的な修正: setupGrammarModeの冒頭で和訳カードと和訳テキストを確実に隠す
-        translationCardEl.classList.add('hidden'); 
-        japaneseTextEl.textContent = ' '; // 和訳テキストの内容もクリア
-        
-        grammarQuestionUiEl.classList.remove('hidden');
-
-        grammarAnswerExplanationEl.classList.add('hidden');
-        
-        // 選択肢の色をリセットする
-        document.querySelectorAll('.choice-button').forEach(button => {
+        choices.forEach(choice => {
+            const letter = choice.substring(0, 1);
+            const button = document.createElement('button');
+            button.id = `choice-${letter}`;
+            button.className = 'choice-button py-2 px-3 rounded-lg text-base text-left bg-gray-100 border border-gray-300 transition duration-150';
+            button.setAttribute('onclick', `checkGrammarAnswer('${letter}')`);
+            button.textContent = choice;
             button.disabled = false;
-            // 不要な背景色/テキスト色/無効化クラスを全て削除し、初期状態に戻す
-            button.classList.remove('bg-red-400', 'text-white', 'bg-green-400', 'bg-green-200', 'text-green-800', 'bg-secondary', 'opacity-50', 'pointer-events-none', 'bg-danger');
-            button.classList.add('bg-gray-100', 'border-gray-300');
+            button.classList.remove('opacity-50', 'pointer-events-none', 'bg-secondary', 'text-white', 'bg-danger', 'text-white', 'bg-green-200', 'text-green-800');
+            
+            // 選択肢の横並びを維持するためにflex-1を追加
+            button.style.flex = '1 1 0%'; 
+            button.style.minWidth = '0'; 
+            
+            grammarChoicesEl.appendChild(button);
         });
-        
-        if (!data.grammar_question) {
-            // 問題データがない場合の表示
-            grammarQuestionTextEl.textContent = '【文法問題】問題データがありません。次の文へ進んでください。';
-            grammarTargetSentenceEl.textContent = '問題データがありません。';
-            grammarTargetSentenceEl.classList.add('italic', 'text-gray-400');
-            grammarChoicesEl.classList.add('hidden');
-            return;
-        }
-
-        // 解答前は指示文を表示
-        grammarQuestionTextEl.textContent = '正しい選択肢を選んでください。'; 
-        
-        grammarTargetSentenceEl.textContent = data.grammar_question; // 問題となる英文 (空欄あり)
-        grammarTargetSentenceEl.classList.remove('italic', 'text-gray-400');
-        grammarChoicesEl.classList.remove('hidden');
-        
-        // 選択肢テキストの調整 (A. B. などを付与)
-        document.getElementById('choice-A').textContent = `${data.grammar_choice_a}`;
-        document.getElementById('choice-B').textContent = `${data.grammar_choice_b}`;
-        document.getElementById('choice-C').textContent = `${data.grammar_choice_c}`;
-        document.getElementById('choice-D').textContent = `${data.grammar_choice_d}`;
-
     }
 
+    /**
+     * 文法問題の回答をチェックする
+     */
     function checkGrammarAnswer(choiceLetter) {
         const currentQuestion = DB[currentSentenceIndex];
-        const userAnswer = currentQuestion['grammar_choice_' + choiceLetter.toLowerCase()];
-        const correctAnswerText = currentQuestion.grammar_answer;
-        
-        // grammar_answerは "D. check in" の形式を期待
-        const isCorrect = userAnswer === correctAnswerText;
+        const userAnswerText = currentQuestion['grammar_choice_' + choiceLetter.toLowerCase()];
+        // grammar_answer は "A. check" の形式を期待
+        const correctAnswerText = currentQuestion.grammar_answer; 
+        const isCorrect = userAnswerText === correctAnswerText;
 
+        // 選択肢を無効化
         document.querySelectorAll('.choice-button').forEach(button => {
             button.disabled = true;
-            button.classList.add('opacity-50', 'pointer-events-none'); // 選択肢を無効化
+            button.classList.add('opacity-50', 'pointer-events-none');
         });
 
         const selectedButton = document.getElementById(`choice-${choiceLetter}`);
-        selectedButton.classList.remove('bg-gray-100', 'border-gray-300', 'opacity-50', 'pointer-events-none');
+        selectedButton.classList.remove('opacity-50', 'pointer-events-none');
 
         if (isCorrect) {
             showMessage('正解です！', 'secondary');
@@ -656,141 +696,110 @@
             showMessage('残念！不正解です。', 'danger');
             selectedButton.classList.add('bg-danger', 'text-white');
             
+            // 正解のボタンをハイライト
             const correctChoiceLetter = correctAnswerText.substring(0, 1);
             const correctButton = document.getElementById(`choice-${correctChoiceLetter}`);
-            correctButton.classList.remove('bg-gray-100', 'border-gray-300', 'opacity-50', 'pointer-events-none');
-            correctButton.classList.add('bg-green-200', 'text-green-800'); 
+            if(correctButton) {
+                correctButton.classList.remove('bg-gray-100', 'border-gray-300', 'opacity-50', 'pointer-events-none');
+                correctButton.classList.add('bg-green-200', 'text-green-800');
+            }
         }
         
         // 解答後は指示文を非表示
-        grammarQuestionTextEl.textContent = ''; 
-
+        grammarQuestionTextEl.textContent = '';
+        
         // 正しい英文と和訳の表示
         grammarTargetSentenceEl.textContent = currentQuestion.en; // 問題英文カードに正解の英文を表示
         grammarTargetSentenceEl.classList.remove('italic', 'text-gray-400');
         
-        // 和訳カードを正しく表示する (内容を現在のデータに合わせる)
-        japaneseTextEl.textContent = currentQuestion.ja.replace(/\n/g, '<br>');
-        translationCardEl.classList.remove('hidden'); // 解答後に和訳を表示
+        // 和訳カードを正しく表示する (内容を現在の文の和訳に更新し、表示)
+        japaneseTextEl.textContent = currentQuestion.ja;
+        translationCardEl.classList.remove('hidden'); 
         
-        // 解答エリア表示のため、メインコンテンツのレイアウトを変更し、スクロールを制御
-        mainContentEl.classList.add('grammar-layout-answered');
-        mainContentEl.classList.remove('overflow-y-auto');
-        
+        // 解説を表示
+        const correctLetter = correctAnswerText.substring(0, 1);
         grammarCorrectAnswerEl.textContent = correctAnswerText;
         grammarExplanationTextEl.textContent = currentQuestion.grammar_explanation;
         grammarAnswerExplanationEl.classList.remove('hidden');
-    }
-    
-    // --- 共通ロジック ---
-    function toggleTranslation() {
-        if (currentMode === 4) return;
-        isTranslationVisible = !isTranslationVisible;
-        updateTranslationVisibility();
-    }
-    
-    function updateTranslationVisibility() {
-        if (currentMode === 4) return;
+
+        // レイアウトを回答後用に調整
+        mainContentEl.classList.add('grammar-layout-answered');
+        mainContentEl.classList.remove('overflow-y-auto');
         
-        if (isTranslationVisible) {
-            // ★ 修正: translationCardEl を表示
-            translationCardEl.classList.remove('hidden');
-            toggleTranslationBtn.textContent = (currentMode === 2) ? '英文・和訳を非表示' : '和訳を非表示';
-            englishTextEl.classList.remove('blur-strong'); 
-        } else {
-            // ★ 修正: translationCardEl を非表示
-            translationCardEl.classList.add('hidden');
-            toggleTranslationBtn.textContent = (currentMode === 2) ? '英文・和訳を表示' : '和訳を表示';
-            if (currentMode === 2) {
-                 englishTextEl.classList.add('blur-strong'); 
-            } else {
-                englishTextEl.classList.remove('blur-strong');
-            }
+        // 音声再生
+        playAudio();
+    }
+    
+    // --- 学習状況の管理 ---
+
+    /**
+     * 学習状況をLocal Storageから読み込む
+     */
+    function loadLearnedStatus() {
+        try {
+            return JSON.parse(localStorage.getItem(LEARNED_STATUS_KEY) || '{}');
+        } catch (e) {
+            console.error("Failed to load learned status from localStorage:", e);
+            return {};
         }
-        toggleTranslationBtn.classList.remove('hidden'); 
     }
 
+    /**
+     * 学習状況をLocal Storageに保存する
+     */
+    function saveLearnedStatus(statusMap) {
+        localStorage.setItem(LEARNED_STATUS_KEY, JSON.stringify(statusMap));
+    }
+
+    /**
+     * 現在の文の学習ステータスを切り替える
+     */
     function toggleLearnedStatus() {
-        if (DB.length === 0 || currentMode === 4) return; 
-
-        const currentData = DB[currentSentenceIndex];
-        const sentenceId = currentData.id;
-        
-        currentData.isLearned = !currentData.isLearned; 
-        
-        const learnedStatusMap = loadLearnedStatus();
-        if (currentData.isLearned) {
-            learnedStatusMap[sentenceId] = true;
-            showMessage("「学習済」にチェックしました！", 'secondary');
-        } else {
-            delete learnedStatusMap[sentenceId]; 
-            showMessage("「未学習」に戻しました。", 'gray');
-        }
-        saveLearnedStatus(learnedStatusMap);
-
-        updateLearnedButtonUI(currentData.isLearned);
-        
-        const learnedFilter = filterModeSelectorEl.value;
-        if ((learnedFilter === 'LEARNED' && !currentData.isLearned) || 
-            (learnedFilter === 'UNLEARNED' && currentData.isLearned)) {
-            
-            applyAllFilters();
-        }
-    }
-    
-    function updateLearnedButtonUI(isLearned) {
-        if (DB.length === 0 || currentMode === 4) {
-             toggleLearnedBtn.classList.add('hidden');
-             return;
-        }
-        
-        if (isLearned) {
-            toggleLearnedBtn.textContent = '✅ 解除'; 
-            toggleLearnedBtn.classList.remove('bg-secondary', 'hover:bg-emerald-600');
-            toggleLearnedBtn.classList.add('bg-gray-500', 'hover:bg-gray-600');
-        } else {
-            toggleLearnedBtn.textContent = '✓ 覚えた'; 
-            toggleLearnedBtn.classList.add('bg-secondary', 'hover:bg-emerald-600');
-            toggleLearnedBtn.classList.remove('bg-gray-500', 'hover:bg-gray-600');
-        }
-        toggleLearnedBtn.classList.remove('hidden');
-    }
-
-    function playAudio() {
-        if (DB.length === 0 || !currentCategoryKey) return;
-        
-        const data = DB[currentSentenceIndex];
-        const config = CATEGORY_MAP[currentCategoryKey];
-        
-        if (!config || !config.audioFolder) {
-             showMessage("エラー: 音声フォルダ設定がありません。", 'danger');
-             return;
-        }
-
-        const audioPath = `./audio/${config.audioFolder}/${data.id}.mp3`;
-        
-        const audio = new Audio(audioPath);
-        audio.play().catch(e => {
-            console.error("音声ファイルの再生に失敗しました。ファイルパスを確認してください: ", audioPath, e);
-            showMessage("音声ファイルの読み込みまたは再生に失敗しました。パスを確認してください。", 'danger');
-        });
-
-        if (currentMode === 2 && !isTranslationVisible) {
-             showMessage("音声が再生されました。英文の構成を考えましょう。", 'secondary');
-        } else if (currentMode === 4) {
-             showMessage("問題文の音声が再生されました。", 'primary');
-        }
-    }
-
-    function navigate(direction) {
         if (DB.length === 0) return;
-        let newIndex = currentSentenceIndex + direction;
-        if (newIndex < 0) newIndex = DB.length - 1;
         
-        isTranslationVisible = false; 
-        loadSentence(newIndex);
+        const currentId = DB[currentSentenceIndex].id;
+        let learnedStatusMap = loadLearnedStatus();
+        
+        const isCurrentlyLearned = !!learnedStatusMap[currentId];
+        
+        if (isCurrentlyLearned) {
+            // 未学習に切り替え
+            delete learnedStatusMap[currentId];
+            DB[currentSentenceIndex].isLearned = false;
+            showMessage('未学習に戻しました。', 'gray');
+        } else {
+            // 学習済みに切り替え
+            learnedStatusMap[currentId] = true;
+            DB[currentSentenceIndex].isLearned = true;
+            showMessage('「覚えた」としてマークしました！', 'primary');
+        }
+
+        saveLearnedStatus(learnedStatusMap);
+        updateLearnedButton(DB[currentSentenceIndex].isLearned);
+        
+        // フィルタリングモードによっては、次の文へ自動移動
+        if (filterModeSelectorEl.value === 'UNLEARNED' && !DB[currentSentenceIndex].isLearned) {
+             navigate(1);
+        } else if (filterModeSelectorEl.value !== 'ALL') {
+             applyAllFilters();
+        }
     }
-    
+
+    /**
+     * 覚えたボタンの表示を更新する
+     */
+    function updateLearnedButton(isLearned) {
+        if (isLearned) {
+            toggleLearnedBtn.classList.remove('bg-secondary', 'hover:bg-emerald-600');
+            toggleLearnedBtn.classList.add('bg-red-500', 'hover:bg-red-600');
+            toggleLearnedBtn.textContent = '未学習に戻す';
+        } else {
+            toggleLearnedBtn.classList.add('bg-secondary', 'hover:bg-emerald-600');
+            toggleLearnedBtn.classList.remove('bg-red-500', 'hover:bg-red-600');
+            toggleLearnedBtn.textContent = '✓ 覚えた';
+        }
+    }
+
     /**
      * メッセージボックスを表示し、3秒後に非表示にする
      */
@@ -812,16 +821,11 @@
         }
         messageBoxEl.classList.add(bgColor, textColor);
         messageBoxEl.classList.remove('hidden');
-        
-        // 3秒後に非表示にするタイマーを設定
-        messageTimeoutId = setTimeout(hideMessage, 3000); 
-    }
 
-    function hideMessage() {
-        messageBoxEl.classList.add('hidden');
-        messageTimeoutId = null;
+        messageTimeoutId = setTimeout(() => {
+            messageBoxEl.classList.add('hidden');
+        }, 3000);
     }
-
 </script>
 </body>
 </html>
