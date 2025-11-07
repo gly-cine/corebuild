@@ -151,8 +151,7 @@
                         <p class="translation-label text-sm font-semibold text-gray-600">和訳</p>
                         <div id="translation-content" class="flex-content-center">
                             <p id="japanese-text" class="text-lg text-gray-700 text-center w-full">
-                                -
-                            </p>
+                                </p>
                         </div>
                     </div>
 
@@ -565,9 +564,10 @@
         if (currentMode === 4) {
             setupGrammarMode(data);
         } else {
+            // 通常モードの処理
             
             englishTextEl.textContent = data.en.replace(/\n/g, '<br>');
-            // ★ 修正: 和訳テキストを現在のデータに合わせる
+            // ★ 修正: 和訳テキストを現在のデータに合わせる (通常モード)
             japaneseTextEl.textContent = data.ja.replace(/\n/g, '<br>'); 
 
             if (currentMode === 2) {
