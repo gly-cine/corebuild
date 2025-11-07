@@ -445,7 +445,7 @@
         englishDisplayCard.classList.toggle('hidden', isGrammarMode);
         grammarQuestionUiEl.classList.toggle('hidden', !isGrammarMode);
         toggleLearnedBtn.classList.toggle('hidden', isGrammarMode);
-        toggleTranslationBtn.classList.toggle('hidden', isGrammarMode); // この行は既存で正しいため維持
+        // toggleTranslationBtn.classList.toggle('hidden', isGrammarMode); // 文法問題モードではボタンを非表示に
 
         if (DB.length === 0) {
             englishTextEl.textContent = '選択された条件に該当するデータがありません。';
@@ -475,12 +475,6 @@
         
         const isGrammarMode = currentMode === 4;
 
-        // モード切り替え時に表示エリアをリセット (applyAllFiltersで再度実行されるためここでは最小限に留める)
-        // englishDisplayCard.classList.toggle('hidden', isGrammarMode);
-        // grammarQuestionUiEl.classList.toggle('hidden', !isGrammarMode);
-        // toggleLearnedBtn.classList.toggle('hidden', isGrammarMode);
-        // toggleTranslationBtn.classList.toggle('hidden', isGrammarMode);
-        
         if (currentMode === 1) { // 英文先行
             toggleTranslationBtn.textContent = '和訳を表示';
         } else if (currentMode === 2) { // 音声先行
@@ -489,7 +483,6 @@
 
         // モード切り替え時にレイアウトをリセット
         mainContentEl.classList.remove('grammar-layout-answered');
-        // mainContentEl.classList.add('overflow-y-auto'); // applyAllFiltersで設定
 
         applyAllFilters();
     }
@@ -516,7 +509,7 @@
             // 文法問題のUIリセット
             resetGrammarUI(data);
             
-            // ② 修正点: 文法問題モードでは解答前に和訳カードを常に非表示にし、フラグもリセット
+            // 文法問題モードでは解答前に和訳カードを常に非表示にし、フラグもリセット
             translationCardEl.classList.add('hidden');
             isTranslationVisible = false;
             japaneseTextEl.textContent = ''; // 和訳内容もクリア
@@ -649,9 +642,7 @@
      * 和訳カードの表示/非表示を切り替える
      */
     function toggleTranslation() {
-        // ① 修正点: 英文先行(1)と音声先行(2)での無効化ロジックを削除
         if (currentMode === 4) {
-            // 文法問題モードでは和訳表示ボタンは隠されているはずなので、ここでは何もしない
             return; 
         }
 
@@ -668,7 +659,8 @@
                 englishTextEl.classList.remove('blur-strong');
                 englishTextEl.classList.remove('italic', 'text-gray-400'); // ぼかし解除時にこのスタイルも解除
             }
-            showMessage('和訳を表示しました。', 'gray');
+            // ① 修正点: 和訳表示メッセージの削除
+            // showMessage('和訳を表示しました。', 'gray'); 
 
         } else {
             // 和訳が非表示になる場合
@@ -679,7 +671,8 @@
             if (currentMode === 2) {
                 englishTextEl.classList.add('blur-strong');
             }
-            showMessage('和訳を非表示にしました。', 'gray');
+            // ① 修正点: 和訳非表示メッセージの削除
+            // showMessage('和訳を非表示にしました。', 'gray');
         }
     }
 
@@ -717,43 +710,41 @@
      */
     function resetGrammarUI(data) {
         grammarQuestionTextEl.textContent = '（空欄に当てはまる語句を選んでください）';
-        grammarChoicesEl.innerHTML = '';
         grammarAnswerExplanationEl.classList.add('hidden');
         mainContentEl.classList.remove('grammar-layout-answered');
         mainContentEl.classList.add('overflow-y-auto');
         
-        // ② 修正点: 文法問題モードで「前の文」に戻ったときなど、和訳カードを非表示にする
+        // 文法問題モードで「前の文」に戻ったときなど、和訳カードを非表示にする
         translationCardEl.classList.add('hidden');
         japaneseTextEl.textContent = '';
         isTranslationVisible = false;
 
+        const allLetters = ['A', 'B', 'C', 'D'];
+        const choices = allLetters
+            .map(letter => ({
+                letter: letter,
+                text: data['grammar_choice_' + letter.toLowerCase()] // 小文字キーでデータ取得
+            }))
+            .filter(choice => choice.text !== undefined);
 
-        const choices = ['a', 'b', 'c', 'd'].map(key => data['grammar_choice_' + key]).filter(c => c !== undefined);
 
-        choices.forEach((choice, index) => {
-            const letter = choice.substring(0, 1); // 'A.', 'B.', ... から A, B を取得
-            const choiceText = choice.substring(3).trim(); // 選択肢のテキスト部分を取得
-
-            // 既存のボタン要素を再利用
+        // ② 修正点: 選択肢のテキスト設定とUIリセット
+        allLetters.forEach(letter => {
             const buttonEl = document.getElementById(`choice-${letter}`);
-            if (buttonEl) {
+            const choiceData = choices.find(c => c.letter === letter);
+
+            if (choiceData && choiceData.text) {
+                const choiceText = choiceData.text.substring(3).trim(); // 例: "A. check"から"check"
                 buttonEl.textContent = choiceText;
                 buttonEl.setAttribute('onclick', `checkGrammarAnswer('${letter}')`);
                 buttonEl.disabled = false;
-                buttonEl.classList.remove('bg-green-100', 'bg-red-100', 'border-green-500', 'border-red-500', 'selected', 'opacity-50');
+                buttonEl.classList.remove('bg-green-100', 'bg-red-100', 'border-green-500', 'border-red-500', 'selected', 'opacity-50', 'hidden');
                 buttonEl.classList.add('bg-gray-100', 'border-gray-300');
-                buttonEl.classList.remove('hidden');
-            }
-        });
-        
-        // 選択肢が4つ未満の場合、残りのボタンを非表示にする
-        const allLetters = ['A', 'B', 'C', 'D'];
-        for(let i = choices.length; i < allLetters.length; i++) {
-            const buttonEl = document.getElementById(`choice-${allLetters[i]}`);
-            if (buttonEl) {
+            } else {
+                // データがない選択肢は非表示にする
                 buttonEl.classList.add('hidden');
             }
-        }
+        });
     }
 
 
@@ -789,8 +780,11 @@
             showMessage('不正解です。', 'danger');
 
             // 正解のボタンを緑色で表示
-            correctButton.classList.remove('bg-gray-100', 'border-gray-300', 'opacity-50');
-            correctButton.classList.add('bg-green-100', 'border-green-500');
+            if (correctButton) {
+                correctButton.classList.remove('bg-gray-100', 'border-gray-300', 'opacity-50');
+                correctButton.classList.add('bg-green-100', 'border-green-500');
+                correctButton.disabled = true; // 正解ボタンも無効化
+            }
         }
 
         // 解説と和訳を表示
