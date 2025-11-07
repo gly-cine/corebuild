@@ -21,6 +21,24 @@
             background-color: #f3f4f6; /* gray-100 */
             border-color: #4f46e5; /* primary-600 */
         }
+
+        /* ① 和訳カードの内容を垂直方向に中央揃えにするためのFlexbox設定 */
+        #translation-card .flex-content-center { 
+            display: flex;
+            align-items: center; /* 垂直方向の中央揃え */
+            justify-content: center; /* 水平方向の中央揃え */
+            flex-grow: 1; 
+        }
+
+        /* ④ 文法問題モードの回答後のレイアウト調整 */
+        .grammar-layout-answered {
+            display: flex;
+            flex-direction: column;
+            gap: 16px; /* p-4相当 */
+            overflow-y: auto; /* 回答後の内容が多い場合にスクロールできるようにする */
+            height: 100%; /* 親要素の高さに合わせる */
+        }
+
     </style>
     <script>
         tailwind.config = {
@@ -72,7 +90,7 @@
             </div>
         </header>
 
-        <main class="flex-grow p-6 flex flex-col space-y-4 overflow-y-auto">
+        <main id="main-content" class="flex-grow p-6 flex flex-col space-y-4 overflow-y-auto">
 
             <div id="selection-screen" class="p-12 flex flex-col items-center justify-center h-full text-center">
                 <h2 id="selection-title" class="text-3xl font-extrabold text-gray-800 mb-8">学習コンテンツを選択してください</h2>
@@ -98,31 +116,36 @@
                 </div>
     
                 <div id="english-display-card" class="bg-indigo-50 p-6 rounded-xl shadow-inner min-h-[100px] flex items-center justify-center transition-all duration-300">
-                    <p id="english-text" class="text-xl md:text-2xl font-bold text-gray-800 text-center select-none">
+                    <p id="english-text" class="text-xl md:text-2xl font-bold text-gray-800 text-center select-none w-full">
                         </p>
                 </div>
     
                 <div id="translation-card" class="bg-white p-4 border border-gray-200 rounded-xl shadow min-h-[60px] transition-all duration-300 hidden flex flex-col">
                     <p class="text-sm font-semibold text-gray-600 mb-1">和訳</p>
-                    <div class="flex-grow flex items-center justify-center">
+                    <div id="translation-content" class="flex-content-center">
                         <p id="japanese-text" class="text-lg text-gray-700 text-center w-full">
                             -
                         </p>
                     </div>
                 </div>
                 
-                <div id="grammar-question-ui" class="hidden flex-col space-y-4 pt-4">
+                <div id="grammar-question-ui" class="hidden flex-col space-y-4 pt-4 flex-grow">
 
-                    <p id="grammar-question-text" class="text-xl font-bold mb-4 text-gray-800 text-center px-4"></p>
-
-                    <div id="grammar-choices" class="flex flex-col space-y-3 mx-auto w-full max-w-lg">
-                        <button id="choice-A" onclick="checkGrammarAnswer('A')" class="choice-button py-3 px-4 rounded-lg text-lg text-left bg-gray-100 border border-gray-300 transition duration-150"></button>
-                        <button id="choice-B" onclick="checkGrammarAnswer('B')" class="choice-button py-3 px-4 rounded-lg text-lg text-left bg-gray-100 border border-gray-300 transition duration-150"></button>
-                        <button id="choice-C" onclick="checkGrammarAnswer('C')" class="choice-button py-3 px-4 rounded-lg text-lg text-left bg-gray-100 border border-gray-300 transition duration-150"></button>
-                        <button id="choice-D" onclick="checkGrammarAnswer('D')" class="choice-button py-3 px-4 rounded-lg text-lg text-left bg-gray-100 border border-gray-300 transition duration-150"></button>
+                    <p id="grammar-question-text" class="text-xl font-bold text-gray-800 text-center px-4"></p>
+                    
+                    <div id="grammar-sentence-card" class="bg-indigo-50 p-6 rounded-xl shadow-inner min-h-[80px] flex items-center justify-center transition-all duration-300">
+                        <p id="grammar-target-sentence" class="text-xl md:text-2xl font-bold text-gray-800 text-center select-none">
+                            </p>
                     </div>
 
-                    <div id="grammar-answer-explanation" class="hidden mt-6 p-4 rounded-xl shadow-xl bg-white border-2 border-green-500 max-w-xl mx-auto w-full">
+                    <div id="grammar-choices" class="flex flex-wrap justify-center gap-3 pt-4 mx-auto w-full">
+                        <button id="choice-A" onclick="checkGrammarAnswer('A')" class="choice-button flex-grow md:flex-grow-0 py-3 px-4 rounded-lg text-lg text-left bg-gray-100 border border-gray-300 transition duration-150 min-w-[45%]"></button>
+                        <button id="choice-B" onclick="checkGrammarAnswer('B')" class="choice-button flex-grow md:flex-grow-0 py-3 px-4 rounded-lg text-lg text-left bg-gray-100 border border-gray-300 transition duration-150 min-w-[45%]"></button>
+                        <button id="choice-C" onclick="checkGrammarAnswer('C')" class="choice-button flex-grow md:flex-grow-0 py-3 px-4 rounded-lg text-lg text-left bg-gray-100 border border-gray-300 transition duration-150 min-w-[45%]"></button>
+                        <button id="choice-D" onclick="checkGrammarAnswer('D')" class="choice-button flex-grow md:flex-grow-0 py-3 px-4 rounded-lg text-lg text-left bg-gray-100 border border-gray-300 transition duration-150 min-w-[45%]"></button>
+                    </div>
+
+                    <div id="grammar-answer-explanation" class="hidden mt-6 p-4 rounded-xl shadow-xl bg-white border-2 border-green-500 max-w-xl mx-auto w-full flex-shrink-0">
                         <p class="font-bold text-green-700 mb-2 border-b border-green-200 pb-1">【正解】<span id="grammar-correct-answer" class="font-extrabold"></span></p>
                         <p class="font-bold text-gray-700 mt-3 mb-1">【解説】</p>
                         <p id="grammar-explanation-text" class="text-gray-600 text-base"></p>
@@ -182,16 +205,13 @@
     let messageTimeoutId = null; 
     let currentGrammarType = 'ALL'; 
 
-    // --- JSONデータ全体は外部ファイルから読み込みます ---
-    
     // JSONパスと対応する音声フォルダを定義
     const CATEGORY_MAP = {
         'travel': { 
-            jsonPath: './data/travel_sentences.json', // ★修正: 外部JSONファイルへのパス
+            jsonPath: './data/travel_sentences.json', 
             audioFolder: 'travel', 
             name: '旅行用英語',
         },
-        // 他のカテゴリ定義をここに追加 (例: 'reading', 'listening'など)
     };
 
     // --- DOM要素の参照 ---
@@ -213,10 +233,14 @@
     const grammarTypeSelectorEl = document.getElementById('grammar-type-selector'); // プルダウン
     const grammarQuestionUiEl = document.getElementById('grammar-question-ui');
     const grammarQuestionTextEl = document.getElementById('grammar-question-text');
+    const grammarTargetSentenceEl = document.getElementById('grammar-target-sentence'); // ③ 追加
+    const grammarChoicesEl = document.getElementById('grammar-choices'); // ④ レイアウト変更のため
+    const grammarSentenceCardEl = document.getElementById('grammar-sentence-card'); // ③ 追加
     const grammarAnswerExplanationEl = document.getElementById('grammar-answer-explanation');
     const grammarCorrectAnswerEl = document.getElementById('grammar-correct-answer');
     const grammarExplanationTextEl = document.getElementById('grammar-explanation-text');
-    
+    const mainContentEl = document.getElementById('main-content'); // ④ レイアウト変更のため
+
     // --- Persistence (学習済ステータスの保存/読み込み) ---
 
     function loadLearnedStatus() {
@@ -239,6 +263,12 @@
 
     // --- アプリ初期化 ---
     window.onload = function() {
+        // ② 修正: ページロード時にlocalStorageから前回のモードを復元
+        const savedMode = localStorage.getItem('lastLearningMode');
+        if (savedMode) {
+            currentMode = parseInt(savedMode, 10);
+            modeSelectorEl.value = currentMode;
+        }
         showSelectionScreen(); 
     };
     
@@ -251,6 +281,10 @@
         progressIndicatorEl.textContent = ''; 
         toggleLearnedBtn.classList.add('hidden');
         grammarQuestionUiEl.classList.add('hidden');
+        
+        // ④ 修正: TOP画面に戻る際は通常スクロールに戻す
+        mainContentEl.classList.remove('grammar-layout-answered');
+        mainContentEl.classList.add('overflow-y-auto');
     }
 
     function selectCategory(category) {
@@ -279,7 +313,6 @@
 
         currentCategoryKey = key;
         
-        // **★修正: データを非同期で読み込む**
         let rawData;
         try {
             englishTextEl.textContent = 'データを読み込み中です...';
@@ -297,7 +330,7 @@
 
         // データの初期化
         const learnedStatusMap = loadLearnedStatus();
-        ALL_DB = rawData.map(item => ({ // rawDataを使用
+        ALL_DB = rawData.map(item => ({
             ...item,
             isLearned: !!learnedStatusMap[item.id]
         })); 
@@ -313,11 +346,18 @@
         // 文法類型フィルターを初期化
         setupGrammarTypeFilter(ALL_DB);
         
-        // モードをデフォルト（英文先行）に設定し、フィルターを適用
-        modeSelectorEl.value = currentMode;
+        // モードを適用
         applyAllFilters(); 
+        
+        // ④ 修正: 文法モードの場合、回答前のレイアウト調整
+        if (currentMode === 4) {
+            mainContentEl.classList.remove('grammar-layout-answered');
+            mainContentEl.classList.add('overflow-y-auto'); // 回答前はスクロールOK
+        }
     }
     
+    // 省略：setupSceneFilter, setupGrammarTypeFilter, filterByType, filterScenes は変更なし
+
     function setupSceneFilter(data) {
         // category_mainの件数をカウント
         const categoryCounts = {};
@@ -346,12 +386,9 @@
         sceneFilterEl.classList.remove('hidden');
     }
 
-    /**
-     * 文法類型フィルタープルダウンをセットアップする
-     */
     function setupGrammarTypeFilter(data) {
         // 文法問題データのみに絞り込む
-        const grammarData = data.filter(item => item.grammar_type);
+        const grammarData = data.filter(item => item.grammar_question);
 
         // grammar_typeの件数をカウント
         const typeCounts = {};
@@ -379,14 +416,19 @@
             grammarTypeSelectorEl.appendChild(option);
         });
         
-        grammarTypeSelectorEl.value = currentGrammarType; // 初期選択状態を設定
+        grammarTypeSelectorEl.value = currentGrammarType; 
     }
-
+    
     function filterByType(type) {
         currentGrammarType = type;
         applyAllFilters();
     }
     
+    function filterScenes(scene) {
+        applyAllFilters();
+    }
+
+
     function applyAllFilters() {
         if (ALL_DB.length === 0) return;
         
@@ -423,23 +465,27 @@
              toggleLearnedBtn.classList.add('hidden');
              englishTextEl.classList.remove('italic', 'text-gray-400', 'blur-strong');
              translationCardEl.classList.add('hidden');
+             
+             // ② 修正: データがない場合、文法問題UIを隠す
+             grammarQuestionUiEl.classList.add('hidden'); 
              return;
         }
+        
+        // ③ 修正: モードに応じて表示エリアを切り替え
+        englishDisplayCard.classList.toggle('hidden', currentMode === 4);
+        grammarQuestionUiEl.classList.toggle('hidden', currentMode !== 4);
+
 
         currentSentenceIndex = 0;
         loadSentence(currentSentenceIndex);
     }
     
-    function filterScenes(scene) {
-        applyAllFilters();
-    }
-
-
     /**
      * モードを切り替える
      */
     function changeMode(mode) {
         currentMode = parseInt(mode, 10);
+        localStorage.setItem('lastLearningMode', currentMode); // ② 修正: モードを保存
         modeSelectorEl.value = currentMode;
         isTranslationVisible = false; 
         
@@ -447,10 +493,13 @@
         englishTextEl.classList.remove('blur-strong', 'italic', 'text-gray-400');
         
         const isGrammarMode = currentMode === 4;
+        
+        // ③ 修正: モード切り替え時に表示エリアをリセット
+        document.getElementById('english-display-card').classList.toggle('hidden', isGrammarMode);
         grammarQuestionUiEl.classList.toggle('hidden', !isGrammarMode);
         
         toggleLearnedBtn.classList.toggle('hidden', isGrammarMode);
-        toggleTranslationBtn.classList.toggle('hidden', isGrammarMode); // 文法モードでは非表示
+        toggleTranslationBtn.classList.toggle('hidden', isGrammarMode); 
         
         if (currentMode === 1) { // 英文先行
             toggleTranslationBtn.textContent = '和訳を表示';
@@ -458,6 +507,10 @@
             toggleTranslationBtn.textContent = '英文・和訳を表示';
         } 
         
+        // ④ 修正: モード切り替え時にレイアウトをリセット
+        mainContentEl.classList.remove('grammar-layout-answered');
+        mainContentEl.classList.add('overflow-y-auto');
+
         applyAllFilters(); 
     }
 
@@ -480,6 +533,11 @@
         englishTextEl.classList.remove('italic', 'text-gray-400', 'blur-strong');
         translationCardEl.classList.add('hidden');
         isTranslationVisible = false;
+        
+        // ④ 修正: 回答エリアを隠し、スクロールを許可する
+        grammarAnswerExplanationEl.classList.add('hidden');
+        mainContentEl.classList.remove('grammar-layout-answered');
+        mainContentEl.classList.add('overflow-y-auto');
 
         // モードによる表示の分岐
         if (currentMode === 4) {
@@ -503,29 +561,39 @@
     // --- モード 4 (文法問題) のロジック ---
 
     function setupGrammarMode(data) {
+        // ③ 修正: 英文先行/和訳カードを非表示にし、文法問題UIを表示
+        document.getElementById('english-display-card').classList.add('hidden');
+        translationCardEl.classList.add('hidden');
+        grammarQuestionUiEl.classList.remove('hidden');
+
         grammarAnswerExplanationEl.classList.add('hidden');
         
         document.querySelectorAll('.choice-button').forEach(button => {
             button.disabled = false;
-            button.classList.remove('bg-red-400', 'text-white', 'bg-green-400', 'bg-green-200', 'text-green-800', 'bg-secondary');
+            button.classList.remove('bg-red-400', 'text-white', 'bg-green-400', 'bg-green-200', 'text-green-800', 'bg-secondary', 'opacity-50', 'pointer-events-none');
             button.classList.add('bg-gray-100', 'border-gray-300');
         });
         
         if (!data.grammar_question) {
-            grammarQuestionTextEl.textContent = 'この文には文法問題がありません。次の文へ進んでください。';
-            englishTextEl.textContent = '【文法問題モード】問題データがありません。';
-            englishTextEl.classList.add('italic', 'text-gray-400');
+            // ③ 修正: 問題がない場合の表示を調整
+            grammarQuestionTextEl.textContent = '【文法問題】問題データがありません。次の文へ進んでください。';
+            grammarTargetSentenceEl.textContent = '問題データがありません。';
+            grammarTargetSentenceEl.classList.add('italic', 'text-gray-400');
+            grammarChoicesEl.classList.add('hidden');
             return;
         }
 
-        grammarQuestionTextEl.textContent = data.grammar_question; 
+        // ③ 修正: 指示文と問題文の位置を入れ替える
+        grammarQuestionTextEl.textContent = '正しい選択肢を選んでください。';
+        grammarTargetSentenceEl.textContent = data.grammar_question; // 問題となる英文
+        grammarTargetSentenceEl.classList.remove('italic', 'text-gray-400');
+        grammarChoicesEl.classList.remove('hidden');
+        
         document.getElementById('choice-A').textContent = `A. ${data.grammar_choice_a.substring(3).trim()}`;
         document.getElementById('choice-B').textContent = `B. ${data.grammar_choice_b.substring(3).trim()}`;
         document.getElementById('choice-C').textContent = `C. ${data.grammar_choice_c.substring(3).trim()}`;
         document.getElementById('choice-D').textContent = `D. ${data.grammar_choice_d.substring(3).trim()}`;
-        
-        englishTextEl.textContent = '【文法問題モード】正しい選択肢を選んでください。';
-        englishTextEl.classList.add('italic', 'text-gray-400');
+
     }
 
     function checkGrammarAnswer(choiceLetter) {
@@ -538,10 +606,11 @@
 
         document.querySelectorAll('.choice-button').forEach(button => {
             button.disabled = true;
+            button.classList.add('opacity-50', 'pointer-events-none'); // 選択肢を無効化
         });
 
         const selectedButton = document.getElementById(`choice-${choiceLetter}`);
-        selectedButton.classList.remove('bg-gray-100', 'border-gray-300');
+        selectedButton.classList.remove('bg-gray-100', 'border-gray-300', 'opacity-50', 'pointer-events-none');
 
         if (isCorrect) {
             showMessage('正解です！', 'secondary');
@@ -552,16 +621,22 @@
             
             const correctChoiceLetter = correctAnswer.substring(0, 1);
             const correctButton = document.getElementById(`choice-${correctChoiceLetter}`);
-            correctButton.classList.remove('bg-gray-100', 'border-gray-300');
+            correctButton.classList.remove('bg-gray-100', 'border-gray-300', 'opacity-50', 'pointer-events-none');
             correctButton.classList.add('bg-green-200', 'text-green-800'); 
         }
+        
+        // ③ 修正: 正しい英文を青枠に表示
+        grammarTargetSentenceEl.textContent = currentQuestion.en;
+        grammarTargetSentenceEl.classList.remove('italic', 'text-gray-400');
+        
+        // ④ 修正: 解答エリア表示のため、メインコンテンツのレイアウトを変更し、スクロールを制御
+        mainContentEl.classList.add('grammar-layout-answered');
+        mainContentEl.classList.remove('overflow-y-auto');
         
         grammarCorrectAnswerEl.textContent = correctAnswer;
         grammarExplanationTextEl.textContent = currentQuestion.grammar_explanation;
         grammarAnswerExplanationEl.classList.remove('hidden');
 
-        englishTextEl.textContent = currentQuestion.en;
-        englishTextEl.classList.remove('italic', 'text-gray-400');
         japaneseTextEl.textContent = currentQuestion.ja;
         translationCardEl.classList.remove('hidden');
     }
@@ -617,7 +692,6 @@
         if ((learnedFilter === 'LEARNED' && !currentData.isLearned) || 
             (learnedFilter === 'UNLEARNED' && currentData.isLearned)) {
             
-            // フィルター条件が変わった場合は、表示リストを再構築
             applyAllFilters();
         }
     }
@@ -651,7 +725,6 @@
              return;
         }
 
-        // data.idが 'travel_sentences_00001' の場合、パスは './audio/travel/travel_sentences_00001.mp3' となる
         const audioPath = `./audio/${config.audioFolder}/${data.id}.mp3`;
         
         const audio = new Audio(audioPath);
