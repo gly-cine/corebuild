@@ -6,7 +6,15 @@
     "year": null,
     "category_main": "空港",
     "category_sub": "チェックイン",
-    "priority": "高"
+    "priority": "高",
+    "grammar_question": "I'd like to ___ in for my flight to New York.",
+    "grammar_answer": "D. check in",
+    "grammar_choice_a": "A. check",
+    "grammar_choice_b": "B. checking",
+    "grammar_choice_c": "C. checked",
+    "grammar_choice_d": "D. check in",
+    "grammar_explanation": "「would like to＋動詞の原形」で『～したい』。句動詞はそのまま原形で使う。",
+    "grammar_type": "成句"
   },
   {
     "id": "travel_sentences_00002",
@@ -15,7 +23,15 @@
     "year": null,
     "category_main": "空港",
     "category_sub": "チェックイン",
-    "priority": "中"
+    "priority": "中",
+    "grammar_question": "Can I have a ___ seat, please?",
+    "grammar_answer": "B. window",
+    "grammar_choice_a": "A. windows",
+    "grammar_choice_b": "B. window",
+    "grammar_choice_c": "C. wind",
+    "grammar_choice_d": "D. windy",
+    "grammar_explanation": "「a window seat（窓側の席）」は名詞＋名詞の形で表す。",
+    "grammar_type": "名詞"
   },
   {
     "id": "travel_sentences_00003",
@@ -24,7 +40,15 @@
     "year": null,
     "category_main": "空港",
     "category_sub": "チェックイン",
-    "priority": "中"
+    "priority": "中",
+    "grammar_question": "How many bags can I ___ in?",
+    "grammar_answer": "A. check",
+    "grammar_choice_a": "A. check",
+    "grammar_choice_b": "B. checking",
+    "grammar_choice_c": "C. checked",
+    "grammar_choice_d": "D. check on",
+    "grammar_explanation": "助動詞の後は動詞の原形。『check in bags』で手荷物を預ける。",
+    "grammar_type": "助動詞"
   },
   {
     "id": "travel_sentences_00004",
@@ -33,7 +57,15 @@
     "year": null,
     "category_main": "空港",
     "category_sub": "セキュリティチェック",
-    "priority": "中"
+    "priority": "中",
+    "grammar_question": "Do I need to ___ my laptop out?",
+    "grammar_answer": "A. take",
+    "grammar_choice_a": "A. take",
+    "grammar_choice_b": "B. takes",
+    "grammar_choice_c": "C. taking",
+    "grammar_choice_d": "D. took",
+    "grammar_explanation": "「need to＋動詞の原形」で『～する必要がある』。原形takeが正しい。",
+    "grammar_type": "不定詞"
   },
   {
     "id": "travel_sentences_00005",
@@ -42,7 +74,15 @@
     "year": null,
     "category_main": "空港",
     "category_sub": "セキュリティチェック",
-    "priority": "中"
+    "priority": "中",
+    "grammar_question": "Is this allowed ___ carry-on luggage?",
+    "grammar_answer": "D. in",
+    "grammar_choice_a": "A. to",
+    "grammar_choice_b": "B. for",
+    "grammar_choice_c": "C. on",
+    "grammar_choice_d": "D. in",
+    "grammar_explanation": "『in carry-on luggage』で『機内持ち込み手荷物の中で』という意味。",
+    "grammar_type": "前置詞"
   },
   {
     "id": "travel_sentences_00006",
@@ -51,7 +91,15 @@
     "year": null,
     "category_main": "空港",
     "category_sub": "搭乗",
-    "priority": "高"
+    "priority": "高",
+    "grammar_question": "Which gate is the flight ___ Los Angeles?",
+    "grammar_answer": "A. to",
+    "grammar_choice_a": "A. to",
+    "grammar_choice_b": "B. for",
+    "grammar_choice_c": "C. from",
+    "grammar_choice_d": "D. toward",
+    "grammar_explanation": "『the flight to ～』で『～行きの便』。方向を表す前置詞toが正解。",
+    "grammar_type": "前置詞"
   },
   {
     "id": "travel_sentences_00007",
@@ -60,7 +108,15 @@
     "year": null,
     "category_main": "空港",
     "category_sub": "搭乗",
-    "priority": "高"
+    "priority": "高",
+    "grammar_question": "When does boarding ___?",
+    "grammar_answer": "C. start",
+    "grammar_choice_a": "A. starts",
+    "grammar_choice_b": "B. started",
+    "grammar_choice_c": "C. start",
+    "grammar_choice_d": "D. starting",
+    "grammar_explanation": "助動詞doesの後は動詞の原形startになる。",
+    "grammar_type": "助動詞"
   },
   {
     "id": "travel_sentences_00008",
@@ -69,7 +125,15 @@
     "year": null,
     "category_main": "空港",
     "category_sub": "乗り継ぎ",
-    "priority": "低"
+    "priority": "低",
+    "grammar_question": "Where is the transfer ___?",
+    "grammar_answer": "B. desk",
+    "grammar_choice_a": "A. disk",
+    "grammar_choice_b": "B. desk",
+    "grammar_choice_c": "C. decks",
+    "grammar_choice_d": "D. desks",
+    "grammar_explanation": "『transfer desk（乗り継ぎカウンター）』が正しい表現。",
+    "grammar_type": "名詞"
   },
   {
     "id": "travel_sentences_00009",
@@ -78,7 +142,15 @@
     "year": null,
     "category_main": "空港",
     "category_sub": "出入国審査",
-    "priority": "高"
+    "priority": "高",
+    "grammar_question": "I’m here ___ sightseeing.",
+    "grammar_answer": "B. for",
+    "grammar_choice_a": "A. to",
+    "grammar_choice_b": "B. for",
+    "grammar_choice_c": "C. at",
+    "grammar_choice_d": "D. on",
+    "grammar_explanation": "『be here for ～』で『～の目的でここにいる』。目的を表すforを使う。",
+    "grammar_type": "前置詞"
   },
   {
     "id": "travel_sentences_00010",
@@ -87,7 +159,15 @@
     "year": null,
     "category_main": "空港",
     "category_sub": "トラブル",
-    "priority": "中"
+    "priority": "中",
+    "grammar_question": "My flight was delayed. What ___ I do?",
+    "grammar_answer": "B. should",
+    "grammar_choice_a": "A. must",
+    "grammar_choice_b": "B. should",
+    "grammar_choice_c": "C. may",
+    "grammar_choice_d": "D. can to",
+    "grammar_explanation": "困った状況で助言を求めるときは『What should I do?（どうすればよいですか）』が定型。",
+    "grammar_type": "助動詞"
   },
   {
     "id": "travel_sentences_00011",
@@ -96,7 +176,15 @@
     "year": null,
     "category_main": "移動",
     "category_sub": "徒歩",
-    "priority": "高"
+    "priority": "高",
+    "grammar_question": "How do I ___ to the train station?",
+    "grammar_answer": "A. get",
+    "grammar_choice_a": "A. get",
+    "grammar_choice_b": "B. got",
+    "grammar_choice_c": "C. getting",
+    "grammar_choice_d": "D. gets",
+    "grammar_explanation": "助動詞「do」の後は動詞の原形getを使う。",
+    "grammar_type": "助動詞"
   },
   {
     "id": "travel_sentences_00012",
@@ -105,7 +193,15 @@
     "year": null,
     "category_main": "移動",
     "category_sub": "タクシー",
-    "priority": "高"
+    "priority": "高",
+    "grammar_question": "Could you ___ me to the airport, please?",
+    "grammar_answer": "B. take",
+    "grammar_choice_a": "A. takes",
+    "grammar_choice_b": "B. take",
+    "grammar_choice_c": "C. taking",
+    "grammar_choice_d": "D. took",
+    "grammar_explanation": "「Could you＋動詞の原形」で丁寧な依頼を表す。",
+    "grammar_type": "助動詞"
   },
   {
     "id": "travel_sentences_00013",
@@ -114,7 +210,15 @@
     "year": null,
     "category_main": "移動",
     "category_sub": "タクシー",
-    "priority": "高"
+    "priority": "高",
+    "grammar_question": "How much is the ___ to downtown?",
+    "grammar_answer": "C. fare",
+    "grammar_choice_a": "A. fee",
+    "grammar_choice_b": "B. cost",
+    "grammar_choice_c": "C. fare",
+    "grammar_choice_d": "D. pay",
+    "grammar_explanation": "交通料金を指すときは「fare」が正しい。",
+    "grammar_type": "名詞"
   },
   {
     "id": "travel_sentences_00014",
@@ -123,7 +227,15 @@
     "year": null,
     "category_main": "移動",
     "category_sub": "バス",
-    "priority": "中"
+    "priority": "中",
+    "grammar_question": "Where can I ___ a bus ticket?",
+    "grammar_answer": "A. buy",
+    "grammar_choice_a": "A. buy",
+    "grammar_choice_b": "B. buying",
+    "grammar_choice_c": "C. buys",
+    "grammar_choice_d": "D. bought",
+    "grammar_explanation": "助動詞「can」の後は動詞の原形buyを用いる。",
+    "grammar_type": "助動詞"
   },
   {
     "id": "travel_sentences_00015",
@@ -132,7 +244,15 @@
     "year": null,
     "category_main": "移動",
     "category_sub": "バス",
-    "priority": "高"
+    "priority": "高",
+    "grammar_question": "Does this bus ___ to the city center?",
+    "grammar_answer": "B. go",
+    "grammar_choice_a": "A. goes",
+    "grammar_choice_b": "B. go",
+    "grammar_choice_c": "C. going",
+    "grammar_choice_d": "D. gone",
+    "grammar_explanation": "助動詞「does」の後は動詞の原形goになる。",
+    "grammar_type": "助動詞"
   },
   {
     "id": "travel_sentences_00016",
@@ -141,7 +261,15 @@
     "year": null,
     "category_main": "移動",
     "category_sub": "電車",
-    "priority": "中"
+    "priority": "中",
+    "grammar_question": "Which platform does the train ___ from?",
+    "grammar_answer": "A. leave",
+    "grammar_choice_a": "A. leave",
+    "grammar_choice_b": "B. leaves",
+    "grammar_choice_c": "C. left",
+    "grammar_choice_d": "D. leaving",
+    "grammar_explanation": "疑問文では助動詞doesの後は動詞の原形leave。",
+    "grammar_type": "助動詞"
   },
   {
     "id": "travel_sentences_00017",
@@ -150,7 +278,15 @@
     "year": null,
     "category_main": "移動",
     "category_sub": "全般",
-    "priority": "中"
+    "priority": "中",
+    "grammar_question": "How long does it ___ to get there?",
+    "grammar_answer": "B. take",
+    "grammar_choice_a": "A. takes",
+    "grammar_choice_b": "B. take",
+    "grammar_choice_c": "C. took",
+    "grammar_choice_d": "D. taking",
+    "grammar_explanation": "「How long does it take to ～?」で「～するのにどのくらいかかる」。",
+    "grammar_type": "助動詞"
   },
   {
     "id": "travel_sentences_00018",
@@ -159,7 +295,15 @@
     "year": null,
     "category_main": "移動",
     "category_sub": "タクシー",
-    "priority": "中"
+    "priority": "中",
+    "grammar_question": "Could you ___ me off here, please?",
+    "grammar_answer": "D. drop",
+    "grammar_choice_a": "A. drops",
+    "grammar_choice_b": "B. dropping",
+    "grammar_choice_c": "C. dropped",
+    "grammar_choice_d": "D. drop",
+    "grammar_explanation": "「drop off」で「～を降ろす」。依頼なので動詞は原形。",
+    "grammar_type": "成句"
   },
   {
     "id": "travel_sentences_00019",
@@ -168,7 +312,15 @@
     "year": null,
     "category_main": "移動",
     "category_sub": "徒歩",
-    "priority": "低"
+    "priority": "低",
+    "grammar_question": "Is it within ___ distance?",
+    "grammar_answer": "B. walking",
+    "grammar_choice_a": "A. walk",
+    "grammar_choice_b": "B. walking",
+    "grammar_choice_c": "C. walked",
+    "grammar_choice_d": "D. walks",
+    "grammar_explanation": "「within walking distance」で「徒歩圏内」という決まり表現。",
+    "grammar_type": "成句"
   },
   {
     "id": "travel_sentences_00020",
@@ -177,7 +329,15 @@
     "year": null,
     "category_main": "移動",
     "category_sub": "徒歩",
-    "priority": "高"
+    "priority": "高",
+    "grammar_question": "I think I’m lost. Can you ___ me?",
+    "grammar_answer": "C. help",
+    "grammar_choice_a": "A. helps",
+    "grammar_choice_b": "B. helped",
+    "grammar_choice_c": "C. help",
+    "grammar_choice_d": "D. helping",
+    "grammar_explanation": "助動詞「can」の後は動詞の原形helpを使う。",
+    "grammar_type": "助動詞"
   },
   {
     "id": "travel_sentences_00021",
@@ -186,7 +346,15 @@
     "year": null,
     "category_main": "ホテル",
     "category_sub": "チェックイン",
-    "priority": "高"
+    "priority": "高",
+    "grammar_question": "I have a reservation ___ the name of Tanaka.",
+    "grammar_answer": "C. under",
+    "grammar_choice_a": "A. below",
+    "grammar_choice_b": "B. on",
+    "grammar_choice_c": "C. under",
+    "grammar_choice_d": "D. with",
+    "grammar_explanation": "「under the name of～」で「～の名前で（予約している）」という慣用表現。",
+    "grammar_type": "成句"
   },
   {
     "id": "travel_sentences_00022",
@@ -195,7 +363,15 @@
     "year": null,
     "category_main": "ホテル",
     "category_sub": "チェックイン",
-    "priority": "中"
+    "priority": "中",
+    "grammar_question": "Could I have your ___ and credit card, please?",
+    "grammar_answer": "A. ID",
+    "grammar_choice_a": "A. ID",
+    "grammar_choice_b": "B. IDs",
+    "grammar_choice_c": "C. identification",
+    "grammar_choice_d": "D. passport",
+    "grammar_explanation": "宿泊時の確認には「ID（身分証）」が自然。",
+    "grammar_type": "名詞"
   },
   {
     "id": "travel_sentences_00023",
@@ -204,7 +380,15 @@
     "year": null,
     "category_main": "ホテル",
     "category_sub": "チェックイン",
-    "priority": "高"
+    "priority": "高",
+    "grammar_question": "What time is ___-out?",
+    "grammar_answer": "B. check",
+    "grammar_choice_a": "A. checking",
+    "grammar_choice_b": "B. check",
+    "grammar_choice_c": "C. checked",
+    "grammar_choice_d": "D. checkout",
+    "grammar_explanation": "「check-out」は名詞形。「What time is check-out?」が正しい。",
+    "grammar_type": "名詞"
   },
   {
     "id": "travel_sentences_00024",
@@ -213,7 +397,15 @@
     "year": null,
     "category_main": "ホテル",
     "category_sub": "チェックアウト",
-    "priority": "中"
+    "priority": "中",
+    "grammar_question": "Could I have a late ___-out, please?",
+    "grammar_answer": "D. check",
+    "grammar_choice_a": "A. checking",
+    "grammar_choice_b": "B. checked",
+    "grammar_choice_c": "C. checks",
+    "grammar_choice_d": "D. check",
+    "grammar_explanation": "「late check-out」で「遅いチェックアウト」の決まり表現。",
+    "grammar_type": "成句"
   },
   {
     "id": "travel_sentences_00025",
@@ -222,7 +414,15 @@
     "year": null,
     "category_main": "ホテル",
     "category_sub": "サービス",
-    "priority": "高"
+    "priority": "高",
+    "grammar_question": "Is breakfast ___?",
+    "grammar_answer": "B. included",
+    "grammar_choice_a": "A. include",
+    "grammar_choice_b": "B. included",
+    "grammar_choice_c": "C. including",
+    "grammar_choice_d": "D. includes",
+    "grammar_explanation": "「be included」で「含まれている」という受け身表現。",
+    "grammar_type": "受動態"
   },
   {
     "id": "travel_sentences_00026",
@@ -231,7 +431,15 @@
     "year": null,
     "category_main": "ホテル",
     "category_sub": "サービス",
-    "priority": "中"
+    "priority": "中",
+    "grammar_question": "Could you ___ some extra towels, please?",
+    "grammar_answer": "A. bring",
+    "grammar_choice_a": "A. bring",
+    "grammar_choice_b": "B. brings",
+    "grammar_choice_c": "C. brought",
+    "grammar_choice_d": "D. bringing",
+    "grammar_explanation": "依頼文では「Could you＋動詞の原形」。",
+    "grammar_type": "助動詞"
   },
   {
     "id": "travel_sentences_00027",
@@ -240,7 +448,15 @@
     "year": null,
     "category_main": "ホテル",
     "category_sub": "トラブル",
-    "priority": "中"
+    "priority": "中",
+    "grammar_question": "The air conditioner ___ working.",
+    "grammar_answer": "C. isn’t",
+    "grammar_choice_a": "A. doesn’t",
+    "grammar_choice_b": "B. don’t",
+    "grammar_choice_c": "C. isn’t",
+    "grammar_choice_d": "D. not",
+    "grammar_explanation": "「be動詞＋not＋～ing」で「～が動作していない」。",
+    "grammar_type": "時制"
   },
   {
     "id": "travel_sentences_00028",
@@ -249,7 +465,15 @@
     "year": null,
     "category_main": "ホテル",
     "category_sub": "周辺情報",
-    "priority": "低"
+    "priority": "低",
+    "grammar_question": "Where is the ___ convenience store?",
+    "grammar_answer": "B. nearest",
+    "grammar_choice_a": "A. near",
+    "grammar_choice_b": "B. nearest",
+    "grammar_choice_c": "C. nearly",
+    "grammar_choice_d": "D. next",
+    "grammar_explanation": "最上級「nearest」で「最も近い」。",
+    "grammar_type": "形容詞"
   },
   {
     "id": "travel_sentences_00029",
@@ -258,7 +482,15 @@
     "year": null,
     "category_main": "ホテル",
     "category_sub": "サービス",
-    "priority": "高"
+    "priority": "高",
+    "grammar_question": "I’d like to leave my luggage here ___ this afternoon.",
+    "grammar_answer": "D. until",
+    "grammar_choice_a": "A. for",
+    "grammar_choice_b": "B. by",
+    "grammar_choice_c": "C. to",
+    "grammar_choice_d": "D. until",
+    "grammar_explanation": "「until」で「～まで（ずっと）」を表す。",
+    "grammar_type": "前置詞"
   },
   {
     "id": "travel_sentences_00030",
@@ -267,7 +499,15 @@
     "year": null,
     "category_main": "ホテル",
     "category_sub": "サービス",
-    "priority": "高"
+    "priority": "高",
+    "grammar_question": "Could you call a ___ for me, please?",
+    "grammar_answer": "C. taxi",
+    "grammar_choice_a": "A. cab",
+    "grammar_choice_b": "B. car",
+    "grammar_choice_c": "C. taxi",
+    "grammar_choice_d": "D. driver",
+    "grammar_explanation": "「call a taxi」で「タクシーを呼ぶ」。",
+    "grammar_type": "名詞"
   },
   {
     "id": "travel_sentences_00031",
@@ -276,7 +516,15 @@
     "year": null,
     "category_main": "観光",
     "category_sub": "観光地",
-    "priority": "高"
+    "priority": "高",
+    "grammar_question": "Could you take a ___ of me, please?",
+    "grammar_answer": "B. picture",
+    "grammar_choice_a": "A. photoed",
+    "grammar_choice_b": "B. picture",
+    "grammar_choice_c": "C. photographing",
+    "grammar_choice_d": "D. pictures",
+    "grammar_explanation": "「take a picture of ～」で「～の写真を撮る」。",
+    "grammar_type": "成句"
   },
   {
     "id": "travel_sentences_00032",
@@ -285,7 +533,15 @@
     "year": null,
     "category_main": "観光",
     "category_sub": "施設",
-    "priority": "高"
+    "priority": "高",
+    "grammar_question": "What time does the museum ___?",
+    "grammar_answer": "A. open",
+    "grammar_choice_a": "A. open",
+    "grammar_choice_b": "B. opens",
+    "grammar_choice_c": "C. opening",
+    "grammar_choice_d": "D. opened",
+    "grammar_explanation": "助動詞「does」の後は動詞の原形。",
+    "grammar_type": "助動詞"
   },
   {
     "id": "travel_sentences_00033",
@@ -294,7 +550,15 @@
     "year": null,
     "category_main": "観光",
     "category_sub": "施設",
-    "priority": "高"
+    "priority": "高",
+    "grammar_question": "How much is the entrance ___?",
+    "grammar_answer": "C. fee",
+    "grammar_choice_a": "A. fare",
+    "grammar_choice_b": "B. pay",
+    "grammar_choice_c": "C. fee",
+    "grammar_choice_d": "D. price",
+    "grammar_explanation": "「entrance fee」で「入場料」。",
+    "grammar_type": "名詞"
   },
   {
     "id": "travel_sentences_00034",
@@ -303,7 +567,15 @@
     "year": null,
     "category_main": "観光",
     "category_sub": "観光ツアー",
-    "priority": "中"
+    "priority": "中",
+    "grammar_question": "Is there a ___ tour available?",
+    "grammar_answer": "B. guided",
+    "grammar_choice_a": "A. guide",
+    "grammar_choice_b": "B. guided",
+    "grammar_choice_c": "C. guiding",
+    "grammar_choice_d": "D. guidance",
+    "grammar_explanation": "「guided tour」で「ガイド付きツアー」。",
+    "grammar_type": "形容詞"
   },
   {
     "id": "travel_sentences_00035",
@@ -312,7 +584,15 @@
     "year": null,
     "category_main": "観光",
     "category_sub": "アクティビティ",
-    "priority": "中"
+    "priority": "中",
+    "grammar_question": "Where can I ___ tickets for the boat cruise?",
+    "grammar_answer": "A. buy",
+    "grammar_choice_a": "A. buy",
+    "grammar_choice_b": "B. buying",
+    "grammar_choice_c": "C. buys",
+    "grammar_choice_d": "D. bought",
+    "grammar_explanation": "助動詞「can」の後は動詞の原形buyを使う。",
+    "grammar_type": "助動詞"
   },
   {
     "id": "travel_sentences_00036",
@@ -321,7 +601,15 @@
     "year": null,
     "category_main": "観光",
     "category_sub": "観光ツアー",
-    "priority": "中"
+    "priority": "中",
+    "grammar_question": "How long does the tour ___?",
+    "grammar_answer": "B. take",
+    "grammar_choice_a": "A. takes",
+    "grammar_choice_b": "B. take",
+    "grammar_choice_c": "C. took",
+    "grammar_choice_d": "D. taking",
+    "grammar_explanation": "「How long does it take～?」の構文と同じくtakeを用いる。",
+    "grammar_type": "助動詞"
   },
   {
     "id": "travel_sentences_00037",
@@ -330,7 +618,15 @@
     "year": null,
     "category_main": "観光",
     "category_sub": "周辺情報",
-    "priority": "中"
+    "priority": "中",
+    "grammar_question": "Are there any famous restaurants ___ here?",
+    "grammar_answer": "C. around",
+    "grammar_choice_a": "A. about",
+    "grammar_choice_b": "B. near",
+    "grammar_choice_c": "C. around",
+    "grammar_choice_d": "D. surrounding",
+    "grammar_explanation": "「around here」で「このあたりに」。",
+    "grammar_type": "前置詞"
   },
   {
     "id": "travel_sentences_00038",
@@ -339,7 +635,15 @@
     "year": null,
     "category_main": "観光",
     "category_sub": "道案内",
-    "priority": "低"
+    "priority": "低",
+    "grammar_question": "Can I get there ___ foot?",
+    "grammar_answer": "B. on",
+    "grammar_choice_a": "A. by",
+    "grammar_choice_b": "B. on",
+    "grammar_choice_c": "C. with",
+    "grammar_choice_d": "D. in",
+    "grammar_explanation": "「on foot」で「徒歩で」。交通手段を表す決まり表現。",
+    "grammar_type": "成句"
   },
   {
     "id": "travel_sentences_00039",
@@ -348,7 +652,15 @@
     "year": null,
     "category_main": "観光",
     "category_sub": "周辺情報",
-    "priority": "高"
+    "priority": "高",
+    "grammar_question": "Where is the nearest ___?",
+    "grammar_answer": "A. restroom",
+    "grammar_choice_a": "A. restroom",
+    "grammar_choice_b": "B. toilet",
+    "grammar_choice_c": "C. restrooms",
+    "grammar_choice_d": "D. bathroom",
+    "grammar_explanation": "公共の場では「restroom」が最も一般的。",
+    "grammar_type": "名詞"
   },
   {
     "id": "travel_sentences_00040",
@@ -357,7 +669,15 @@
     "year": null,
     "category_main": "観光",
     "category_sub": "道案内",
-    "priority": "高"
+    "priority": "高",
+    "grammar_question": "What’s the best way to get to the city ___?",
+    "grammar_answer": "D. center",
+    "grammar_choice_a": "A. central",
+    "grammar_choice_b": "B. centered",
+    "grammar_choice_c": "C. centres",
+    "grammar_choice_d": "D. center",
+    "grammar_explanation": "「the city center」で「市の中心部」。",
+    "grammar_type": "名詞"
   },
   {
     "id": "travel_sentences_00041",
@@ -366,7 +686,15 @@
     "year": null,
     "category_main": "食事",
     "category_sub": "入店・案内",
-    "priority": "高"
+    "priority": "高",
+    "grammar_question": "Table for ___, please.",
+    "grammar_answer": "B. two",
+    "grammar_choice_a": "A. twice",
+    "grammar_choice_b": "B. two",
+    "grammar_choice_c": "C. second",
+    "grammar_choice_d": "D. double",
+    "grammar_explanation": "「table for two」で「2名用の席」という決まり表現。",
+    "grammar_type": "成句"
   },
   {
     "id": "travel_sentences_00042",
@@ -375,7 +703,15 @@
     "year": null,
     "category_main": "食事",
     "category_sub": "注文前",
-    "priority": "高"
+    "priority": "高",
+    "grammar_question": "Could we ___ the menu, please?",
+    "grammar_answer": "A. see",
+    "grammar_choice_a": "A. see",
+    "grammar_choice_b": "B. saw",
+    "grammar_choice_c": "C. seeing",
+    "grammar_choice_d": "D. seen",
+    "grammar_explanation": "「Could we＋動詞の原形」で丁寧な依頼を表す。",
+    "grammar_type": "助動詞"
   },
   {
     "id": "travel_sentences_00043",
@@ -384,7 +720,15 @@
     "year": null,
     "category_main": "食事",
     "category_sub": "注文前",
-    "priority": "中"
+    "priority": "中",
+    "grammar_question": "What do you ___?",
+    "grammar_answer": "B. recommend",
+    "grammar_choice_a": "A. recommends",
+    "grammar_choice_b": "B. recommend",
+    "grammar_choice_c": "C. recommended",
+    "grammar_choice_d": "D. recommending",
+    "grammar_explanation": "助動詞「do」の後は動詞の原形recommend。",
+    "grammar_type": "助動詞"
   },
   {
     "id": "travel_sentences_00044",
@@ -393,7 +737,15 @@
     "year": null,
     "category_main": "食事",
     "category_sub": "注文",
-    "priority": "高"
+    "priority": "高",
+    "grammar_question": "I’ll have ___ one, please.",
+    "grammar_answer": "C. this",
+    "grammar_choice_a": "A. these",
+    "grammar_choice_b": "B. that",
+    "grammar_choice_c": "C. this",
+    "grammar_choice_d": "D. those",
+    "grammar_explanation": "「I’ll have this one」で「これをください」。",
+    "grammar_type": "定型表現"
   },
   {
     "id": "travel_sentences_00045",
@@ -402,7 +754,15 @@
     "year": null,
     "category_main": "食事",
     "category_sub": "注文",
-    "priority": "高"
+    "priority": "高",
+    "grammar_question": "Could I get some ___, please?",
+    "grammar_answer": "A. water",
+    "grammar_choice_a": "A. water",
+    "grammar_choice_b": "B. waters",
+    "grammar_choice_c": "C. watering",
+    "grammar_choice_d": "D. watery",
+    "grammar_explanation": "不可算名詞の「water」が正しい。",
+    "grammar_type": "名詞"
   },
   {
     "id": "travel_sentences_00046",
@@ -411,7 +771,15 @@
     "year": null,
     "category_main": "食事",
     "category_sub": "注文前",
-    "priority": "中"
+    "priority": "中",
+    "grammar_question": "Does this dish ___ nuts or seafood?",
+    "grammar_answer": "B. contain",
+    "grammar_choice_a": "A. contains",
+    "grammar_choice_b": "B. contain",
+    "grammar_choice_c": "C. contained",
+    "grammar_choice_d": "D. containing",
+    "grammar_explanation": "助動詞「does」の後は動詞の原形contain。",
+    "grammar_type": "助動詞"
   },
   {
     "id": "travel_sentences_00047",
@@ -420,7 +788,15 @@
     "year": null,
     "category_main": "食事",
     "category_sub": "会計",
-    "priority": "高"
+    "priority": "高",
+    "grammar_question": "Could we have the ___, please?",
+    "grammar_answer": "C. bill",
+    "grammar_choice_a": "A. check",
+    "grammar_choice_b": "B. receipt",
+    "grammar_choice_c": "C. bill",
+    "grammar_choice_d": "D. payment",
+    "grammar_explanation": "イギリス英語では「bill」、アメリカ英語では「check」も可。",
+    "grammar_type": "名詞"
   },
   {
     "id": "travel_sentences_00048",
@@ -429,7 +805,15 @@
     "year": null,
     "category_main": "食事",
     "category_sub": "会計",
-    "priority": "中"
+    "priority": "中",
+    "grammar_question": "Is service charge ___?",
+    "grammar_answer": "D. included",
+    "grammar_choice_a": "A. including",
+    "grammar_choice_b": "B. include",
+    "grammar_choice_c": "C. includes",
+    "grammar_choice_d": "D. included",
+    "grammar_explanation": "「be included」で「含まれている」という受け身表現。",
+    "grammar_type": "受動態"
   },
   {
     "id": "travel_sentences_00049",
@@ -438,7 +822,15 @@
     "year": null,
     "category_main": "食事",
     "category_sub": "持ち帰り",
-    "priority": "中"
+    "priority": "中",
+    "grammar_question": "Could you ___ this to go?",
+    "grammar_answer": "A. pack",
+    "grammar_choice_a": "A. pack",
+    "grammar_choice_b": "B. packed",
+    "grammar_choice_c": "C. packing",
+    "grammar_choice_d": "D. packs",
+    "grammar_explanation": "「Could you＋動詞の原形」で依頼。",
+    "grammar_type": "助動詞"
   },
   {
     "id": "travel_sentences_00050",
@@ -447,7 +839,15 @@
     "year": null,
     "category_main": "食事",
     "category_sub": "その他",
-    "priority": "低"
+    "priority": "低",
+    "grammar_question": "Everything was ___, thank you!",
+    "grammar_answer": "B. delicious",
+    "grammar_choice_a": "A. delight",
+    "grammar_choice_b": "B. delicious",
+    "grammar_choice_c": "C. delighting",
+    "grammar_choice_d": "D. deliciously",
+    "grammar_explanation": "「delicious」で「とてもおいしい」。",
+    "grammar_type": "形容詞"
   },
   {
     "id": "travel_sentences_00051",
@@ -456,7 +856,15 @@
     "year": null,
     "category_main": "買い物",
     "category_sub": "価格",
-    "priority": "高"
+    "priority": "高",
+    "grammar_question": "How much is ___?",
+    "grammar_answer": "C. this",
+    "grammar_choice_a": "A. that",
+    "grammar_choice_b": "B. these",
+    "grammar_choice_c": "C. this",
+    "grammar_choice_d": "D. those",
+    "grammar_explanation": "「How much is this?」で単数名詞に対して「これはいくらですか」。",
+    "grammar_type": "定型表現"
   },
   {
     "id": "travel_sentences_00052",
@@ -465,7 +873,15 @@
     "year": null,
     "category_main": "買い物",
     "category_sub": "衣料品",
-    "priority": "高"
+    "priority": "高",
+    "grammar_question": "Can I ___ this on?",
+    "grammar_answer": "A. try",
+    "grammar_choice_a": "A. try",
+    "grammar_choice_b": "B. trying",
+    "grammar_choice_c": "C. tried",
+    "grammar_choice_d": "D. tries",
+    "grammar_explanation": "「try on」で「試着する」。助動詞の後は原形。",
+    "grammar_type": "助動詞"
   },
   {
     "id": "travel_sentences_00053",
@@ -474,7 +890,15 @@
     "year": null,
     "category_main": "買い物",
     "category_sub": "衣料品",
-    "priority": "中"
+    "priority": "中",
+    "grammar_question": "Do you have this in a different ___?",
+    "grammar_answer": "B. size",
+    "grammar_choice_a": "A. sized",
+    "grammar_choice_b": "B. size",
+    "grammar_choice_c": "C. sizing",
+    "grammar_choice_d": "D. sizes",
+    "grammar_explanation": "「in a different size」で「別のサイズで」。",
+    "grammar_type": "名詞"
   },
   {
     "id": "travel_sentences_00054",
@@ -483,7 +907,15 @@
     "year": null,
     "category_main": "買い物",
     "category_sub": "衣料品",
-    "priority": "中"
+    "priority": "中",
+    "grammar_question": "Do you have this in another ___?",
+    "grammar_answer": "A. color",
+    "grammar_choice_a": "A. color",
+    "grammar_choice_b": "B. coloring",
+    "grammar_choice_c": "C. colorful",
+    "grammar_choice_d": "D. coloured",
+    "grammar_explanation": "「in another color」で「別の色で」。",
+    "grammar_type": "名詞"
   },
   {
     "id": "travel_sentences_00055",
@@ -492,7 +924,15 @@
     "year": null,
     "category_main": "買い物",
     "category_sub": "価格",
-    "priority": "中"
+    "priority": "中",
+    "grammar_question": "Could you give me a ___?",
+    "grammar_answer": "C. discount",
+    "grammar_choice_a": "A. sale",
+    "grammar_choice_b": "B. cheaper",
+    "grammar_choice_c": "C. discount",
+    "grammar_choice_d": "D. cheaper price",
+    "grammar_explanation": "「give a discount」で「割引する」。",
+    "grammar_type": "成句"
   },
   {
     "id": "travel_sentences_00056",
@@ -501,7 +941,15 @@
     "year": null,
     "category_main": "買い物",
     "category_sub": "店員",
-    "priority": "高"
+    "priority": "高",
+    "grammar_question": "I’m just ___, thank you.",
+    "grammar_answer": "B. looking",
+    "grammar_choice_a": "A. look",
+    "grammar_choice_b": "B. looking",
+    "grammar_choice_c": "C. looks",
+    "grammar_choice_d": "D. looked",
+    "grammar_explanation": "「I’m just looking」で「見ているだけです」。",
+    "grammar_type": "定型表現"
   },
   {
     "id": "travel_sentences_00057",
@@ -510,7 +958,15 @@
     "year": null,
     "category_main": "買い物",
     "category_sub": "支払い",
-    "priority": "高"
+    "priority": "高",
+    "grammar_question": "Could I pay ___ credit card?",
+    "grammar_answer": "D. by",
+    "grammar_choice_a": "A. with",
+    "grammar_choice_b": "B. on",
+    "grammar_choice_c": "C. in",
+    "grammar_choice_d": "D. by",
+    "grammar_explanation": "「by credit card」で「クレジットカードで支払う」。",
+    "grammar_type": "前置詞"
   },
   {
     "id": "travel_sentences_00058",
@@ -519,7 +975,15 @@
     "year": null,
     "category_main": "買い物",
     "category_sub": "支払い",
-    "priority": "中"
+    "priority": "中",
+    "grammar_question": "Can I get a ___, please?",
+    "grammar_answer": "A. receipt",
+    "grammar_choice_a": "A. receipt",
+    "grammar_choice_b": "B. recipe",
+    "grammar_choice_c": "C. bill",
+    "grammar_choice_d": "D. check",
+    "grammar_explanation": "「receipt」は「領収書」。",
+    "grammar_type": "名詞"
   },
   {
     "id": "travel_sentences_00059",
@@ -528,7 +992,15 @@
     "year": null,
     "category_main": "買い物",
     "category_sub": "支払い",
-    "priority": "中"
+    "priority": "中",
+    "grammar_question": "Is tax included ___ the price?",
+    "grammar_answer": "C. in",
+    "grammar_choice_a": "A. of",
+    "grammar_choice_b": "B. at",
+    "grammar_choice_c": "C. in",
+    "grammar_choice_d": "D. on",
+    "grammar_explanation": "「be included in」で「～に含まれている」。",
+    "grammar_type": "前置詞"
   },
   {
     "id": "travel_sentences_00060",
@@ -537,7 +1009,15 @@
     "year": null,
     "category_main": "買い物",
     "category_sub": "サービス",
-    "priority": "低"
+    "priority": "低",
+    "grammar_question": "Could you wrap this as a ___, please?",
+    "grammar_answer": "B. gift",
+    "grammar_choice_a": "A. present",
+    "grammar_choice_b": "B. gift",
+    "grammar_choice_c": "C. gifting",
+    "grammar_choice_d": "D. gifted",
+    "grammar_explanation": "「as a gift」で「贈り物として」。",
+    "grammar_type": "成句"
   },
   {
     "id": "travel_sentences_00061",
@@ -546,7 +1026,15 @@
     "year": null,
     "category_main": "緊急",
     "category_sub": "トラブル",
-    "priority": "高"
+    "priority": "高",
+    "grammar_question": "Call the ___, please!",
+    "grammar_answer": "B. police",
+    "grammar_choice_a": "A. policeman",
+    "grammar_choice_b": "B. police",
+    "grammar_choice_c": "C. polices",
+    "grammar_choice_d": "D. policing",
+    "grammar_explanation": "「the police」で「警察（複数扱いの集合名詞）」を意味する。",
+    "grammar_type": "名詞"
   },
   {
     "id": "travel_sentences_00062",
@@ -555,7 +1043,15 @@
     "year": null,
     "category_main": "緊急",
     "category_sub": "病気",
-    "priority": "高"
+    "priority": "高",
+    "grammar_question": "I need an ___.",
+    "grammar_answer": "C. ambulance",
+    "grammar_choice_a": "A. hospital",
+    "grammar_choice_b": "B. doctor",
+    "grammar_choice_c": "C. ambulance",
+    "grammar_choice_d": "D. emergency",
+    "grammar_explanation": "「ambulance」で「救急車」。冠詞anがつく。",
+    "grammar_type": "名詞"
   },
   {
     "id": "travel_sentences_00063",
@@ -564,7 +1060,15 @@
     "year": null,
     "category_main": "緊急",
     "category_sub": "トラブル",
-    "priority": "高"
+    "priority": "高",
+    "grammar_question": "My wallet has been ___.",
+    "grammar_answer": "A. stolen",
+    "grammar_choice_a": "A. stolen",
+    "grammar_choice_b": "B. stole",
+    "grammar_choice_c": "C. stealing",
+    "grammar_choice_d": "D. steal",
+    "grammar_explanation": "「has been＋過去分詞」で受け身の現在完了形。",
+    "grammar_type": "受動態"
   },
   {
     "id": "travel_sentences_00064",
@@ -573,7 +1077,15 @@
     "year": null,
     "category_main": "緊急",
     "category_sub": "トラブル",
-    "priority": "高"
+    "priority": "高",
+    "grammar_question": "I’ve ___ my passport.",
+    "grammar_answer": "B. lost",
+    "grammar_choice_a": "A. lose",
+    "grammar_choice_b": "B. lost",
+    "grammar_choice_c": "C. losing",
+    "grammar_choice_d": "D. loses",
+    "grammar_explanation": "「have＋過去分詞」で現在完了。失った状態を表す。",
+    "grammar_type": "時制"
   },
   {
     "id": "travel_sentences_00065",
@@ -582,7 +1094,15 @@
     "year": null,
     "category_main": "緊急",
     "category_sub": "病気",
-    "priority": "高"
+    "priority": "高",
+    "grammar_question": "I don’t ___ well.",
+    "grammar_answer": "C. feel",
+    "grammar_choice_a": "A. feels",
+    "grammar_choice_b": "B. feeling",
+    "grammar_choice_c": "C. feel",
+    "grammar_choice_d": "D. felt",
+    "grammar_explanation": "「feel well」で「気分が良い」。助動詞の後は原形。",
+    "grammar_type": "動詞"
   },
   {
     "id": "travel_sentences_00066",
@@ -591,7 +1111,15 @@
     "year": null,
     "category_main": "緊急",
     "category_sub": "病気",
-    "priority": "高"
+    "priority": "高",
+    "grammar_question": "Where is the ___ hospital?",
+    "grammar_answer": "B. nearest",
+    "grammar_choice_a": "A. near",
+    "grammar_choice_b": "B. nearest",
+    "grammar_choice_c": "C. next",
+    "grammar_choice_d": "D. close",
+    "grammar_explanation": "「the nearest」で「最も近い」。",
+    "grammar_type": "形容詞"
   },
   {
     "id": "travel_sentences_00067",
@@ -600,7 +1128,15 @@
     "year": null,
     "category_main": "緊急",
     "category_sub": "病気",
-    "priority": "中"
+    "priority": "中",
+    "grammar_question": "I need to ___ a doctor.",
+    "grammar_answer": "A. see",
+    "grammar_choice_a": "A. see",
+    "grammar_choice_b": "B. seeing",
+    "grammar_choice_c": "C. saw",
+    "grammar_choice_d": "D. seen",
+    "grammar_explanation": "「need to＋動詞の原形」で「～する必要がある」。",
+    "grammar_type": "不定詞"
   },
   {
     "id": "travel_sentences_00068",
@@ -609,7 +1145,15 @@
     "year": null,
     "category_main": "緊急",
     "category_sub": "トラブル",
-    "priority": "中"
+    "priority": "中",
+    "grammar_question": "Can you help me ___ the embassy?",
+    "grammar_answer": "B. contact",
+    "grammar_choice_a": "A. contacting",
+    "grammar_choice_b": "B. contact",
+    "grammar_choice_c": "C. contacted",
+    "grammar_choice_d": "D. contacts",
+    "grammar_explanation": "「help＋人＋動詞の原形」で使う。",
+    "grammar_type": "動詞"
   },
   {
     "id": "travel_sentences_00069",
@@ -618,7 +1162,15 @@
     "year": null,
     "category_main": "緊急",
     "category_sub": "トラブル",
-    "priority": "中"
+    "priority": "中",
+    "grammar_question": "Someone is ___ me.",
+    "grammar_answer": "D. following",
+    "grammar_choice_a": "A. follow",
+    "grammar_choice_b": "B. followed",
+    "grammar_choice_c": "C. follows",
+    "grammar_choice_d": "D. following",
+    "grammar_explanation": "「be＋～ing」で現在進行形「～しているところ」。",
+    "grammar_type": "時制"
   },
   {
     "id": "travel_sentences_00070",
@@ -627,7 +1179,15 @@
     "year": null,
     "category_main": "緊急",
     "category_sub": "トラブル",
-    "priority": "中"
+    "priority": "中",
+    "grammar_question": "I need to report a ___.",
+    "grammar_answer": "C. theft",
+    "grammar_choice_a": "A. thief",
+    "grammar_choice_b": "B. stealing",
+    "grammar_choice_c": "C. theft",
+    "grammar_choice_d": "D. stole",
+    "grammar_explanation": "「report a theft」で「盗難を届け出る」。",
+    "grammar_type": "名詞"
   },
   {
     "id": "travel_sentences_00071",
@@ -636,7 +1196,15 @@
     "year": null,
     "category_main": "汎用",
     "category_sub": "会話",
-    "priority": "高"
+    "priority": "高",
+    "grammar_question": "___ me.",
+    "grammar_answer": "A. Excuse",
+    "grammar_choice_a": "A. Excuse",
+    "grammar_choice_b": "B. Excused",
+    "grammar_choice_c": "C. Excusing",
+    "grammar_choice_d": "D. Excuses",
+    "grammar_explanation": "「Excuse me.」で「すみません」の定型表現。",
+    "grammar_type": "定型表現"
   },
   {
     "id": "travel_sentences_00072",
@@ -645,7 +1213,15 @@
     "year": null,
     "category_main": "汎用",
     "category_sub": "依頼",
-    "priority": "高"
+    "priority": "高",
+    "grammar_question": "Could you ___ me, please?",
+    "grammar_answer": "B. help",
+    "grammar_choice_a": "A. helps",
+    "grammar_choice_b": "B. help",
+    "grammar_choice_c": "C. helped",
+    "grammar_choice_d": "D. helping",
+    "grammar_explanation": "「Could you＋動詞の原形」で依頼を表す。",
+    "grammar_type": "助動詞"
   },
   {
     "id": "travel_sentences_00073",
@@ -654,7 +1230,15 @@
     "year": null,
     "category_main": "汎用",
     "category_sub": "会話",
-    "priority": "高"
+    "priority": "高",
+    "grammar_question": "I don’t ___.",
+    "grammar_answer": "A. understand",
+    "grammar_choice_a": "A. understand",
+    "grammar_choice_b": "B. understands",
+    "grammar_choice_c": "C. understanding",
+    "grammar_choice_d": "D. understood",
+    "grammar_explanation": "助動詞「do」の後は動詞の原形。",
+    "grammar_type": "動詞"
   },
   {
     "id": "travel_sentences_00074",
@@ -663,7 +1247,15 @@
     "year": null,
     "category_main": "汎用",
     "category_sub": "会話",
-    "priority": "高"
+    "priority": "高",
+    "grammar_question": "Could you ___ that again, please?",
+    "grammar_answer": "C. say",
+    "grammar_choice_a": "A. says",
+    "grammar_choice_b": "B. saying",
+    "grammar_choice_c": "C. say",
+    "grammar_choice_d": "D. said",
+    "grammar_explanation": "「Could you say that again?」で「もう一度言ってください」。",
+    "grammar_type": "助動詞"
   },
   {
     "id": "travel_sentences_00075",
@@ -672,7 +1264,15 @@
     "year": null,
     "category_main": "汎用",
     "category_sub": "会話",
-    "priority": "高"
+    "priority": "高",
+    "grammar_question": "Do you ___ English?",
+    "grammar_answer": "B. speak",
+    "grammar_choice_a": "A. speaks",
+    "grammar_choice_b": "B. speak",
+    "grammar_choice_c": "C. speaking",
+    "grammar_choice_d": "D. spoken",
+    "grammar_explanation": "「Do you speak English?」が正しい語順と動詞形。",
+    "grammar_type": "動詞"
   },
   {
     "id": "travel_sentences_00076",
@@ -681,7 +1281,15 @@
     "year": null,
     "category_main": "汎用",
     "category_sub": "依頼",
-    "priority": "中"
+    "priority": "中",
+    "grammar_question": "Could you ___ it down, please?",
+    "grammar_answer": "A. write",
+    "grammar_choice_a": "A. write",
+    "grammar_choice_b": "B. writes",
+    "grammar_choice_c": "C. writing",
+    "grammar_choice_d": "D. written",
+    "grammar_explanation": "「write down」で「書き留める」。依頼なので原形。",
+    "grammar_type": "成句"
   },
   {
     "id": "travel_sentences_00077",
@@ -690,7 +1298,15 @@
     "year": null,
     "category_main": "汎用",
     "category_sub": "会話",
-    "priority": "中"
+    "priority": "中",
+    "grammar_question": "That’s ___, thank you.",
+    "grammar_answer": "C. okay",
+    "grammar_choice_a": "A. all right",
+    "grammar_choice_b": "B. good",
+    "grammar_choice_c": "C. okay",
+    "grammar_choice_d": "D. fine",
+    "grammar_explanation": "「That’s okay」で「大丈夫です」。",
+    "grammar_type": "定型表現"
   },
   {
     "id": "travel_sentences_00078",
@@ -699,7 +1315,15 @@
     "year": null,
     "category_main": "汎用",
     "category_sub": "道案内",
-    "priority": "中"
+    "priority": "中",
+    "grammar_question": "Where can I ___ this?",
+    "grammar_answer": "B. find",
+    "grammar_choice_a": "A. found",
+    "grammar_choice_b": "B. find",
+    "grammar_choice_c": "C. finding",
+    "grammar_choice_d": "D. finds",
+    "grammar_explanation": "助動詞「can」の後は動詞の原形。",
+    "grammar_type": "助動詞"
   },
   {
     "id": "travel_sentences_00079",
@@ -708,7 +1332,15 @@
     "year": null,
     "category_main": "汎用",
     "category_sub": "会話",
-    "priority": "低"
+    "priority": "低",
+    "grammar_question": "I’m sorry, I’m not ___ around here.",
+    "grammar_answer": "D. from",
+    "grammar_choice_a": "A. at",
+    "grammar_choice_b": "B. in",
+    "grammar_choice_c": "C. of",
+    "grammar_choice_d": "D. from",
+    "grammar_explanation": "「be from」で「～の出身」。",
+    "grammar_type": "前置詞"
   },
   {
     "id": "travel_sentences_00080",
@@ -717,6 +1349,14 @@
     "year": null,
     "category_main": "汎用",
     "category_sub": "会話",
-    "priority": "高"
+    "priority": "高",
+    "grammar_question": "Thank you so ___.",
+    "grammar_answer": "A. much",
+    "grammar_choice_a": "A. much",
+    "grammar_choice_b": "B. many",
+    "grammar_choice_c": "C. more",
+    "grammar_choice_d": "D. most",
+    "grammar_explanation": "「thank you so much」で「本当にありがとう」。",
+    "grammar_type": "定型表現"
   }
 ]
