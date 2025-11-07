@@ -15,6 +15,12 @@
         .selected { opacity: 0.5; pointer-events: none; }
         /* 音声先行モード用の強いぼかし */
         .blur-strong { filter: blur(8px); }
+        
+        /* 文法問題の選択肢のホバー効果 */
+        .choice-button:not(:disabled):hover { 
+            background-color: #f3f4f6; /* gray-100 */
+            border-color: #4f46e5; /* primary-600 */
+        }
     </style>
     <script>
         tailwind.config = {
@@ -36,7 +42,7 @@
     <div id="app" class="w-full max-w-4xl bg-white shadow-2xl rounded-xl flex flex-col h-full md:h-5/6 overflow-hidden">
 
         <header id="app-header" class="p-6 bg-primary text-white rounded-t-xl shadow-lg flex flex-col md:flex-row justify-between items-center hidden">
-            <h1 class="text-2xl font-bold tracking-tight">海外旅行で便利なフレーズ</h1>
+            <h1 class="text-2xl font-bold tracking-tight mb-3 md:mb-0">海外旅行で便利なフレーズ</h1>
             
             <div class="flex flex-wrap justify-center items-center space-x-4 mt-3 md:mt-0">
                 
@@ -54,8 +60,14 @@
                     <select id="mode-selector" onchange="changeMode(this.value)" class="text-gray-800 px-3 py-1 rounded-lg font-medium text-sm transition duration-200 focus:ring-primary focus:border-primary">
                         <option value="1">① 英文先行</option>
                         <option value="2">② 音声先行</option>
-                        <option value="3">③ 並べ替え</option>
+                        <option value="4">③ 文法問題</option>
                     </select>
+                </div>
+                
+                <div class="flex items-center space-x-2 mt-2 md:mt-0">
+                    <label for="grammar-type-selector" class="text-sm font-medium">文法類型:</label>
+                    <select id="grammar-type-selector" onchange="filterByType(this.value)" class="text-gray-800 px-3 py-1 rounded-lg font-medium text-sm transition duration-200 focus:ring-primary focus:border-primary">
+                        </select>
                 </div>
             </div>
         </header>
@@ -69,13 +81,7 @@
                     <button id="btn-travel" onclick="selectCategory('travel')" class="w-full py-4 bg-primary text-white text-xl font-bold rounded-xl shadow-lg hover:bg-indigo-700 transition-colors duration-200 transform hover:scale-[1.02]">
                         ✈️ 旅行用英語
                     </button>
-                    </div>
-                
-                <div id="common-test-sub-group" class="w-full max-w-md hidden">
-                    <h2 id="common-test-sub-title" class="text-3xl font-extrabold text-gray-800 mb-4">共通テスト：学習内容を選択</h2>
-                    <div id="common-test-sub">...</div>
                 </div>
-                <div id="single-category-transition" class="mt-8 pt-6 w-full max-w-md hidden">...</div>
             </div>
             
             <div id="learning-screen" class="hidden flex-grow flex flex-col space-y-4">
@@ -93,8 +99,7 @@
     
                 <div id="english-display-card" class="bg-indigo-50 p-6 rounded-xl shadow-inner min-h-[100px] flex items-center justify-center transition-all duration-300">
                     <p id="english-text" class="text-xl md:text-2xl font-bold text-gray-800 text-center select-none">
-                        学習モードを選択してください
-                    </p>
+                        </p>
                 </div>
     
                 <div id="translation-card" class="bg-white p-4 border border-gray-200 rounded-xl shadow min-h-[60px] transition-all duration-300 hidden flex flex-col">
@@ -105,30 +110,25 @@
                         </p>
                     </div>
                 </div>
-    
-                <div id="scramble-ui" class="space-y-4 hidden">
-                    <div class="p-4 bg-indigo-100 rounded-xl border-dashed border-2 border-indigo-300 min-h-[80px]">
-                        <p class="text-sm font-semibold text-indigo-700 mb-1">解答構築エリア</p>
-                        <div id="answer-area" class="flex flex-wrap gap-2">
-                            </div>
+                
+                <div id="grammar-question-ui" class="hidden flex-col space-y-4 pt-4">
+
+                    <p id="grammar-question-text" class="text-xl font-bold mb-4 text-gray-800 text-center px-4"></p>
+
+                    <div id="grammar-choices" class="flex flex-col space-y-3 mx-auto w-full max-w-lg">
+                        <button id="choice-A" onclick="checkGrammarAnswer('A')" class="choice-button py-3 px-4 rounded-lg text-lg text-left bg-gray-100 border border-gray-300 transition duration-150"></button>
+                        <button id="choice-B" onclick="checkGrammarAnswer('B')" class="choice-button py-3 px-4 rounded-lg text-lg text-left bg-gray-100 border border-gray-300 transition duration-150"></button>
+                        <button id="choice-C" onclick="checkGrammarAnswer('C')" class="choice-button py-3 px-4 rounded-lg text-lg text-left bg-gray-100 border border-gray-300 transition duration-150"></button>
+                        <button id="choice-D" onclick="checkGrammarAnswer('D')" class="choice-button py-3 px-4 rounded-lg text-lg text-left bg-gray-100 border border-gray-300 transition duration-150"></button>
                     </div>
-    
-                    <div class="p-4 bg-white rounded-xl shadow-md border-t border-gray-200">
-                        <p class="text-sm font-semibold text-gray-600 mb-2">単語を選択して正しい英文を完成させよう</p>
-                        <div id="scrambled-words-area" class="flex flex-wrap gap-2">
-                            </div>
-                    </div>
-    
-                    <div class="flex justify-center space-x-4 pt-2">
-                        <button id="check-answer-btn" onclick="checkScrambledAnswer()" class="px-6 py-2 bg-secondary text-white font-bold rounded-lg hover:bg-emerald-600 transition-colors shadow-md hidden">
-                            解答チェック
-                        </button>
-                        <button id="reset-scramble-btn" onclick="resetScramble()" class="px-6 py-2 bg-gray-500 text-white font-bold rounded-lg hover:bg-gray-600 transition-colors shadow-md hidden">
-                            リセット
-                        </button>
+
+                    <div id="grammar-answer-explanation" class="hidden mt-6 p-4 rounded-xl shadow-xl bg-white border-2 border-green-500 max-w-xl mx-auto w-full">
+                        <p class="font-bold text-green-700 mb-2 border-b border-green-200 pb-1">【正解】<span id="grammar-correct-answer" class="font-extrabold"></span></p>
+                        <p class="font-bold text-gray-700 mt-3 mb-1">【解説】</p>
+                        <p id="grammar-explanation-text" class="text-gray-600 text-base"></p>
                     </div>
                 </div>
-    
+
                 <div id="message-box" class="text-center py-2 text-lg font-semibold hidden rounded-lg"></div>
             </div>
 
@@ -144,14 +144,14 @@
                 </button>
             </div>
             
-            <button onclick="showSelectionScreen()" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition-colors font-medium">
+            <button onclick="showSelectionScreen()" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition-colors font-medium mt-4 md:mt-0">
                 TOP画面
             </button>
 
             <div class="flex space-x-3 mt-4 md:mt-0">
                 
                 <button id="toggle-learned-btn" onclick="toggleLearnedStatus()" class="px-6 py-2 bg-secondary text-white font-bold rounded-lg hover:bg-emerald-600 transition-colors shadow-md flex items-center hidden">
-                    ◻️ 学習済にする
+                    ✓ 覚えた
                 </button>
                 
                 <button id="toggle-translation-btn" onclick="toggleTranslation()" class="px-6 py-2 bg-primary text-white font-bold rounded-lg hover:bg-indigo-700 transition-colors shadow-md hidden">
@@ -173,59 +173,62 @@
     // --- グローバル変数と定数 ---
     let ALL_DB = []; // 読み込んだ全データ
     let DB = []; // 現在の学習データ (フィルタリング後)
-    let currentMode = 1;
+    let currentMode = 1; // 1:英文先行, 2:音声先行, 4:文法問題 (デフォルトを1に変更)
     let currentSentenceIndex = 0;
-    let isTranslationVisible = false; // 和訳表示の状態を維持
-    let correctWords = []; 
-    let scrambledWords = []; 
-    let answerSequence = []; 
+    let isTranslationVisible = false; 
     let currentCategoryKey = ''; 
-    const LEARNED_STATUS_KEY = 'learning_app_learned_status'; // localStorageのキー
+    const LEARNED_STATUS_KEY = 'learning_app_learned_status'; 
     
-    // ★追加: メッセージ自動非表示用のタイマーID
     let messageTimeoutId = null; 
+    let currentGrammarType = 'ALL'; 
 
     // JSONパスと対応する音声フォルダを定義
     const CATEGORY_MAP = {
         'travel': { 
             jsonPath: './data/travel_sentences.json', 
             audioFolder: 'travel', 
-            name: '旅行用英語'
+            name: '旅行用英語',
+            // 埋め込みデータ (添付ファイルの内容に基づき、文法問題データを含む)
+            data: [
+              { "id": "travel_sentences_00001", "en": "I'd like to check in for my flight to New York.", "ja": "ニューヨーク行きのフライトのチェックインをしたいです。", "year": null, "category_main": "空港", "category_sub": "チェックイン", "priority": "高", "grammar_question": "I'd like to ___ in for my flight to New York.", "grammar_answer": "D. check in", "grammar_choice_a": "A. check", "grammar_choice_b": "B. checking", "grammar_choice_c": "C. checked", "grammar_choice_d": "D. check in", "grammar_explanation": "「would like to＋動詞の原形」で『～したい』。句動詞はそのまま原形で使う。", "grammar_type": "成句" },
+              { "id": "travel_sentences_00002", "en": "Can I have a window seat, please?", "ja": "窓側の席をお願いします。", "year": null, "category_main": "空港", "category_sub": "チェックイン", "priority": "中", "grammar_question": "Can I have a ___ seat, please?", "grammar_answer": "B. window", "grammar_choice_a": "A. windows", "grammar_choice_b": "B. window", "grammar_choice_c": "C. a window", "grammar_choice_d": "D. some window", "grammar_explanation": "「window seat」は「窓側の席」という複合名詞で、不可算名詞ではないため単数形で使う。", "grammar_type": "名詞" },
+              { "id": "travel_sentences_00003", "en": "How many bags can I check in?", "ja": "預け荷物は何個までですか？", "year": null, "category_main": "空港", "category_sub": "チェックイン", "priority": "中", "grammar_question": "How ___ bags can I check in?", "grammar_answer": "B. many", "grammar_choice_a": "A. much", "grammar_choice_b": "B. many", "grammar_choice_c": "C. far", "grammar_choice_d": "D. often", "grammar_explanation": "「bags（バッグ）」は数えられる名詞（可算名詞）なので、「How many」で数を尋ねる。", "grammar_type": "数量表現" },
+              { "id": "travel_sentences_00004", "en": "Do I need to take my laptop out?", "ja": "ノートパソコンを取り出す必要がありますか？", "year": null, "category_main": "空港", "category_sub": "セキュリティチェック", "priority": "中", "grammar_question": "Do I ___ to take my laptop out?", "grammar_answer": "A. need", "grammar_choice_a": "A. need", "grammar_choice_b": "B. must", "grammar_choice_c": "C. should", "grammar_choice_d": "D. have", "grammar_explanation": "「～する必要があるか？」と尋ねるには「need to」を使う。「Do I have to」も可能だが、選択肢に「have to」はないため「need」が正解。", "grammar_type": "助動詞" },
+              { "id": "travel_sentences_00005", "en": "Is this allowed in carry-on luggage?", "ja": "これは機内持ち込みできますか？", "year": null, "category_main": "空港", "category_sub": "セキュリティチェック", "priority": "中", "grammar_question": "Is this ___ in carry-on luggage?", "grammar_answer": "D. allowed", "grammar_choice_a": "A. allow", "grammar_choice_b": "B. allowing", "grammar_choice_c": "C. allows", "grammar_choice_d": "D. allowed", "grammar_explanation": "「be allowed to...」または「be allowed in...」で「～が許可されている」という受動態。", "grammar_type": "受動態" },
+              { "id": "travel_sentences_00006", "en": "Which gate is the flight to Los Angeles?", "ja": "ロサンゼルス行きのフライトはどのゲートですか？", "year": null, "category_main": "空港", "category_sub": "搭乗", "priority": "高", "grammar_question": "Which gate is the flight ___ Los Angeles?", "grammar_answer": "B. to", "grammar_choice_a": "A. in", "grammar_choice_b": "B. to", "grammar_choice_c": "C. at", "grammar_choice_d": "D. for", "grammar_explanation": "「the flight to [場所]」で「[場所]行きのフライト」という意味。", "grammar_type": "前置詞" },
+              { "id": "travel_sentences_00007", "en": "When does boarding start?", "ja": "搭乗はいつ始まりますか？", "year": null, "category_main": "空港", "category_sub": "搭乗", "priority": "高", "grammar_question": "When ___ boarding start?", "grammar_answer": "B. does", "grammar_choice_a": "A. is", "grammar_choice_b": "B. does", "grammar_choice_c": "C. did", "grammar_choice_d": "D. do", "grammar_explanation": "「boarding」は動名詞だが、ここでは「搭乗（という行為）」を表す単数名詞として扱われるため、助動詞「does」を用いる。", "grammar_type": "時制" },
+              { "id": "travel_sentences_00078", "en": "Where can I find this?", "ja": "これはどこにありますか？", "year": null, "category_main": "汎用", "category_sub": "道案内", "priority": "中", "grammar_question": "Where can I ___ this?", "grammar_answer": "B. find", "grammar_choice_a": "A. found", "grammar_choice_b": "B. find", "grammar_choice_c": "C. finding", "grammar_choice_d": "D. finds", "grammar_explanation": "助動詞「can」の後は動詞の原形。この文には文法問題として適切なデータがすべて揃っている。", "grammar_type": "助動詞" },
+              { "id": "travel_sentences_00079", "en": "I’m sorry, I’m not from around here.", "ja": "すみません、私はこの辺の者ではありません。", "year": null, "category_main": "汎用", "category_sub": "会話", "priority": "低", "grammar_question": "I’m sorry, I’m not ___ around here.", "grammar_answer": "D. from", "grammar_choice_a": "A. at", "grammar_choice_b": "B. in", "grammar_choice_c": "C. of", "grammar_choice_d": "D. from", "grammar_explanation": "「be from」で「～の出身である」または「～から来た」という意味。この場合、「この辺りの者ではない」という意図。", "grammar_type": "前置詞" }
+            ]
         },
-        // 他のカテゴリは追加しません
     };
 
     // --- DOM要素の参照 ---
-    const filterModeSelectorEl = document.getElementById('filter-mode-selector'); // 新規追加
-    const toggleLearnedBtn = document.getElementById('toggle-learned-btn'); // 新規追加
+    const filterModeSelectorEl = document.getElementById('filter-mode-selector'); 
+    const toggleLearnedBtn = document.getElementById('toggle-learned-btn'); 
     const modeSelectorEl = document.getElementById('mode-selector'); 
     const englishTextEl = document.getElementById('english-text');
     const japaneseTextEl = document.getElementById('japanese-text');
     const translationCardEl = document.getElementById('translation-card');
     const toggleTranslationBtn = document.getElementById('toggle-translation-btn');
-    const scrambledWordsAreaEl = document.getElementById('scrambled-words-area');
-    const answerAreaEl = document.getElementById('answer-area');
-    const scrambleUiEl = document.getElementById('scramble-ui');
     const messageBoxEl = document.getElementById('message-box');
-    const checkAnswerBtn = document.getElementById('check-answer-btn');
-    const resetScrambleBtn = document.getElementById('reset-scramble-btn');
     const selectionScreenEl = document.getElementById('selection-screen'); 
     const learningScreenEl = document.getElementById('learning-screen'); 
-    const commonTestSubGroupEl = document.getElementById('common-test-sub-group'); 
     const appHeaderEl = document.getElementById('app-header'); 
     const appFooterEl = document.getElementById('app-footer'); 
     const progressIndicatorEl = document.getElementById('progress-indicator'); 
-    const selectionTitleEl = document.getElementById('selection-title');
-    const mainCategoryButtonsEl = document.getElementById('main-category-buttons');
-    const singleCategoryTransitionEl = document.getElementById('single-category-transition');
     const sceneFilterEl = document.getElementById('scene-filter'); 
+
+    // ★修正: 文法問題用のDOM要素の参照を修正/追加
+    const grammarTypeSelectorEl = document.getElementById('grammar-type-selector'); // プルダウンに変更
+    const grammarQuestionUiEl = document.getElementById('grammar-question-ui');
+    const grammarQuestionTextEl = document.getElementById('grammar-question-text');
+    const grammarAnswerExplanationEl = document.getElementById('grammar-answer-explanation');
+    const grammarCorrectAnswerEl = document.getElementById('grammar-correct-answer');
+    const grammarExplanationTextEl = document.getElementById('grammar-explanation-text');
     
     // --- Persistence (学習済ステータスの保存/読み込み) ---
 
-    /**
-     * localStorageから学習済ステータスをロードする
-     * @returns {Object<string, boolean>} 文IDをキーとする学習済フラグのマップ
-     */
     function loadLearnedStatus() {
         try {
             const stored = localStorage.getItem(LEARNED_STATUS_KEY);
@@ -236,10 +239,6 @@
         }
     }
 
-    /**
-     * 学習済ステータスをlocalStorageに保存する
-     * @param {Object<string, boolean>} statusMap - 文IDをキーとする学習済フラグのマップ
-     */
     function saveLearnedStatus(statusMap) {
         try {
             localStorage.setItem(LEARNED_STATUS_KEY, JSON.stringify(statusMap));
@@ -253,29 +252,17 @@
         showSelectionScreen(); 
     };
     
-    /**
-     * カテゴリ選択画面を表示し、学習画面を非表示にする
-     */
     function showSelectionScreen() {
         selectionScreenEl.classList.remove('hidden');
         learningScreenEl.classList.add('hidden');
         appHeaderEl.classList.add('hidden');
         appFooterEl.classList.add('hidden');
         
-        mainCategoryButtonsEl.classList.remove('hidden');
-        commonTestSubGroupEl.classList.add('hidden'); 
-        singleCategoryTransitionEl.classList.add('hidden');
-        
-        selectionTitleEl.textContent = '学習コンテンツを選択してください'; 
-        selectionTitleEl.classList.remove('hidden'); 
-        // 進捗表示をリセット
         progressIndicatorEl.textContent = ''; 
-        toggleLearnedBtn.classList.add('hidden'); // 学習済ボタンも非表示
+        toggleLearnedBtn.classList.add('hidden');
+        grammarQuestionUiEl.classList.add('hidden');
     }
 
-    /**
-     * カテゴリボタンが押されたときの処理
-     */
     function selectCategory(category) {
         if (category === 'travel') {
             startLearning('travel');
@@ -283,13 +270,10 @@
         } 
     }
     
-    /**
-     * 学習を開始し、DBをロードする
-     */
     async function startLearning(key) {
         const config = CATEGORY_MAP[key];
         if (!config) {
-            showMessage('エラー: 不正なカテゴリが選択されました。', 'danger');
+            showMessage('エラー: 不正なカテゴリが選択されました！', 'danger');
             return;
         }
         
@@ -300,143 +284,42 @@
         appFooterEl.classList.remove('hidden');
         document.getElementById('app-header').querySelector('h1').textContent = config.name;
 
-
         currentCategoryKey = key;
         
-        try {
-            englishTextEl.textContent = `データの読み込み中です...`;
-            
-            // 埋め込みデータ
-            const provided_json_content = [
-              { "id": "travel_sentences_00001", "en": "I'd like to check in for my flight to New York.", "ja": "ニューヨーク行きのフライトのチェックインをしたいです。", "year": null, "category_main": "空港", "category_sub": "チェックイン", "priority": "高" },
-              { "id": "travel_sentences_00002", "en": "Can I have a window seat, please?", "ja": "窓側の席をお願いします。", "year": null, "category_main": "空港", "category_sub": "チェックイン", "priority": "中" },
-              { "id": "travel_sentences_00003", "en": "How many bags can I check in?", "ja": "預け荷物は何個までですか？", "year": null, "category_main": "空港", "category_sub": "チェックイン", "priority": "中" },
-              { "id": "travel_sentences_00004", "en": "Do I need to take my laptop out?", "ja": "ノートパソコンを取り出す必要がありますか？", "year": null, "category_main": "空港", "category_sub": "セキュリティチェック", "priority": "中" },
-              { "id": "travel_sentences_00005", "en": "Is this allowed in carry-on luggage?", "ja": "これは機内持ち込みできますか？", "year": null, "category_main": "空港", "category_sub": "セキュリティチェック", "priority": "中" },
-              { "id": "travel_sentences_00006", "en": "Which gate is the flight to Los Angeles?", "ja": "ロサンゼルス行きのフライトはどのゲートですか？", "year": null, "category_main": "空港", "category_sub": "搭乗", "priority": "高" },
-              { "id": "travel_sentences_00007", "en": "When does boarding start?", "ja": "搭乗はいつ始まりますか？", "year": null, "category_main": "空港", "category_sub": "搭乗", "priority": "高" },
-              { "id": "travel_sentences_00008", "en": "Where is the transfer desk?", "ja": "乗り継ぎカウンターはどこですか？", "year": null, "category_main": "空港", "category_sub": "乗り継ぎ", "priority": "低" },
-              { "id": "travel_sentences_00009", "en": "I’m here for sightseeing.", "ja": "観光で来ました。", "year": null, "category_main": "空港", "category_sub": "出入国審査", "priority": "高" },
-              { "id": "travel_sentences_00010", "en": "My flight was delayed. What should I do?", "ja": "フライトが遅れたのですが、どうすればいいですか？", "year": null, "category_main": "空港", "category_sub": "トラブル", "priority": "中" },
-              { "id": "travel_sentences_00011", "en": "How do I get to the train station?", "ja": "駅へはどう行けばいいですか？", "year": null, "category_main": "移動", "category_sub": "徒歩", "priority": "高" },
-              { "id": "travel_sentences_00012", "en": "Could you take me to the airport, please?", "ja": "空港までお願いします。", "year": null, "category_main": "移動", "category_sub": "タクシー", "priority": "高" },
-              { "id": "travel_sentences_00013", "en": "How much is the fare to downtown?", "ja": "中心街までの運賃はいくらですか？", "year": null, "category_main": "移動", "category_sub": "タクシー", "priority": "高" },
-              { "id": "travel_sentences_00014", "en": "Where can I buy a bus ticket?", "ja": "バスのチケットはどこで買えますか？", "year": null, "category_main": "移動", "category_sub": "バス", "priority": "中" },
-              { "id": "travel_sentences_00015", "en": "Does this bus go to the city center?", "ja": "このバスは市の中心部に行きますか？", "year": null, "category_main": "移動", "category_sub": "バス", "priority": "高" },
-              { "id": "travel_sentences_00016", "en": "Which platform does the train leave from?", "ja": "その電車はどのホームから出ますか？", "year": null, "category_main": "移動", "category_sub": "電車", "priority": "中" },
-              { "id": "travel_sentences_00017", "en": "How long does it take to get there?", "ja": "そこまでどのくらい時間がかかりますか？", "year": null, "category_main": "移動", "category_sub": "全般", "priority": "中" },
-              { "id": "travel_sentences_00018", "en": "Could you drop me off here, please?", "ja": "ここで降ろしてもらえますか？", "year": null, "category_main": "移動", "category_sub": "タクシー", "priority": "中" },
-              { "id": "travel_sentences_00019", "en": "Is it within walking distance?", "ja": "歩いて行ける距離ですか？", "year": null, "category_main": "移動", "category_sub": "徒歩", "priority": "低" },
-              { "id": "travel_sentences_00020", "en": "I think I’m lost. Can you help me?", "ja": "道に迷いました。助けてもらえますか？", "year": null, "category_main": "移動", "category_sub": "徒歩", "priority": "高" },
-              { "id": "travel_sentences_00021", "en": "I have a reservation under the name of Tanaka.", "ja": "田中の名前で予約しています。", "year": null, "category_main": "ホテル", "category_sub": "チェックイン", "priority": "高" },
-              { "id": "travel_sentences_00022", "en": "Could I have your ID and credit card, please?", "ja": "身分証明書とクレジットカードをお願いします。（※ホテル側の質問例）", "year": null, "category_main": "ホテル", "category_sub": "チェックイン", "priority": "中" },
-              { "id": "travel_sentences_00023", "en": "What time is check-out?", "ja": "チェックアウトは何時ですか？", "year": null, "category_main": "ホテル", "category_sub": "チェックイン", "priority": "高" },
-              { "id": "travel_sentences_00024", "en": "Could I have a late check-out, please?", "ja": "レイトチェックアウトをお願いできますか？", "year": null, "category_main": "ホテル", "category_sub": "チェックアウト", "priority": "中" },
-              { "id": "travel_sentences_00025", "en": "Is breakfast included?", "ja": "朝食は含まれていますか？", "year": null, "category_main": "ホテル", "category_sub": "サービス", "priority": "高" },
-              { "id": "travel_sentences_00026", "en": "Could you bring some extra towels, please?", "ja": "タオルをもう少し持ってきてもらえますか？", "year": null, "category_main": "ホテル", "category_sub": "サービス", "priority": "中" },
-              { "id": "travel_sentences_00027", "en": "The air conditioner isn’t working.", "ja": "エアコンが動きません。", "year": null, "category_main": "ホテル", "category_sub": "トラブル", "priority": "中" },
-              { "id": "travel_sentences_00028", "en": "Where is the nearest convenience store?", "ja": "一番近いコンビニはどこですか？", "year": null, "category_main": "ホテル", "category_sub": "周辺情報", "priority": "低" },
-              { "id": "travel_sentences_00029", "en": "I’d like to leave my luggage here until this afternoon.", "ja": "午後まで荷物を預かってもらえますか？", "year": null, "category_main": "ホテル", "category_sub": "サービス", "priority": "高" },
-              { "id": "travel_sentences_00030", "en": "Could you call a taxi for me, please?", "ja": "タクシーを呼んでもらえますか？", "year": null, "category_main": "ホテル", "category_sub": "サービス", "priority": "高" },
-              { "id": "travel_sentences_00031", "en": "Could you take a picture of me, please?", "ja": "写真を撮ってもらえますか？", "year": null, "category_main": "観光", "category_sub": "観光地", "priority": "高" },
-              { "id": "travel_sentences_00032", "en": "What time does the museum open?", "ja": "博物館は何時に開きますか？", "year": null, "category_main": "観光", "category_sub": "施設", "priority": "高" },
-              { "id": "travel_sentences_00033", "en": "How much is the entrance fee?", "ja": "入場料はいくらですか？", "year": null, "category_main": "観光", "category_sub": "施設", "priority": "高" },
-              { "id": "travel_sentences_00034", "en": "Is there a guided tour available?", "ja": "ガイドツアーはありますか？", "year": null, "category_main": "観光", "category_sub": "観光ツアー", "priority": "中" },
-              { "id": "travel_sentences_00035", "en": "Where can I buy tickets for the boat cruise?", "ja": "ボートクルーズのチケットはどこで買えますか？", "year": null, "category_main": "観光", "category_sub": "アクティビティ", "priority": "中" },
-              { "id": "travel_sentences_00036", "en": "How long does the tour take?", "ja": "ツアーはどのくらい時間がかかりますか？", "year": null, "category_main": "観光", "category_sub": "観光ツアー", "priority": "中" },
-              { "id": "travel_sentences_00037", "en": "Are there any famous restaurants around here?", "ja": "この近くに有名なレストランはありますか？", "year": null, "category_main": "観光", "category_sub": "周辺情報", "priority": "中" },
-              { "id": "travel_sentences_00038", "en": "Can I get there on foot?", "ja": "そこへは歩いて行けますか？", "year": null, "category_main": "観光", "category_sub": "道案内", "priority": "低" },
-              { "id": "travel_sentences_00039", "en": "Where is the nearest restroom?", "ja": "一番近いトイレはどこですか？", "year": null, "category_main": "観光", "category_sub": "周辺情報", "priority": "高" },
-              { "id": "travel_sentences_00040", "en": "What’s the best way to get to the city center?", "ja": "市の中心部へ行く一番良い方法は何ですか？", "year": null, "category_main": "観光", "category_sub": "道案内", "priority": "高" },
-              { "id": "travel_sentences_00041", "en": "Table for two, please.", "ja": "2人用の席をお願いします。", "year": null, "category_main": "食事", "category_sub": "入店・案内", "priority": "高" },
-              { "id": "travel_sentences_00042", "en": "Could we see the menu, please?", "ja": "メニューを見せてもらえますか？", "year": null, "category_main": "食事", "category_sub": "注文前", "priority": "高" },
-              { "id": "travel_sentences_00043", "en": "What do you recommend?", "ja": "おすすめは何ですか？", "year": null, "category_main": "食事", "category_sub": "注文前", "priority": "中" },
-              { "id": "travel_sentences_00044", "en": "I’ll have this one, please.", "ja": "これをお願いします。", "year": null, "category_main": "食事", "category_sub": "注文", "priority": "高" },
-              { "id": "travel_sentences_00045", "en": "Could I get some water, please?", "ja": "お水をいただけますか？", "year": null, "category_main": "食事", "category_sub": "注文", "priority": "高" },
-              { "id": "travel_sentences_00046", "en": "Does this dish contain nuts or seafood?", "ja": "この料理にはナッツやシーフードが入っていますか？", "year": null, "category_main": "食事", "category_sub": "注文前", "priority": "中" },
-              { "id": "travel_sentences_00047", "en": "Could we have the bill, please?", "ja": "お会計をお願いします。", "year": null, "category_main": "食事", "category_sub": "会計", "priority": "高" },
-              { "id": "travel_sentences_00048", "en": "Is service charge included?", "ja": "サービス料は含まれていますか？", "year": null, "category_main": "食事", "category_sub": "会計", "priority": "中" },
-              { "id": "travel_sentences_00049", "en": "Could you pack this to go?", "ja": "これを持ち帰りにしてもらえますか？", "year": null, "category_main": "食事", "category_sub": "持ち帰り", "priority": "中" },
-              { "id": "travel_sentences_00050", "en": "Everything was delicious, thank you!", "ja": "すべてとても美味しかったです、ありがとうございました！", "year": null, "category_main": "食事", "category_sub": "その他", "priority": "低" },
-              { "id": "travel_sentences_00051", "en": "How much is this?", "ja": "これはいくらですか？", "year": null, "category_main": "買い物", "category_sub": "価格", "priority": "高" },
-              { "id": "travel_sentences_00052", "en": "Can I try this on?", "ja": "試着してもいいですか？", "year": null, "category_main": "買い物", "category_sub": "衣料品", "priority": "高" },
-              { "id": "travel_sentences_00053", "en": "Do you have this in a different size?", "ja": "これの別のサイズはありますか？", "year": null, "category_main": "買い物", "category_sub": "衣料品", "priority": "中" },
-              { "id": "travel_sentences_00054", "en": "Do you have this in another color?", "ja": "これの別の色はありますか？", "year": null, "category_main": "買い物", "category_sub": "衣料品", "priority": "中" },
-              { "id": "travel_sentences_00055", "en": "Could you give me a discount?", "ja": "値引きしてもらえますか？", "year": null, "category_main": "買い物", "category_sub": "価格", "priority": "中" },
-              { "id": "travel_sentences_00056", "en": "I’m just looking, thank you.", "ja": "見ているだけです、ありがとう。", "year": null, "category_main": "買い物", "category_sub": "店員", "priority": "高" },
-              { "id": "travel_sentences_00057", "en": "Could I pay by credit card?", "ja": "クレジットカードで支払えますか？", "year": null, "category_main": "買い物", "category_sub": "支払い", "priority": "高" },
-              { "id": "travel_sentences_00058", "en": "Can I get a receipt, please?", "ja": "レシートをもらえますか？", "year": null, "category_main": "買い物", "category_sub": "支払い", "priority": "中" },
-              { "id": "travel_sentences_00059", "en": "Is tax included in the price?", "ja": "この値段に税金は含まれていますか？", "year": null, "category_main": "買い物", "category_sub": "支払い", "priority": "中" },
-              { "id": "travel_sentences_00060", "en": "Could you wrap this as a gift, please?", "ja": "ギフト用に包んでもらえますか？", "year": null, "category_main": "買い物", "category_sub": "サービス", "priority": "低" },
-              { "id": "travel_sentences_00061", "en": "Call the police, please!", "ja": "警察を呼んでください！", "year": null, "category_main": "緊急", "category_sub": "トラブル", "priority": "高" },
-              { "id": "travel_sentences_00062", "en": "I need an ambulance!", "ja": "救急車を呼んでください！", "year": null, "category_main": "緊急", "category_sub": "病気", "priority": "高" },
-              { "id": "travel_sentences_00063", "en": "My wallet has been stolen.", "ja": "財布を盗まれました。", "year": null, "category_main": "緊急", "category_sub": "トラブル", "priority": "高" },
-              { "id": "travel_sentences_00064", "en": "I’ve lost my passport.", "ja": "パスポートをなくしました。", "year": null, "category_main": "緊急", "category_sub": "トラブル", "priority": "高" },
-              { "id": "travel_sentences_00065", "en": "I don’t feel well.", "ja": "気分が悪いです。", "year": null, "category_main": "緊急", "category_sub": "病気", "priority": "高" },
-              { "id": "travel_sentences_00066", "en": "Where is the nearest hospital?", "ja": "一番近い病院はどこですか？", "year": null, "category_main": "緊急", "category_sub": "病気", "priority": "高" },
-              { "id": "travel_sentences_00067", "en": "I need to see a doctor.", "ja": "医者に診てもらいたいです。", "year": null, "category_main": "緊急", "category_sub": "病気", "priority": "中" },
-              { "id": "travel_sentences_00068", "en": "Can you help me contact the embassy?", "ja": "大使館に連絡するのを手伝ってもらえますか？", "year": null, "category_main": "緊急", "category_sub": "トラブル", "priority": "中" },
-              { "id": "travel_sentences_00069", "en": "Someone is following me.", "ja": "誰かに後をつけられています。", "year": null, "category_main": "緊急", "category_sub": "トラブル", "priority": "中" },
-              { "id": "travel_sentences_00070", "en": "I need to report a theft.", "ja": "盗難を届け出たいです。", "year": null, "category_main": "緊急", "category_sub": "トラブル", "priority": "中" },
-              { "id": "travel_sentences_00071", "en": "Excuse me.", "ja": "すみません。／ちょっといいですか。", "year": null, "category_main": "汎用", "category_sub": "会話", "priority": "高" },
-              { "id": "travel_sentences_00072", "en": "Could you help me, please?", "ja": "手伝ってもらえますか？", "year": null, "category_main": "汎用", "category_sub": "依頼", "priority": "高" },
-              { "id": "travel_sentences_00073", "en": "I don’t understand.", "ja": "わかりません。", "year": null, "category_main": "汎用", "category_sub": "会話", "priority": "高" },
-              { "id": "travel_sentences_00074", "en": "Could you say that again, please?", "ja": "もう一度言ってもらえますか？", "year": null, "category_main": "汎用", "category_sub": "会話", "priority": "高" },
-              { "id": "travel_sentences_00075", "en": "Do you speak English?", "ja": "英語を話せますか？", "year": null, "category_main": "汎用", "category_sub": "会話", "priority": "高" },
-              { "id": "travel_sentences_00076", "en": "Could you write it down, please?", "ja": "書いてもらえますか？", "year": null, "category_main": "汎用", "category_sub": "依頼", "priority": "中" },
-              { "id": "travel_sentences_00077", "en": "That’s okay, thank you.", "ja": "大丈夫です、ありがとうございます。", "year": null, "category_main": "汎用", "category_sub": "会話", "priority": "中" },
-              { "id": "travel_sentences_00078", "en": "Where can I find this?", "ja": "これはどこにありますか？", "year": null, "category_main": "汎用", "category_sub": "道案内", "priority": "中" },
-              { "id": "travel_sentences_00079", "en": "I’m sorry, I’m not from around here.", "ja": "すみません、私はこの辺の者ではありません。", "year": null, "category_main": "汎用", "category_sub": "会話", "priority": "低" },
-              { "id": "travel_sentences_00080", "en": "Thank you so much!", "ja": "本当にありがとうございます！", "year": null, "category_main": "汎用", "category_sub": "会話", "priority": "高" }
-            ];
+        // データの初期化とロード (今回は埋め込みデータを使用)
+        const learnedStatusMap = loadLearnedStatus();
+        ALL_DB = config.data.map(item => ({
+            ...item,
+            isLearned: !!learnedStatusMap[item.id]
+        })); 
 
-            // ローカルストレージから学習済ステータスを読み込む
-            const learnedStatusMap = loadLearnedStatus();
-
-            // 全データに学習済ステータスを付与
-            ALL_DB = provided_json_content.map(item => ({
-                ...item,
-                isLearned: !!learnedStatusMap[item.id] // IDをキーに学習済フラグを設定
-            })); 
-
-            if (ALL_DB.length === 0) {
-                englishTextEl.textContent = `${config.name} のデータがありません。`;
-                showMessage('JSONファイルにデータがありません。', 'danger');
-                return;
-            }
-            
-            // 場面フィルターを初期化
-            setupSceneFilter(ALL_DB); 
-            
-            // フィルタリングを適用し、最初の文をロード
-            // 全てのフィルター（場面、学習済）を適用
-            applyAllFilters(); 
-            
-        } catch (error) {
-            console.error("データの読み込み中にエラーが発生しました:", error);
-            englishTextEl.textContent = `データの読み込みに失敗しました。\n${error.message}`;
-            showMessage('データの読み込みに失敗しました。ローカルサーバーで実行しているか確認してください。', 'danger');
+        if (ALL_DB.length === 0) {
+            englishTextEl.textContent = `${config.name} のデータがありません。`;
+            showMessage('JSONファイルにデータがありません。', 'danger');
+            return;
         }
+        
+        // 場面フィルターを初期化
+        setupSceneFilter(ALL_DB); 
+        // 文法類型フィルターを初期化
+        setupGrammarTypeFilter(ALL_DB);
+        
+        // モードをデフォルト（英文先行）に設定し、フィルターを適用
+        modeSelectorEl.value = currentMode;
+        applyAllFilters(); 
     }
     
-    /**
-     * 使用場面フィルターの初期設定 (category_mainを使用)
-     */
     function setupSceneFilter(data) {
-        // 'category_main'フィールドを「使用場面」として利用
         const scenes = new Set(data.map(item => item.category_main).filter(c => c && c.trim() !== ''));
-        // 日本語でソート
         const sortedScenes = Array.from(scenes).sort((a, b) => a.localeCompare(b, 'ja', { sensitivity: 'base' })); 
         
         sceneFilterEl.innerHTML = '';
         
-        // 全ての場面 (デフォルト)
         const allOption = document.createElement('option');
         allOption.value = 'ALL';
         allOption.textContent = '全ての使用場面';
         sceneFilterEl.appendChild(allOption);
         
-        // 各場面のオプションを追加
         sortedScenes.forEach(scene => {
             const option = document.createElement('option');
             option.value = scene;
@@ -446,10 +329,41 @@
         
         sceneFilterEl.classList.remove('hidden');
     }
-    
+
     /**
-     * 全てのフィルター（場面・学習済）を適用し、DBを再構築する
+     * 文法類型フィルタープルダウンをセットアップする
      */
+    function setupGrammarTypeFilter(data) {
+        const grammarData = data.filter(item => item.grammar_type);
+        const types = new Set(grammarData.map(item => item.grammar_type).filter(t => t && t.trim() !== ''));
+        const sortedTypes = Array.from(types).sort((a, b) => a.localeCompare(b, 'ja', { sensitivity: 'base' })); 
+        
+        grammarTypeSelectorEl.innerHTML = ''; 
+
+        // 1. 全て (ALL) オプションを追加
+        const allOption = document.createElement('option');
+        allOption.value = 'ALL';
+        allOption.textContent = '全ての類型';
+        grammarTypeSelectorEl.appendChild(allOption);
+
+        // 2. 各類型オプションを追加
+        sortedTypes.forEach(type => {
+            const option = document.createElement('option');
+            option.value = type;
+            option.textContent = type;
+            grammarTypeSelectorEl.appendChild(option);
+        });
+        
+        grammarTypeSelectorEl.value = currentGrammarType; // 初期選択状態を設定
+    }
+
+    function filterByType(type) {
+        currentGrammarType = type;
+        if (currentMode === 4) { // 文法問題モードの場合のみDBを再構築
+            applyAllFilters();
+        }
+    }
+    
     function applyAllFilters() {
         if (ALL_DB.length === 0) return;
         
@@ -462,10 +376,20 @@
         // 2. 学習済フィルターの適用
         const learnedFilter = filterModeSelectorEl.value;
         if (learnedFilter === 'LEARNED') {
-            DB = tempDB.filter(item => item.isLearned);
+            tempDB = tempDB.filter(item => item.isLearned);
         } else if (learnedFilter === 'UNLEARNED') {
-            DB = tempDB.filter(item => !item.isLearned);
-        } else { // ALL
+            tempDB = tempDB.filter(item => !item.isLearned);
+        }
+        
+        // 3. モード固有のフィルターを適用
+        if (currentMode === 4) { // 文法問題モード
+            let grammarDB = tempDB.filter(item => item.grammar_question);
+            if (currentGrammarType !== 'ALL') {
+                grammarDB = grammarDB.filter(item => item.grammar_type === currentGrammarType);
+            }
+            DB = grammarDB;
+        } else { // 英文先行/音声先行モード
+            // 文法問題データのない項目も含む
             DB = tempDB;
         }
 
@@ -473,69 +397,54 @@
              englishTextEl.textContent = '選択された条件に該当するデータがありません。';
              showMessage('データが見つかりませんでした。', 'danger');
              progressIndicatorEl.textContent = '0/0'; 
-             // 学習済ボタンを隠す
              toggleLearnedBtn.classList.add('hidden');
+             // 英文を初期状態に戻す
+             englishTextEl.classList.remove('italic', 'text-gray-400', 'blur-strong');
+             translationCardEl.classList.add('hidden');
              return;
         }
 
         currentSentenceIndex = 0;
-        // 現在のモード設定を維持したまま、最初の文をロード
-        changeMode(modeSelectorEl.value);
+        loadSentence(currentSentenceIndex);
     }
     
-    /**
-     * 使用場面フィルターによるDBの絞り込み (category_mainを使用)
-     * (実際は applyAllFilters を呼び出すだけ)
-     */
     function filterScenes(scene) {
-        // sceneFilterEl.value はこの時点で更新されているため、そのまま applyAllFilters を呼ぶ
         applyAllFilters();
     }
 
 
     /**
-     * 単語並べ替えのために英文を整形し、単語配列を生成する
-     */
-    function tokenizeSentence(sentence) {
-        // 句読点などを考慮し、より正確に単語に分割 (コード改善: 句読点を分離して単語として扱う)
-        const cleanedSentence = sentence.trim().replace(/[\n\u2018\u2019\u201c\u201d]/g, '').replace(/[.,!?:;—–"”'()]/g, ' $& ').replace(/-/g, ' - ').replace(/\s+/g, ' ');
-        const words = cleanedSentence.split(/\s+/).filter(w => w.length > 0);
-        return words;
-    }
-
-    /**
      * モードを切り替える
      */
     function changeMode(mode) {
-        if (DB.length === 0) return;
-
+        // currentModeを更新し、UIをリセット
         currentMode = parseInt(mode, 10);
-        
-        // 全てのモード設定をリセット
-        englishTextEl.classList.remove('blur-strong', 'italic', 'text-gray-400');
-        translationCardEl.classList.add('hidden');
-        toggleTranslationBtn.classList.add('hidden');
-        scrambleUiEl.classList.add('hidden');
-        checkAnswerBtn.classList.add('hidden');
-        resetScrambleBtn.classList.add('hidden');
-        messageBoxEl.classList.add('hidden');
+        modeSelectorEl.value = currentMode;
         isTranslationVisible = false; // モード切り替え時、和訳は非表示に戻す
-
-        // モード固有のUI設定
+        
+        // 全てのモード固有UIをリセット
+        translationCardEl.classList.add('hidden');
+        englishTextEl.classList.remove('blur-strong', 'italic', 'text-gray-400');
+        
+        // 文法問題UIの表示/非表示を切り替え
+        const isGrammarMode = currentMode === 4;
+        grammarQuestionUiEl.classList.toggle('hidden', !isGrammarMode);
+        
+        // その他共通UIの表示/非表示を切り替え
+        toggleLearnedBtn.classList.toggle('hidden', isGrammarMode);
+        
         if (currentMode === 1) { // 英文先行
             toggleTranslationBtn.textContent = '和訳を表示';
-            toggleTranslationBtn.classList.remove('hidden');
+            toggleTranslationBtn.classList.remove('hidden'); // ボタンを表示
         } else if (currentMode === 2) { // 音声先行
-            englishTextEl.classList.add('blur-strong'); // 強いぼかしを適用
             toggleTranslationBtn.textContent = '英文・和訳を表示';
-            toggleTranslationBtn.classList.remove('hidden');
-        } else if (currentMode === 3) { // 並べ替え
-            scrambleUiEl.classList.remove('hidden');
-            checkAnswerBtn.classList.remove('hidden');
-            resetScrambleBtn.classList.remove('hidden');
+            toggleTranslationBtn.classList.remove('hidden'); // ボタンを表示
+        } else if (currentMode === 4) { // 文法問題
+             toggleTranslationBtn.classList.add('hidden'); // 文法モードでは非表示
         }
-
-        loadSentence(currentSentenceIndex);
+        
+        // モードに合わせてDBを再構築（文法問題は文法問題データがあるものに絞るため）
+        applyAllFilters(); 
     }
 
     /**
@@ -550,135 +459,193 @@
         currentSentenceIndex = (index + DB.length) % DB.length;
         const data = DB[currentSentenceIndex];
 
-        // 進捗状況を更新 (例: 21/100)
+        // 進捗状況を更新
         progressIndicatorEl.textContent = `${currentSentenceIndex + 1}/${DB.length}`;
 
-        englishTextEl.innerHTML = data.en.replace(/\n/g, '<br>');
-        japaneseTextEl.innerHTML = data.ja.replace(/\n/g, '<br>');
+        // 英文/和訳表示エリアのクリアとリセット
+        englishTextEl.classList.remove('italic', 'text-gray-400', 'blur-strong');
+        translationCardEl.classList.add('hidden');
+        isTranslationVisible = false;
 
-        // 和訳の表示状態を維持したまま更新
-        updateTranslationVisibility();
-        
-        // 学習済ボタンのUIを更新
-        updateLearnedButtonUI(data.isLearned);
-
-        if (currentMode === 3) {
-            setupScrambleMode();
+        // モードによる表示の分岐
+        if (currentMode === 4) {
+            setupGrammarMode(data);
         } else {
-            // モード1/2で和訳非表示の場合のぼかし状態を再設定
-            if (currentMode === 1 && !isTranslationVisible) {
-                englishTextEl.classList.remove('blur-strong');
-            } else if (currentMode === 2 && !isTranslationVisible) {
+            // 英文先行/音声先行モード (③ 英文・和訳の表示修正)
+            
+            // 英文を一旦全て表示
+            englishTextEl.textContent = data.en.replace(/\n/g, '<br>');
+            japaneseTextEl.textContent = data.ja.replace(/\n/g, '<br>');
+
+            // 音声先行モードの場合は英文をぼかす
+            if (currentMode === 2) {
                 englishTextEl.classList.add('blur-strong');
-            } else {
-                 englishTextEl.classList.remove('blur-strong'); // 和訳表示時は英文のぼかしを解除
             }
+            
+            // 和訳の表示状態はボタンに依存
+            updateTranslationVisibility(); 
+
+            // 学習済ボタンのUIを更新
+            updateLearnedButtonUI(data.isLearned);
         }
         
         hideMessage();
     }
+    
+    // --- モード 4 (文法問題) のロジック ---
 
-    /**
-     * 和訳の表示/非表示を切り替える (モード 1, 2)
-     */
+    function setupGrammarMode(data) {
+        if (!data.grammar_question) {
+            grammarQuestionTextEl.textContent = 'この文には文法問題がありません。次の文へ進んでください。';
+            // 英文カードを空にし、メッセージを表示
+            englishTextEl.textContent = '【文法問題モード】問題データがありません。';
+            englishTextEl.classList.add('italic', 'text-gray-400');
+            showMessage('問題データがありません', 'danger');
+            return;
+        }
+
+        // 1. UIを初期状態に戻す
+        grammarAnswerExplanationEl.classList.add('hidden');
+        
+        // 2. 選択肢ボタンを有効化・リセット (④ 選択肢の表示修正)
+        document.querySelectorAll('.choice-button').forEach(button => {
+            button.disabled = false;
+            button.classList.remove('bg-red-400', 'text-white', 'bg-green-400', 'bg-green-200', 'text-green-800');
+            button.classList.add('bg-gray-100', 'border-gray-300');
+        });
+        
+        // 3. 問題文と選択肢を表示 (④ 選択肢の表示修正: 'A. 'などを削除してデータのみ表示)
+        grammarQuestionTextEl.textContent = data.grammar_question; 
+        document.getElementById('choice-A').textContent = `A. ${data.grammar_choice_a.substring(3).trim()}`;
+        document.getElementById('choice-B').textContent = `B. ${data.grammar_choice_b.substring(3).trim()}`;
+        document.getElementById('choice-C').textContent = `C. ${data.grammar_choice_c.substring(3).trim()}`;
+        document.getElementById('choice-D').textContent = `D. ${data.grammar_choice_d.substring(3).trim()}`;
+        
+        // 4. 英文・和訳表示エリアは非表示に
+        englishTextEl.textContent = '【文法問題モード】正しい選択肢を選んでください。';
+        englishTextEl.classList.add('italic', 'text-gray-400');
+    }
+
+    function checkGrammarAnswer(choiceLetter) {
+        const currentQuestion = DB[currentSentenceIndex];
+        // 選択肢の文字と、問題データ内の選択肢の内容を結合して、完全な解答形式と比較
+        const userAnswerText = currentQuestion['grammar_choice_' + choiceLetter.toLowerCase()].substring(3).trim();
+        const userAnswer = `${choiceLetter}. ${userAnswerText}`;
+        const correctAnswer = currentQuestion.grammar_answer;
+        
+        const isCorrect = userAnswer === correctAnswer;
+
+        // 1. 全選択肢を無効化
+        document.querySelectorAll('.choice-button').forEach(button => {
+            button.disabled = true;
+        });
+
+        // 2. 選択したボタンのスタイル変更
+        const selectedButton = document.getElementById(`choice-${choiceLetter}`);
+        selectedButton.classList.remove('bg-gray-100', 'border-gray-300');
+
+        if (isCorrect) {
+            showMessage('正解です！', 'secondary');
+            selectedButton.classList.add('bg-secondary', 'text-white');
+        } else {
+            showMessage('残念！不正解です。', 'danger');
+            selectedButton.classList.add('bg-danger', 'text-white');
+            
+            // 正解のボタンをハイライト
+            const correctChoiceLetter = correctAnswer.substring(0, 1);
+            const correctButton = document.getElementById(`choice-${correctChoiceLetter}`);
+            correctButton.classList.remove('bg-gray-100', 'border-gray-300');
+            correctButton.classList.add('bg-green-200', 'text-green-800'); 
+        }
+        
+        // 3. 解答と解説を表示
+        grammarCorrectAnswerEl.textContent = correctAnswer;
+        grammarExplanationTextEl.textContent = currentQuestion.grammar_explanation;
+        grammarAnswerExplanationEl.classList.remove('hidden');
+
+        // 4. 元の英文と和訳を表示 (学習を促すため)
+        englishTextEl.textContent = currentQuestion.en;
+        englishTextEl.classList.remove('italic', 'text-gray-400');
+        japaneseTextEl.textContent = currentQuestion.ja;
+        translationCardEl.classList.remove('hidden');
+    }
+    
+    // --- 共通ロジック ---
+
     function toggleTranslation() {
+        if (currentMode === 4) return;
         isTranslationVisible = !isTranslationVisible;
         updateTranslationVisibility();
     }
     
-    /**
-     * 和訳の表示状態を更新し、トグルボタンのテキストを変更する
-     */
+    // ③ 和訳/英文の表示ロジックの修正
     function updateTranslationVisibility() {
+        if (currentMode === 4) return;
+        
         if (isTranslationVisible) {
             translationCardEl.classList.remove('hidden');
-            if (currentMode === 2) {
-                 toggleTranslationBtn.textContent = '英文・和訳を非表示';
-            } else {
-                toggleTranslationBtn.textContent = '和訳を非表示';
-            }
+            toggleTranslationBtn.textContent = (currentMode === 2) ? '英文・和訳を非表示' : '和訳を非表示';
             // 英文をはっきり表示
             englishTextEl.classList.remove('blur-strong'); 
         } else {
             translationCardEl.classList.add('hidden');
+            toggleTranslationBtn.textContent = (currentMode === 2) ? '英文・和訳を表示' : '和訳を表示';
+            // 音声先行モードの場合は英文を強くぼかす
             if (currentMode === 2) {
-                 toggleTranslationBtn.textContent = '英文・和訳を表示';
-                 englishTextEl.classList.add('blur-strong'); // 音声先行で非表示なら強くぼかす
+                 englishTextEl.classList.add('blur-strong'); 
             } else {
-                toggleTranslationBtn.textContent = '和訳を表示';
-                 englishTextEl.classList.remove('blur-strong');
+                englishTextEl.classList.remove('blur-strong');
             }
         }
+        toggleTranslationBtn.classList.remove('hidden'); // ④ ボタンの表示
     }
 
-    /**
-     * 学習済ステータスを切り替える
-     */
     function toggleLearnedStatus() {
-        if (DB.length === 0) return;
+        if (DB.length === 0 || currentMode === 4) return; 
 
         const currentData = DB[currentSentenceIndex];
         const sentenceId = currentData.id;
         
-        // 1. ALL_DBを更新 (DBはALL_DBの要素への参照を持っているため、両方が更新される)
         currentData.isLearned = !currentData.isLearned; 
         
-        // 2. localStorageを更新
         const learnedStatusMap = loadLearnedStatus();
         if (currentData.isLearned) {
             learnedStatusMap[sentenceId] = true;
-            // メッセージも短縮
-            showMessage("「学習済」にチェックしました！", 'secondary'); // ★修正: showMessageを呼び出し
+            showMessage("「学習済」にチェックしました！", 'secondary');
         } else {
-            delete learnedStatusMap[sentenceId]; // 未学習に戻す
-            // メッセージも短縮
-            showMessage("「未学習」に戻しました。", 'gray'); // ★修正: showMessageを呼び出し
+            delete learnedStatusMap[sentenceId]; 
+            showMessage("「未学習」に戻しました。", 'gray');
         }
         saveLearnedStatus(learnedStatusMap);
 
-        // 3. UIを更新
         updateLearnedButtonUI(currentData.isLearned);
         
-        // 4. フィルタリングモードの場合、次の文へ自動的に移動する（またはリストから削除）
         const learnedFilter = filterModeSelectorEl.value;
         if ((learnedFilter === 'LEARNED' && !currentData.isLearned) || 
             (learnedFilter === 'UNLEARNED' && currentData.isLearned)) {
             
-            // 現在のフィルターモードに合致しなくなったため、DBを再構築し、次の文へ
             applyAllFilters();
         }
     }
     
-    /**
-     * 学習済ボタンの表示とテキストを更新する
-     * @param {boolean} isLearned - 現在の英文が学習済か
-     */
     function updateLearnedButtonUI(isLearned) {
-        if (DB.length === 0) {
+        if (DB.length === 0 || currentMode === 4) {
              toggleLearnedBtn.classList.add('hidden');
              return;
         }
         
         if (isLearned) {
-            // **修正: テキストを「✅ 解除」に短縮**
             toggleLearnedBtn.textContent = '✅ 解除'; 
-            // チェック済はPrimaryからGrayへ色を変更
             toggleLearnedBtn.classList.remove('bg-secondary', 'hover:bg-emerald-600');
             toggleLearnedBtn.classList.add('bg-gray-500', 'hover:bg-gray-600');
         } else {
-            // **修正: テキストを「✓ 覚えた」に短縮**
             toggleLearnedBtn.textContent = '✓ 覚えた'; 
-            // 未チェックはSecondaryカラー
             toggleLearnedBtn.classList.add('bg-secondary', 'hover:bg-emerald-600');
             toggleLearnedBtn.classList.remove('bg-gray-500', 'hover:bg-gray-600');
         }
         toggleLearnedBtn.classList.remove('hidden');
     }
 
-
-    /**
-     * 音声ファイルを再生する
-     */
     function playAudio() {
         if (DB.length === 0 || !currentCategoryKey) return;
         
@@ -690,7 +657,6 @@
              return;
         }
 
-        // 音声ファイルパスを動的に生成: ./audio/{audioFolder}/{data.id}.mp3
         const audioPath = `./audio/${config.audioFolder}/${data.id}.mp3`;
         
         const audio = new Audio(audioPath);
@@ -701,188 +667,24 @@
 
         if (currentMode === 2 && !isTranslationVisible) {
              showMessage("音声が再生されました。英文の構成を考えましょう。", 'secondary');
-        } else if (currentMode === 3) {
-             showMessage("音声が再生されました。単語を並べ替えてください。", 'primary'); // メッセージカラーをPrimaryに統一
+        } else if (currentMode === 4) {
+             showMessage("問題文の音声が再生されました。", 'primary');
         }
     }
 
-    /**
-     * 次または前の文へ移動する
-     * @param {number} direction - 1:次, -1:前
-     */
     function navigate(direction) {
         if (DB.length === 0) return;
         let newIndex = currentSentenceIndex + direction;
-        // 負のインデックスを修正
         if (newIndex < 0) newIndex = DB.length - 1;
         
-        // 文移動時には和訳/英文非表示状態をリセット
         isTranslationVisible = false; 
         loadSentence(newIndex);
-        changeMode(currentMode);
     }
     
-    // --- モード 3 (並べ替え) のロジック ---
-
-    /**
-     * モード3の初期設定と単語シャッフルを行う
-     */
-    function setupScrambleMode() {
-        const data = DB[currentSentenceIndex];
-        
-        englishTextEl.textContent = '並べ替えモード：以下の単語を正しい順番に組み替えてください。';
-        englishTextEl.classList.add('italic', 'text-gray-400');
-        englishTextEl.classList.remove('blur-strong'); 
-
-        correctWords = tokenizeSentence(data.en);
-        
-        scrambledWords = [...correctWords];
-        shuffleArray(scrambledWords);
-        
-        answerSequence = []; 
-        
-        renderScrambledWords();
-        renderAnswerArea();
-        hideMessage();
-        
-        // 並べ替えモードでは和訳を強制的に非表示にする
-        translationCardEl.classList.add('hidden');
-        
-        // 並べ替えUIを再表示（回答チェックで非表示になっている可能性があるため）
-        scrambleUiEl.classList.remove('hidden');
-    }
-    
-    /**
-     * 配列をシャッフルする（Fisher-Yatesアルゴリズム）
-     */
-    function shuffleArray(array) {
-        for (let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];
-        }
-    }
-
-    /**
-     * シャッフルされた単語ボタンをレンダリングする
-     */
-    function renderScrambledWords() {
-        scrambledWordsAreaEl.innerHTML = '';
-        scrambledWords.forEach((word, index) => {
-            // スタイリッシュテーマ: Primaryカラーを使用
-            const button = document.createElement('button');
-            button.className = 'word-button bg-primary text-white text-sm md:text-base font-medium px-3 py-1 rounded-full shadow-md hover:bg-indigo-700 transition-colors duration-200';
-            button.textContent = word;
-            button.dataset.index = index;
-            button.onclick = () => selectWord(word, index);
-            if (answerSequence.some(item => item.originalIndex === index)) {
-                button.classList.add('selected');
-            }
-            scrambledWordsAreaEl.appendChild(button);
-        });
-    }
-
-    /**
-     * ユーザー解答エリアをレンダリングする
-     */
-    function renderAnswerArea() {
-        answerAreaEl.innerHTML = '';
-        answerSequence.forEach((item, index) => {
-            const span = document.createElement('span');
-            span.className = 'answer-word bg-white text-gray-800 text-sm md:text-base px-3 py-1 rounded-full shadow border border-gray-300 cursor-pointer';
-            span.textContent = item.word;
-            span.dataset.originalIndex = item.originalIndex; 
-            span.onclick = () => deselectWord(index);
-            answerAreaEl.appendChild(span);
-        });
-        
-        // 英文表示エリアに現在の解答を表示
-        if (answerSequence.length === 0) {
-            englishTextEl.textContent = '並べ替えモード：単語を選択してください';
-        } else {
-            englishTextEl.textContent = answerSequence.map(item => item.word).join(' ');
-        }
-    }
-
-    /**
-     * シャッフル単語を選択して解答エリアに追加する
-     */
-    function selectWord(word, originalIndex) {
-        const button = scrambledWordsAreaEl.querySelector(`[data-index="${originalIndex}"]`);
-        if (button) {
-            button.classList.add('selected');
-        }
-
-        answerSequence.push({ word, originalIndex });
-        renderAnswerArea();
-        hideMessage();
-    }
-    
-    /**
-     * 解答エリアの単語を削除し、シャッフルエリアに戻す
-     */
-    function deselectWord(answerIndex) {
-        const [removedItem] = answerSequence.splice(answerIndex, 1);
-        
-        const button = scrambledWordsAreaEl.querySelector(`[data-index="${removedItem.originalIndex}"]`);
-        if (button) {
-            button.classList.remove('selected');
-        }
-        
-        renderAnswerArea();
-        hideMessage();
-    }
-    
-    /**
-     * 並べ替えをリセットする
-     */
-    function resetScramble() {
-        setupScrambleMode(); 
-        showMessage("並べ替えがリセットされました。", 'gray');
-    }
-
-    /**
-     * 並べ替えモードの回答チェックと画面調整
-     */
-    function checkScrambledAnswer() {
-        if (answerSequence.length === 0) {
-            showMessage("単語を選択して英文を構築してください。", 'danger');
-            return;
-        }
-
-        const userSentence = answerSequence.map(item => item.word).join(' ');
-        const correctSentence = correctWords.join(' ');
-        
-        // 比較のために正規化（空白文字と句読点を考慮する）
-        const normalize = (text) => text.trim().toLowerCase().replace(/\s+/g, ' ').replace(/[.,!?:;—–"”'()]/g, '');
-        
-        if (normalize(userSentence) === normalize(correctSentence)) {
-            showMessage("正解です！よくできました！", 'secondary');
-        } else {
-            // 不正解の場合は、正しい英文を確認するように促す
-            showMessage("残念！不正解です。正しい英文を確認しましょう。", 'danger');
-        }
-        
-        // 正解・不正解にかかわらず、学習のため正しい英文と和訳を表示し、並べ替えUIを非表示にする
-        
-        // 1. 正しい英文を表示
-        englishTextEl.textContent = correctSentence;
-        englishTextEl.classList.remove('italic', 'text-gray-400');
-        
-        // 2. 並べ替えUIを非表示 (回答に使ったエリアを消す)
-        scrambleUiEl.classList.add('hidden');
-        
-        // 3. 和訳を表示
-        translationCardEl.classList.remove('hidden');
-    }
-
-
     /**
      * メッセージボックスを表示し、3秒後に非表示にする
-     * @param {string} text - 表示するメッセージ
-     * @param {string} type - 'secondary', 'danger', 'primary', 'gray' など
      */
     function showMessage(text, type) {
-        // ★変更点: 既存のタイマーがあればクリア
         if (messageTimeoutId) {
             clearTimeout(messageTimeoutId);
         }
@@ -901,16 +703,12 @@
         messageBoxEl.classList.add(bgColor, textColor);
         messageBoxEl.classList.remove('hidden');
         
-        // ★変更点: 3秒後に非表示にするタイマーを設定
+        // 3秒後に非表示にするタイマーを設定
         messageTimeoutId = setTimeout(hideMessage, 3000); 
     }
 
-    /**
-     * メッセージボックスを非表示にする
-     */
     function hideMessage() {
         messageBoxEl.classList.add('hidden');
-        // ★変更点: タイマーIDをリセット
         messageTimeoutId = null;
     }
 
