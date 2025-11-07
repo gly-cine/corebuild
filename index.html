@@ -22,21 +22,35 @@
             border-color: #4f46e5; /* primary-600 */
         }
 
-        /* 和訳カードの内容を垂直方向に中央揃えにするためのFlexbox設定 */
+        /* ① 修正: 和訳カードの内容を垂直方向に中央揃えにするためのFlexbox設定 */
+        #translation-card { 
+            display: flex;
+            flex-direction: column; 
+            padding: 12px 16px; /* p-4からp-3へ調整 */
+        }
         #translation-card .flex-content-center { 
             display: flex;
             align-items: center; /* 垂直方向の中央揃え */
             justify-content: center; /* 水平方向の中央揃え */
             flex-grow: 1; 
         }
+        #translation-card .translation-label {
+            /* ラベル自体をコンテンツと切り離して上部に配置する */
+            align-self: flex-start;
+            margin-bottom: 4px; /* ラベルと内容の間に少しスペース */
+        }
+        #translation-card #japanese-text {
+            /* テキストが中央に位置するように確保 */
+            min-height: 1.5rem; /* 1行分の最低高さを保証 */
+        }
 
         /* 文法問題モードの回答後のレイアウト調整 */
         .grammar-layout-answered {
             display: flex;
             flex-direction: column;
-            gap: 16px; /* p-4相当 */
-            overflow-y: auto; /* 回答後の内容が多い場合にスクロールできるようにする */
-            height: 100%; /* 親要素の高さに合わせる */
+            gap: 12px; /* gapを少し削減 (space-y-4/16px から 12px へ) */
+            overflow-y: auto; 
+            height: 100%; 
         }
 
     </style>
@@ -90,9 +104,7 @@
             </div>
         </header>
 
-        <main id="main-content" class="flex-grow p-6 flex flex-col space-y-4 overflow-y-auto">
-
-            <div id="selection-screen" class="p-12 flex flex-col items-center justify-center h-full text-center">
+        <main id="main-content" class="flex-grow p-6 flex flex-col space-y-3 overflow-y-auto"> <div id="selection-screen" class="p-12 flex flex-col items-center justify-center h-full text-center">
                 <h2 id="selection-title" class="text-3xl font-extrabold text-gray-800 mb-8">学習コンテンツを選択してください</h2>
                 
                 <div id="main-category-buttons" class="space-y-6 w-full max-w-md">
@@ -102,11 +114,7 @@
                     </div>
             </div>
             
-            <div id="learning-screen" class="hidden flex-grow flex flex-col space-y-4">
-                
-                <div class="text-center text-sm text-gray-500 mb-4 flex justify-between items-center">
-                    
-                    <span id="progress-indicator" class="px-2 py-1 rounded-md text-gray-600 font-semibold"></span>
+            <div id="learning-screen" class="hidden flex-grow flex flex-col space-y-3"> <div class="text-center text-sm text-gray-500 mb-2 flex justify-between items-center"> <span id="progress-indicator" class="px-2 py-1 rounded-md text-gray-600 font-semibold"></span>
 
                     <div class="flex items-center space-x-2">
                         <label for="scene-filter" class="text-sm font-medium text-gray-600">使用場面:</label>
@@ -121,15 +129,13 @@
                 </div>
     
                 
-                <div id="grammar-question-ui" class="hidden flex-col space-y-4 pt-4 flex-grow">
-
-                    <div id="grammar-sentence-card" class="bg-indigo-50 p-6 rounded-xl shadow-inner min-h-[80px] flex items-center justify-center transition-all duration-300">
+                <div id="grammar-question-ui" class="hidden flex-col space-y-3 pt-2 flex-grow"> <div id="grammar-sentence-card" class="bg-indigo-50 p-6 rounded-xl shadow-inner min-h-[80px] flex items-center justify-center transition-all duration-300">
                         <p id="grammar-target-sentence" class="text-xl md:text-2xl font-bold text-gray-800 text-center select-none">
                             </p>
                     </div>
                     
-                    <div id="translation-card" class="bg-white p-4 border border-gray-200 rounded-xl shadow min-h-[60px] transition-all duration-300 hidden flex flex-col">
-                        <p class="text-sm font-semibold text-gray-600 mb-1">和訳</p>
+                    <div id="translation-card" class="bg-white border border-gray-200 rounded-xl shadow min-h-[60px] transition-all duration-300 hidden">
+                        <p class="translation-label text-sm font-semibold text-gray-600">和訳</p>
                         <div id="translation-content" class="flex-content-center">
                             <p id="japanese-text" class="text-lg text-gray-700 text-center w-full">
                                 -
@@ -137,21 +143,16 @@
                         </div>
                     </div>
 
-                    <p id="grammar-question-text" class="text-xl font-bold text-gray-800 text-center px-4 pt-4"></p>
+                    <p id="grammar-question-text" class="text-xl font-bold text-gray-800 text-center px-4"></p>
 
 
-                    <div id="grammar-choices" class="flex flex-wrap justify-center gap-3 pt-4 mx-auto w-full">
-                        <button id="choice-A" onclick="checkGrammarAnswer('A')" class="choice-button flex-grow md:flex-grow-0 py-3 px-4 rounded-lg text-lg text-left bg-gray-100 border border-gray-300 transition duration-150 min-w-[45%]"></button>
-                        <button id="choice-B" onclick="checkGrammarAnswer('B')" class="choice-button flex-grow md:flex-grow-0 py-3 px-4 rounded-lg text-lg text-left bg-gray-100 border border-gray-300 transition duration-150 min-w-[45%]"></button>
-                        <button id="choice-C" onclick="checkGrammarAnswer('C')" class="choice-button flex-grow md:flex-grow-0 py-3 px-4 rounded-lg text-lg text-left bg-gray-100 border border-gray-300 transition duration-150 min-w-[45%]"></button>
-                        <button id="choice-D" onclick="checkGrammarAnswer('D')" class="choice-button flex-grow md:flex-grow-0 py-3 px-4 rounded-lg text-lg text-left bg-gray-100 border border-gray-300 transition duration-150 min-w-[45%]"></button>
+                    <div id="grammar-choices" class="flex flex-wrap justify-center gap-2 pt-2 mx-auto w-full"> <button id="choice-A" onclick="checkGrammarAnswer('A')" class="choice-button flex-grow md:flex-grow-0 py-2 px-3 rounded-lg text-base text-left bg-gray-100 border border-gray-300 transition duration-150 min-w-[45%]"></button> <button id="choice-B" onclick="checkGrammarAnswer('B')" class="choice-button flex-grow md:flex-grow-0 py-2 px-3 rounded-lg text-base text-left bg-gray-100 border border-gray-300 transition duration-150 min-w-[45%]"></button>
+                        <button id="choice-C" onclick="checkGrammarAnswer('C')" class="choice-button flex-grow md:flex-grow-0 py-2 px-3 rounded-lg text-base text-left bg-gray-100 border border-gray-300 transition duration-150 min-w-[45%]"></button>
+                        <button id="choice-D" onclick="checkGrammarAnswer('D')" class="choice-button flex-grow md:flex-grow-0 py-2 px-3 rounded-lg text-base text-left bg-gray-100 border border-gray-300 transition duration-150 min-w-[45%]"></button>
                     </div>
 
-                    <div id="grammar-answer-explanation" class="hidden mt-6 p-4 rounded-xl shadow-xl bg-white border-2 border-green-500 max-w-xl mx-auto w-full flex-shrink-0">
-                        <p class="font-bold text-green-700 mb-2 border-b border-green-200 pb-1">【正解】<span id="grammar-correct-answer" class="font-extrabold"></span></p>
-                        <p class="font-bold text-gray-700 mt-3 mb-1">【解説】</p>
-                        <p id="grammar-explanation-text" class="text-gray-600 text-base"></p>
-                    </div>
+                    <div id="grammar-answer-explanation" class="hidden mt-4 p-3 rounded-xl shadow-xl bg-white border-2 border-green-500 max-w-xl mx-auto w-full flex-shrink-0"> <p class="font-bold text-green-700 mb-1 border-b border-green-200 pb-1">【正解】<span id="grammar-correct-answer" class="font-extrabold"></span></p>
+                        <p class="font-bold text-gray-700 mt-2 mb-1">【解説】</p> <p id="grammar-explanation-text" class="text-gray-600 text-sm"></p> </div>
                 </div>
 
                 <div id="message-box" class="text-center py-2 text-lg font-semibold hidden rounded-lg"></div>
@@ -222,7 +223,7 @@
     const modeSelectorEl = document.getElementById('mode-selector'); 
     const englishTextEl = document.getElementById('english-text');
     const japaneseTextEl = document.getElementById('japanese-text');
-    const translationCardEl = document.getElementById('translation-card'); // ★ grammar-question-ui内に移動済み
+    const translationCardEl = document.getElementById('translation-card'); 
     const toggleTranslationBtn = document.getElementById('toggle-translation-btn');
     const messageBoxEl = document.getElementById('message-box');
     const selectionScreenEl = document.getElementById('selection-screen'); 
@@ -510,7 +511,7 @@
             toggleTranslationBtn.textContent = '英文・和訳を表示';
         } 
         
-        // ④ 修正: モード切り替え時にレイアウトをリセット
+        // ⑤ 修正: モード切り替え時にレイアウトをリセット
         mainContentEl.classList.remove('grammar-layout-answered');
         mainContentEl.classList.add('overflow-y-auto');
 
@@ -537,7 +538,7 @@
         translationCardEl.classList.add('hidden');
         isTranslationVisible = false;
         
-        // ④ 修正: 回答エリアを隠し、スクロールを許可する
+        // ⑤ 修正: 回答エリアを隠し、スクロールを許可する
         grammarAnswerExplanationEl.classList.add('hidden');
         mainContentEl.classList.remove('grammar-layout-answered');
         mainContentEl.classList.add('overflow-y-auto');
@@ -585,12 +586,14 @@
             return;
         }
 
-        // 指示文と問題文の位置
-        grammarQuestionTextEl.textContent = '正しい選択肢を選んでください。';
+        // ② 修正: 指示文を削除
+        grammarQuestionTextEl.textContent = ''; 
+        
         grammarTargetSentenceEl.textContent = data.grammar_question; // 問題となる英文 (空欄あり)
         grammarTargetSentenceEl.classList.remove('italic', 'text-gray-400');
         grammarChoicesEl.classList.remove('hidden');
         
+        // 選択肢テキストの調整 (A. B. などを付与)
         document.getElementById('choice-A').textContent = `A. ${data.grammar_choice_a.substring(3).trim()}`;
         document.getElementById('choice-B').textContent = `B. ${data.grammar_choice_b.substring(3).trim()}`;
         document.getElementById('choice-C').textContent = `C. ${data.grammar_choice_c.substring(3).trim()}`;
@@ -631,7 +634,7 @@
         grammarTargetSentenceEl.textContent = currentQuestion.en; // 問題英文カードに正解の英文を表示
         grammarTargetSentenceEl.classList.remove('italic', 'text-gray-400');
         
-        // 和訳カードを正しく表示する (★ HTML構造の変更により、問題英文カードのすぐ下に表示されるようになった)
+        // 和訳カードを正しく表示する 
         japaneseTextEl.textContent = currentQuestion.ja;
         translationCardEl.classList.remove('hidden'); 
 
