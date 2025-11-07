@@ -154,6 +154,14 @@
                             </p>
                     </div>
                     
+                    <div id="grammar-translation-card" class="bg-white border border-gray-200 rounded-xl shadow min-h-[60px] transition-all duration-300 hidden">
+                        <p class="translation-label text-sm font-semibold text-gray-600">和訳</p>
+                        <div id="grammar-translation-content" class="flex-content-center">
+                            <p id="grammar-japanese-text" class="text-lg text-gray-700 text-center w-full">
+                                </p>
+                        </div>
+                    </div>
+
                     <p id="grammar-question-text" class="text-xl font-bold text-gray-800 text-center px-4"></p>
 
 
@@ -222,6 +230,7 @@
     const LEARNED_STATUS_KEY = 'learning_app_learned_status';
     let messageTimeoutId = null;
     let currentGrammarType = 'ALL';
+    let currentSceneFilter = 'ALL'; // ④ 追加: 現在の場面フィルターの値
 
     // JSONパスと対応する音声フォルダを定義
     const CATEGORY_MAP = {
@@ -258,11 +267,17 @@
     const grammarExplanationTextEl = document.getElementById('grammar-explanation-text');
     const messageBoxEl = document.getElementById('message-box');
     const grammarTypeSelectorEl = document.getElementById('grammar-type-selector');
+    // ② 追加: 文法問題モード用の和訳カードのDOM参照
+    const grammarTranslationCardEl = document.getElementById('grammar-translation-card');
+    const grammarJapaneseTextEl = document.getElementById('grammar-japanese-text');
 
 
     // --- 初期化処理 ---
 
     document.addEventListener('DOMContentLoaded', () => {
+        // ① 修正点: ページの読み込み完了時にshowMessageを一度クリアすることで、不必要なメッセージ表示を防ぐ
+        clearMessage(); 
+
         const lastCategory = localStorage.getItem('lastLearningCategory');
         const lastMode = localStorage.getItem('lastLearningMode');
 
@@ -286,6 +301,8 @@
         mainContentEl.classList.add('overflow-y-auto'); // TOP画面はスクロール可能に
         document.getElementById('selection-title').textContent = '学習コンテンツを選択してください';
         currentCategoryKey = '';
+        currentSceneFilter = 'ALL'; // フィルターリセット
+        currentGrammarType = 'ALL'; // フィルターリセット
     }
 
     /**
@@ -331,7 +348,6 @@
 
             // フィルターを初期化
             setupSceneFilter(ALL_DB);
-            // 文法類型フィルターを初期化
             setupGrammarTypeFilter(ALL_DB);
             
             // モードを適用
@@ -376,6 +392,7 @@
             option.textContent = `${scene} (${categoryCounts[scene] || 0}件)`;
             sceneFilterEl.appendChild(option);
         });
+        sceneFilterEl.value = currentSceneFilter; // 現在の選択を維持
     }
 
     /**
@@ -404,16 +421,16 @@
             option.textContent = `${type} (${grammarTypeCounts[type] || 0}件)`;
             grammarTypeSelectorEl.appendChild(option);
         });
+        grammarTypeSelectorEl.value = currentGrammarType; // 現在の選択を維持
     }
 
 
     /**
      * 現在のフィルター設定に基づきデータを絞り込む
+     * ③・④ 修正点: ここで現在のcurrentGrammarTypeとcurrentSceneFilterを使ってフィルターを適用
      */
     function applyAllFilters() {
         const filterMode = filterModeSelectorEl.value;
-        const selectedScene = sceneFilterEl.value;
-        const selectedGrammarType = grammarTypeSelectorEl.value;
         const isGrammarMode = currentMode === 4;
 
         DB = ALL_DB.filter(item => {
@@ -421,15 +438,15 @@
             if (filterMode === 'UNLEARNED' && item.isLearned) return false;
             if (filterMode === 'LEARNED' && !item.isLearned) return false;
 
-            // 使用場面フィルター
-            if (selectedScene !== 'ALL' && item.category_main !== selectedScene) return false;
-            
+            // ④ 修正点: 使用場面フィルターを適用
+            if (currentSceneFilter !== 'ALL' && item.category_main !== currentSceneFilter) return false;
+
             // 文法モード固有のフィルター
             if (isGrammarMode) {
                 // 文法問題データがないものは除外
                 if (!item.grammar_question || item.grammar_question.trim() === '') return false;
-                // 文法類型フィルター
-                if (selectedGrammarType !== 'ALL' && item.grammar_type !== selectedGrammarType) return false;
+                // ③ 修正点: 文法類型フィルターを適用
+                if (currentGrammarType !== 'ALL' && item.grammar_type !== currentGrammarType) return false;
             } else {
                 // 文法モード以外では、文法問題データはあってもなくても含める
                 // 文法類型フィルターは無視される
@@ -443,9 +460,12 @@
 
         // UIの表示/非表示を切り替え
         englishDisplayCard.classList.toggle('hidden', isGrammarMode);
+        translationCardEl.classList.toggle('hidden', isGrammarMode); // 通常モードの和訳カードも非表示
         grammarQuestionUiEl.classList.toggle('hidden', !isGrammarMode);
         toggleLearnedBtn.classList.toggle('hidden', isGrammarMode);
-        // toggleTranslationBtn.classList.toggle('hidden', isGrammarMode); // 文法問題モードではボタンを非表示に
+        
+        // 文法モードの場合、和訳ボタンを隠す
+        toggleTranslationBtn.classList.toggle('hidden', isGrammarMode);
 
         if (DB.length === 0) {
             englishTextEl.textContent = '選択された条件に該当するデータがありません。';
@@ -468,22 +488,20 @@
         currentMode = parseInt(mode, 10);
         localStorage.setItem('lastLearningMode', currentMode);
         modeSelectorEl.value = currentMode;
-        isTranslationVisible = false; // モード変更時は和訳カードを必ず非表示にリセット
+        isTranslationVisible = false; 
         translationCardEl.classList.add('hidden');
-        japaneseTextEl.textContent = ''; // 和訳内容もクリア
+        grammarTranslationCardEl.classList.add('hidden');
+        japaneseTextEl.textContent = ''; 
+        grammarJapaneseTextEl.textContent = ''; 
         englishTextEl.classList.remove('blur-strong', 'italic', 'text-gray-400');
         
-        const isGrammarMode = currentMode === 4;
-
-        if (currentMode === 1) { // 英文先行
+        if (currentMode === 1) { 
             toggleTranslationBtn.textContent = '和訳を表示';
-        } else if (currentMode === 2) { // 音声先行
+        } else if (currentMode === 2) { 
             toggleTranslationBtn.textContent = '英文・和訳を表示';
         }
 
-        // モード切り替え時にレイアウトをリセット
         mainContentEl.classList.remove('grammar-layout-answered');
-
         applyAllFilters();
     }
 
@@ -511,8 +529,10 @@
             
             // 文法問題モードでは解答前に和訳カードを常に非表示にし、フラグもリセット
             translationCardEl.classList.add('hidden');
+            grammarTranslationCardEl.classList.add('hidden'); // ② 修正点: 文法問題用の和訳カードを非表示に
             isTranslationVisible = false;
-            japaneseTextEl.textContent = ''; // 和訳内容もクリア
+            japaneseTextEl.textContent = ''; 
+            grammarJapaneseTextEl.textContent = ''; // ② 修正点: 文法問題用の和訳テキストもクリア
             
             // 文法UIを表示し、通常英文UIを非表示
             englishDisplayCard.classList.add('hidden');
@@ -534,6 +554,7 @@
 
             // 非文法モードでは和訳カードを初期状態で非表示に
             translationCardEl.classList.add('hidden');
+            grammarTranslationCardEl.classList.add('hidden'); // 文法問題用の和訳カードも非表示
             isTranslationVisible = false;
             japaneseTextEl.textContent = '';
             
@@ -554,13 +575,15 @@
         // 移動時は和訳を非表示にリセット
         isTranslationVisible = false;
         translationCardEl.classList.add('hidden');
-        japaneseTextEl.textContent = ''; // 内容もクリア
+        grammarTranslationCardEl.classList.add('hidden'); // 文法問題用の和訳カードも非表示
+        japaneseTextEl.textContent = ''; 
+        grammarJapaneseTextEl.textContent = ''; // 文法問題用の和訳テキストもクリア
 
         // モードに応じた英文表示の調整 (再度のマスキング)
-        if (currentMode === 1) { // 英文先行
+        if (currentMode === 1) { 
             englishTextEl.classList.remove('blur-strong', 'italic', 'text-gray-400');
-        } else if (currentMode === 2) { // 音声先行
-            englishTextEl.classList.add('blur-strong'); // 英文をぼかす
+        } else if (currentMode === 2) { 
+            englishTextEl.classList.add('blur-strong'); 
             englishTextEl.classList.remove('italic', 'text-gray-400');
         }
 
@@ -657,10 +680,8 @@
             // 音声先行モード(2)の場合、英文のぼかしを解除
             if (currentMode === 2) {
                 englishTextEl.classList.remove('blur-strong');
-                englishTextEl.classList.remove('italic', 'text-gray-400'); // ぼかし解除時にこのスタイルも解除
+                englishTextEl.classList.remove('italic', 'text-gray-400');
             }
-            // ① 修正点: 和訳表示メッセージの削除
-            // showMessage('和訳を表示しました。', 'gray'); 
 
         } else {
             // 和訳が非表示になる場合
@@ -671,8 +692,6 @@
             if (currentMode === 2) {
                 englishTextEl.classList.add('blur-strong');
             }
-            // ① 修正点: 和訳非表示メッセージの削除
-            // showMessage('和訳を非表示にしました。', 'gray');
         }
     }
 
@@ -716,25 +735,21 @@
         
         // 文法問題モードで「前の文」に戻ったときなど、和訳カードを非表示にする
         translationCardEl.classList.add('hidden');
+        grammarTranslationCardEl.classList.add('hidden'); // ② 修正点: 文法問題用の和訳カードも非表示に
         japaneseTextEl.textContent = '';
+        grammarJapaneseTextEl.textContent = ''; // ② 修正点: 文法問題用の和訳テキストもクリア
         isTranslationVisible = false;
 
         const allLetters = ['A', 'B', 'C', 'D'];
-        const choices = allLetters
-            .map(letter => ({
-                letter: letter,
-                text: data['grammar_choice_' + letter.toLowerCase()] // 小文字キーでデータ取得
-            }))
-            .filter(choice => choice.text !== undefined);
-
-
-        // ② 修正点: 選択肢のテキスト設定とUIリセット
+        
+        // 選択肢のテキスト設定とUIリセット
         allLetters.forEach(letter => {
             const buttonEl = document.getElementById(`choice-${letter}`);
-            const choiceData = choices.find(c => c.letter === letter);
+            const choiceKey = 'grammar_choice_' + letter.toLowerCase();
+            const choiceTextWithLetter = data[choiceKey];
 
-            if (choiceData && choiceData.text) {
-                const choiceText = choiceData.text.substring(3).trim(); // 例: "A. check"から"check"
+            if (choiceTextWithLetter) {
+                const choiceText = choiceTextWithLetter.substring(3).trim(); 
                 buttonEl.textContent = choiceText;
                 buttonEl.setAttribute('onclick', `checkGrammarAnswer('${letter}')`);
                 buttonEl.disabled = false;
@@ -753,8 +768,8 @@
      */
     function checkGrammarAnswer(selectedLetter) {
         const data = DB[currentSentenceIndex];
-        const correctChoiceWithLetter = data.grammar_answer; // 例: "A. check"
-        const correctLetter = correctChoiceWithLetter.substring(0, 1); // 例: "A"
+        const correctChoiceWithLetter = data.grammar_answer; 
+        const correctLetter = correctChoiceWithLetter.substring(0, 1); 
         
         const isCorrect = selectedLetter === correctLetter;
 
@@ -783,7 +798,7 @@
             if (correctButton) {
                 correctButton.classList.remove('bg-gray-100', 'border-gray-300', 'opacity-50');
                 correctButton.classList.add('bg-green-100', 'border-green-500');
-                correctButton.disabled = true; // 正解ボタンも無効化
+                correctButton.disabled = true; 
             }
         }
 
@@ -793,9 +808,9 @@
         grammarAnswerExplanationEl.classList.remove('hidden');
 
         // 和訳カードの表示（解答後）
-        japaneseTextEl.textContent = data.ja;
-        translationCardEl.classList.remove('hidden');
-        isTranslationVisible = true; // 解答後は表示状態とする
+        grammarJapaneseTextEl.textContent = data.ja; // ② 修正点: 文法問題用の和訳テキストに設定
+        grammarTranslationCardEl.classList.remove('hidden'); // ② 修正点: 文法問題用の和訳カードを表示
+        isTranslationVisible = true; 
 
         // レイアウトを回答後スタイルに切り替え
         mainContentEl.classList.remove('overflow-y-auto');
@@ -804,30 +819,50 @@
 
     /**
      * 文法類型でフィルタリングする
+     * ③ 修正点: currentGrammarTypeを更新してからフィルター適用
      */
     function filterByType(type) {
         currentGrammarType = type;
         applyAllFilters();
     }
+    
+    /**
+     * 使用場面でフィルタリングする
+     * ④ 追加: currentSceneFilterを更新してからフィルター適用
+     */
+    function filterScenes(scene) {
+        currentSceneFilter = scene;
+        applyAllFilters();
+    }
+
 
     // --- メッセージ表示 ---
+
+    /**
+     * メッセージボックスをクリアする
+     */
+    function clearMessage() {
+        if (messageTimeoutId) {
+            clearTimeout(messageTimeoutId);
+        }
+        messageBoxEl.classList.add('hidden');
+        messageBoxEl.textContent = '';
+    }
 
     /**
      * メッセージボックスを表示し、3秒後に非表示にする
      */
     function showMessage(text, type) {
-        if (messageTimeoutId) {
-            clearTimeout(messageTimeoutId);
-        }
+        clearMessage();
         
         messageBoxEl.textContent = text;
         messageBoxEl.className = `text-center py-2 px-4 text-lg font-semibold rounded-lg shadow-sm mt-4`;
         
         let bgColor, textColor;
         switch (type) {
-            case 'secondary': bgColor = 'bg-emerald-200'; textColor = 'text-emerald-800'; break; // Secondaryカラー (Emerald)
+            case 'secondary': bgColor = 'bg-emerald-200'; textColor = 'text-emerald-800'; break; 
             case 'danger': bgColor = 'bg-red-200'; textColor = 'text-red-800'; break;
-            case 'primary': bgColor = 'bg-indigo-200'; textColor = 'text-indigo-800'; break; // Primaryカラー (Indigo)
+            case 'primary': bgColor = 'bg-indigo-200'; textColor = 'text-indigo-800'; break; 
             case 'gray': bgColor = 'bg-gray-200'; textColor = 'text-gray-800'; break;
             default: bgColor = 'bg-gray-200'; textColor = 'text-gray-800'; break;
         }
