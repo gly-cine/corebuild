@@ -562,12 +562,17 @@
 
         // モードによる表示の分岐
         if (currentMode === 4) {
+            
+            // ★ 修正 ①: 文法問題モードでは、前回の和訳と解答結果を完全にクリアする
+            japaneseTextEl.textContent = ' '; 
+            grammarAnswerExplanationEl.classList.add('hidden');
+            
             setupGrammarMode(data);
         } else {
             // 通常モードの処理
             
             englishTextEl.textContent = data.en.replace(/\n/g, '<br>');
-            // ★ 修正: 和訳テキストを現在のデータに合わせる (通常モード)
+            // ★ 修正 ①: 和訳テキストを現在のデータに合わせる (通常モード)
             japaneseTextEl.textContent = data.ja.replace(/\n/g, '<br>'); 
 
             if (currentMode === 2) {
@@ -586,15 +591,16 @@
     function setupGrammarMode(data) {
         // 共通要素の非表示/表示
         englishDisplayCard.classList.add('hidden');
-        // ★ 修正: 解答前は和訳カードを完全に非表示にする
+        // ★ 修正 ②: 解答前は和訳カードを確実に非表示にする
         translationCardEl.classList.add('hidden'); 
         grammarQuestionUiEl.classList.remove('hidden');
 
         grammarAnswerExplanationEl.classList.add('hidden');
         
+        // ★ 修正 ①: 選択肢の色をリセットする
         document.querySelectorAll('.choice-button').forEach(button => {
             button.disabled = false;
-            button.classList.remove('bg-red-400', 'text-white', 'bg-green-400', 'bg-green-200', 'text-green-800', 'bg-secondary', 'opacity-50', 'pointer-events-none');
+            button.classList.remove('bg-red-400', 'text-white', 'bg-green-400', 'bg-green-200', 'text-green-800', 'bg-secondary', 'opacity-50', 'pointer-events-none', 'bg-danger');
             button.classList.add('bg-gray-100', 'border-gray-300');
         });
         
@@ -615,20 +621,20 @@
         grammarChoicesEl.classList.remove('hidden');
         
         // 選択肢テキストの調整 (A. B. などを付与)
-        document.getElementById('choice-A').textContent = `A. ${data.grammar_choice_a.substring(3).trim()}`;
-        document.getElementById('choice-B').textContent = `B. ${data.grammar_choice_b.substring(3).trim()}`;
-        document.getElementById('choice-C').textContent = `C. ${data.grammar_choice_c.substring(3).trim()}`;
-        document.getElementById('choice-D').textContent = `D. ${data.grammar_choice_d.substring(3).trim()}`;
+        document.getElementById('choice-A').textContent = `${data.grammar_choice_a}`;
+        document.getElementById('choice-B').textContent = `${data.grammar_choice_b}`;
+        document.getElementById('choice-C').textContent = `${data.grammar_choice_c}`;
+        document.getElementById('choice-D').textContent = `${data.grammar_choice_d}`;
 
     }
 
     function checkGrammarAnswer(choiceLetter) {
         const currentQuestion = DB[currentSentenceIndex];
-        const userAnswerText = currentQuestion['grammar_choice_' + choiceLetter.toLowerCase()].substring(3).trim();
-        const userAnswer = `${choiceLetter}. ${userAnswerText}`;
-        const correctAnswer = currentQuestion.grammar_answer;
+        const userAnswer = currentQuestion['grammar_choice_' + choiceLetter.toLowerCase()];
+        const correctAnswerText = currentQuestion.grammar_answer;
         
-        const isCorrect = userAnswer === correctAnswer;
+        // grammar_answerは "D. check in" の形式を期待
+        const isCorrect = userAnswer === correctAnswerText;
 
         document.querySelectorAll('.choice-button').forEach(button => {
             button.disabled = true;
@@ -645,7 +651,7 @@
             showMessage('残念！不正解です。', 'danger');
             selectedButton.classList.add('bg-danger', 'text-white');
             
-            const correctChoiceLetter = correctAnswer.substring(0, 1);
+            const correctChoiceLetter = correctAnswerText.substring(0, 1);
             const correctButton = document.getElementById(`choice-${correctChoiceLetter}`);
             correctButton.classList.remove('bg-gray-100', 'border-gray-300', 'opacity-50', 'pointer-events-none');
             correctButton.classList.add('bg-green-200', 'text-green-800'); 
@@ -658,7 +664,7 @@
         grammarTargetSentenceEl.textContent = currentQuestion.en; // 問題英文カードに正解の英文を表示
         grammarTargetSentenceEl.classList.remove('italic', 'text-gray-400');
         
-        // ★ 修正: 和訳カードを正しく表示する (内容を現在のデータに合わせる)
+        // 和訳カードを正しく表示する (内容を現在のデータに合わせる)
         japaneseTextEl.textContent = currentQuestion.ja.replace(/\n/g, '<br>');
         translationCardEl.classList.remove('hidden'); 
 
@@ -666,7 +672,7 @@
         mainContentEl.classList.add('grammar-layout-answered');
         mainContentEl.classList.remove('overflow-y-auto');
         
-        grammarCorrectAnswerEl.textContent = correctAnswer;
+        grammarCorrectAnswerEl.textContent = correctAnswerText;
         grammarExplanationTextEl.textContent = currentQuestion.grammar_explanation;
         grammarAnswerExplanationEl.classList.remove('hidden');
     }
