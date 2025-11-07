@@ -474,7 +474,7 @@
         // UIの表示/非表示を切り替え
         englishDisplayCard.classList.toggle('hidden', isGrammarMode);
         
-        // 通常の和訳カードも文法モードでは非表示にする
+        // 通常の和訳カードも文法モードでは非表示にする (再確認)
         translationCardEl.classList.add('hidden'); 
         
         grammarQuestionUiEl.classList.toggle('hidden', !isGrammarMode);
@@ -504,7 +504,7 @@
         modeSelectorEl.value = currentMode;
         isTranslationVisible = false; 
         
-        // どちらの和訳カードも非表示にリセット
+        // 【再修正ポイント】モード切り替え時、通常モードの和訳カードを**強制的に**非表示にする
         translationCardEl.classList.add('hidden');
         grammarTranslationCardEl.classList.add('hidden'); 
         
@@ -544,7 +544,7 @@
             // 文法問題のUIリセット
             resetGrammarUI(data);
             
-            // 修正点: 通常の和訳カードは常に非表示
+            // 通常の和訳カードは常に非表示
             translationCardEl.classList.add('hidden');
             grammarTranslationCardEl.classList.add('hidden'); 
             isTranslationVisible = false;
