@@ -461,7 +461,7 @@
                 // 文法問題データがないものは除外
                 if (!item.grammar_question || item.grammar_question.trim() === '') return false;
                 
-                // ② 修正点: 文法類型フィルターを適用
+                // 文法類型フィルターを適用
                 if (currentGrammarType !== 'ALL' && item.grammar_type !== currentGrammarType) return false;
             } 
             
@@ -474,7 +474,7 @@
         // UIの表示/非表示を切り替え
         englishDisplayCard.classList.toggle('hidden', isGrammarMode);
         
-        // ① 修正点: 通常の和訳カードも文法モードでは非表示にする
+        // 通常の和訳カードも文法モードでは非表示にする
         translationCardEl.classList.add('hidden'); 
         
         grammarQuestionUiEl.classList.toggle('hidden', !isGrammarMode);
@@ -504,7 +504,7 @@
         modeSelectorEl.value = currentMode;
         isTranslationVisible = false; 
         
-        // ① 修正点: どちらの和訳カードも非表示にリセット
+        // どちらの和訳カードも非表示にリセット
         translationCardEl.classList.add('hidden');
         grammarTranslationCardEl.classList.add('hidden'); 
         
@@ -544,7 +544,7 @@
             // 文法問題のUIリセット
             resetGrammarUI(data);
             
-            // ① 修正点: 通常の和訳カードは常に非表示
+            // 修正点: 通常の和訳カードは常に非表示
             translationCardEl.classList.add('hidden');
             grammarTranslationCardEl.classList.add('hidden'); 
             isTranslationVisible = false;
@@ -591,7 +591,7 @@
         loadSentence(currentSentenceIndex + direction);
         // 移動時は和訳を非表示にリセット
         isTranslationVisible = false;
-        translationCardEl.classList.add('hidden'); // ① 修正点: 通常の和訳カードも非表示
+        translationCardEl.classList.add('hidden'); // 通常の和訳カードも非表示
         grammarTranslationCardEl.classList.add('hidden'); 
         japaneseTextEl.textContent = ''; 
         grammarJapaneseTextEl.textContent = ''; 
@@ -722,7 +722,7 @@
         mainContentEl.classList.remove('grammar-layout-answered');
         mainContentEl.classList.add('overflow-y-auto');
         
-        // ① 修正点: 通常の和訳カードは非表示
+        // 通常の和訳カードは非表示
         translationCardEl.classList.add('hidden');
         grammarTranslationCardEl.classList.add('hidden'); 
         japaneseTextEl.textContent = '';
