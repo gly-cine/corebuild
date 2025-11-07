@@ -22,7 +22,7 @@
             border-color: #4f46e5; /* primary-600 */
         }
 
-        /* ①③ 和訳カードの内容を垂直方向に中央揃えにするためのFlexbox設定 */
+        /* 和訳カードの内容を垂直方向に中央揃えにするためのFlexbox設定 */
         #translation-card .flex-content-center { 
             display: flex;
             align-items: center; /* 垂直方向の中央揃え */
@@ -30,7 +30,7 @@
             flex-grow: 1; 
         }
 
-        /* ④ 文法問題モードの回答後のレイアウト調整 */
+        /* 文法問題モードの回答後のレイアウト調整 */
         .grammar-layout-answered {
             display: flex;
             flex-direction: column;
@@ -120,14 +120,6 @@
                         </p>
                 </div>
     
-                <div id="translation-card" class="bg-white p-4 border border-gray-200 rounded-xl shadow min-h-[60px] transition-all duration-300 hidden flex flex-col">
-                    <p class="text-sm font-semibold text-gray-600 mb-1">和訳</p>
-                    <div id="translation-content" class="flex-content-center">
-                        <p id="japanese-text" class="text-lg text-gray-700 text-center w-full">
-                            -
-                        </p>
-                    </div>
-                </div>
                 
                 <div id="grammar-question-ui" class="hidden flex-col space-y-4 pt-4 flex-grow">
 
@@ -136,6 +128,15 @@
                             </p>
                     </div>
                     
+                    <div id="translation-card" class="bg-white p-4 border border-gray-200 rounded-xl shadow min-h-[60px] transition-all duration-300 hidden flex flex-col">
+                        <p class="text-sm font-semibold text-gray-600 mb-1">和訳</p>
+                        <div id="translation-content" class="flex-content-center">
+                            <p id="japanese-text" class="text-lg text-gray-700 text-center w-full">
+                                -
+                            </p>
+                        </div>
+                    </div>
+
                     <p id="grammar-question-text" class="text-xl font-bold text-gray-800 text-center px-4 pt-4"></p>
 
 
@@ -221,7 +222,7 @@
     const modeSelectorEl = document.getElementById('mode-selector'); 
     const englishTextEl = document.getElementById('english-text');
     const japaneseTextEl = document.getElementById('japanese-text');
-    const translationCardEl = document.getElementById('translation-card');
+    const translationCardEl = document.getElementById('translation-card'); // ★ grammar-question-ui内に移動済み
     const toggleTranslationBtn = document.getElementById('toggle-translation-btn');
     const messageBoxEl = document.getElementById('message-box');
     const selectionScreenEl = document.getElementById('selection-screen'); 
@@ -363,8 +364,6 @@
         }
     }
     
-    // 省略: setupSceneFilter, setupGrammarTypeFilter, filterByType, filterScenes は変更なし
-
     function setupSceneFilter(data) {
         // category_mainの件数をカウント
         const categoryCounts = {};
@@ -586,8 +585,7 @@
             return;
         }
 
-        // ③ 修正: 指示文と問題文の位置を入れ替える
-        // 指示文は選択肢の直前（HTML構造では問題文カードの下、選択肢のコンテナの直前）に表示されるようにした
+        // 指示文と問題文の位置
         grammarQuestionTextEl.textContent = '正しい選択肢を選んでください。';
         grammarTargetSentenceEl.textContent = data.grammar_question; // 問題となる英文 (空欄あり)
         grammarTargetSentenceEl.classList.remove('italic', 'text-gray-400');
@@ -629,13 +627,13 @@
             correctButton.classList.add('bg-green-200', 'text-green-800'); 
         }
         
-        // ② 修正: 正しい英文と和訳の表示
+        // 正しい英文と和訳の表示
         grammarTargetSentenceEl.textContent = currentQuestion.en; // 問題英文カードに正解の英文を表示
         grammarTargetSentenceEl.classList.remove('italic', 'text-gray-400');
         
-        // 和訳カードを正しく表示する
+        // 和訳カードを正しく表示する (★ HTML構造の変更により、問題英文カードのすぐ下に表示されるようになった)
         japaneseTextEl.textContent = currentQuestion.ja;
-        translationCardEl.classList.remove('hidden'); // ★ 問題英文の下、選択肢の上に表示される (HTML構造による)
+        translationCardEl.classList.remove('hidden'); 
 
         // 解答エリア表示のため、メインコンテンツのレイアウトを変更し、スクロールを制御
         mainContentEl.classList.add('grammar-layout-answered');
@@ -646,8 +644,7 @@
         grammarAnswerExplanationEl.classList.remove('hidden');
     }
     
-    // --- 共通ロジック ---
-
+    // --- 共通ロジック (変更なし) ---
     function toggleTranslation() {
         if (currentMode === 4) return;
         isTranslationVisible = !isTranslationVisible;
