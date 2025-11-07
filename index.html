@@ -51,7 +51,7 @@
             height: 100%; 
         }
 
-        /* ② 選択肢を横一列に強制的に並べるためのスタイル調整 */
+        /* 選択肢を横一列に強制的に並べるためのスタイル調整 */
         .choice-button {
             /* flex-1: 選択肢4つが均等幅になるようにする */
             flex: 1 1 0%; 
@@ -567,7 +567,8 @@
         } else {
             
             englishTextEl.textContent = data.en.replace(/\n/g, '<br>');
-            japaneseTextEl.textContent = data.ja.replace(/\n/g, '<br>');
+            // ★ 修正: 和訳テキストを現在のデータに合わせる
+            japaneseTextEl.textContent = data.ja.replace(/\n/g, '<br>'); 
 
             if (currentMode === 2) {
                 englishTextEl.classList.add('blur-strong');
@@ -585,7 +586,8 @@
     function setupGrammarMode(data) {
         // 共通要素の非表示/表示
         englishDisplayCard.classList.add('hidden');
-        translationCardEl.classList.add('hidden'); // 回答前は非表示
+        // ★ 修正: 解答前は和訳カードを完全に非表示にする
+        translationCardEl.classList.add('hidden'); 
         grammarQuestionUiEl.classList.remove('hidden');
 
         grammarAnswerExplanationEl.classList.add('hidden');
@@ -605,7 +607,7 @@
             return;
         }
 
-        // ① 修正: 解答前は指示文を表示
+        // 解答前は指示文を表示
         grammarQuestionTextEl.textContent = '正しい選択肢を選んでください。'; 
         
         grammarTargetSentenceEl.textContent = data.grammar_question; // 問題となる英文 (空欄あり)
@@ -649,15 +651,15 @@
             correctButton.classList.add('bg-green-200', 'text-green-800'); 
         }
         
-        // ① 修正: 解答後は指示文を非表示
+        // 解答後は指示文を非表示
         grammarQuestionTextEl.textContent = ''; 
 
         // 正しい英文と和訳の表示
         grammarTargetSentenceEl.textContent = currentQuestion.en; // 問題英文カードに正解の英文を表示
         grammarTargetSentenceEl.classList.remove('italic', 'text-gray-400');
         
-        // 和訳カードを正しく表示する 
-        japaneseTextEl.textContent = currentQuestion.ja;
+        // ★ 修正: 和訳カードを正しく表示する (内容を現在のデータに合わせる)
+        japaneseTextEl.textContent = currentQuestion.ja.replace(/\n/g, '<br>');
         translationCardEl.classList.remove('hidden'); 
 
         // 解答エリア表示のため、メインコンテンツのレイアウトを変更し、スクロールを制御
