@@ -563,7 +563,7 @@
         // モードによる表示の分岐
         if (currentMode === 4) {
             
-            // ★ 修正 ①: 文法問題モードでは、前回の和訳と解答結果を完全にクリアする
+            // 文法問題モードでは、前回の和訳と解答結果を完全にクリアする
             japaneseTextEl.textContent = ' '; 
             grammarAnswerExplanationEl.classList.add('hidden');
             
@@ -572,7 +572,6 @@
             // 通常モードの処理
             
             englishTextEl.textContent = data.en.replace(/\n/g, '<br>');
-            // ★ 修正 ①: 和訳テキストを現在のデータに合わせる (通常モード)
             japaneseTextEl.textContent = data.ja.replace(/\n/g, '<br>'); 
 
             if (currentMode === 2) {
@@ -591,15 +590,18 @@
     function setupGrammarMode(data) {
         // 共通要素の非表示/表示
         englishDisplayCard.classList.add('hidden');
-        // ★ 修正 ②: 解答前は和訳カードを確実に非表示にする
+        
+        // ★ 決定的な修正: setupGrammarModeの冒頭で和訳カードを確実に隠す
         translationCardEl.classList.add('hidden'); 
+        
         grammarQuestionUiEl.classList.remove('hidden');
 
         grammarAnswerExplanationEl.classList.add('hidden');
         
-        // ★ 修正 ①: 選択肢の色をリセットする
+        // 選択肢の色をリセットする
         document.querySelectorAll('.choice-button').forEach(button => {
             button.disabled = false;
+            // 不要な背景色/テキスト色/無効化クラスを全て削除し、初期状態に戻す
             button.classList.remove('bg-red-400', 'text-white', 'bg-green-400', 'bg-green-200', 'text-green-800', 'bg-secondary', 'opacity-50', 'pointer-events-none', 'bg-danger');
             button.classList.add('bg-gray-100', 'border-gray-300');
         });
@@ -693,7 +695,7 @@
             englishTextEl.classList.remove('blur-strong'); 
         } else {
             translationCardEl.classList.add('hidden');
-            toggleTranslationBtn.textContent = (currentMode === 2) ? '英文・和訳を表示' : '和訳を表示';
+            toggleTranslationBtn.textContent = (currentMode === 2) ? '英文・和訳を表示' : '和訳を非表示';
             if (currentMode === 2) {
                  englishTextEl.classList.add('blur-strong'); 
             } else {
