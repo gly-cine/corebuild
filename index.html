@@ -296,19 +296,28 @@
     // --- 初期化処理 ---
 
     document.addEventListener('DOMContentLoaded', () => {
+        // 【修正②】初期状態ではメッセージをクリア（表示しない）
         clearMessage(); 
 
+        // 【修正①】リロード時の挙動を制御
         const lastCategory = localStorage.getItem('lastLearningCategory');
         const lastMode = localStorage.getItem('lastLearningMode');
+        const isReload = sessionStorage.getItem('isReload');
 
-        if (lastCategory && CATEGORY_MAP[lastCategory]) {
+        // セッション内でのリロードの場合、前回の状態を復元
+        if (isReload === 'true' && lastCategory && CATEGORY_MAP[lastCategory]) {
             selectCategory(lastCategory, false);
             if (lastMode) {
                 changeMode(lastMode);
             }
+        } else {
+            // 初回アクセスの場合はTOP画面を表示
+            showSelectionScreen();
         }
-    });
 
+        // リロードフラグを設定（次回リロード時に状態復元できるように）
+        sessionStorage.setItem('isReload', 'true');
+    });
     /**
      * カテゴリ選択画面を表示する
      */
@@ -325,6 +334,12 @@
         currentGrammarType = 'ALL'; 
         // 通常モードの和訳カードを非表示に
         translationCardEl.classList.add('hidden'); 
+        
+        // 【修正①】TOP画面に戻った時はリロードフラグをクリア
+        sessionStorage.removeItem('isReload');
+        
+        // 【修正②】TOP画面ではメッセージをクリア
+        clearMessage();
     }
 
     /**
@@ -335,6 +350,9 @@
             showMessage('選択されたカテゴリが見つかりません。', 'danger');
             return;
         }
+
+        // 【修正②】カテゴリ選択時はメッセージをクリア
+        clearMessage();
 
         currentCategoryKey = key;
         const config = CATEGORY_MAP[key];
@@ -371,6 +389,9 @@
             // フィルターを初期化
             setupSceneFilter(ALL_DB);
             setupGrammarTypeFilter(ALL_DB);
+            
+            // 【修正②】データ読み込み成功時はメッセージをクリア
+            clearMessage();
             
             // モードを適用
             applyAllFilters(); 
@@ -505,7 +526,12 @@
 
         if (DB.length === 0) {
             englishTextEl.textContent = '選択された条件に該当するデータがありません。';
-            showMessage('データが見つかりませんでした。', 'danger');
+            // 【修正②】データが0件の時のみメッセージを表示
+            if (ALL_DB.length > 0) {
+                showMessage('選択された条件に該当するデータがありません。', 'danger');
+            } else {
+                showMessage('データが見つかりませんでした。', 'danger');
+            }
             progressIndicatorEl.textContent = '0/0';
             toggleLearnedBtn.classList.add('hidden');
             englishTextEl.classList.remove('italic', 'text-gray-400', 'blur-strong');
