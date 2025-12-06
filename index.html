@@ -130,10 +130,26 @@
                 <h2 id="selection-title" class="text-3xl font-extrabold text-gray-800 mb-8">学習コンテンツを選択してください</h2>
                 
                 <div id="main-category-buttons" class="space-y-6 w-full max-w-md">
-                    <button id="btn-travel" onclick="selectCategory('travel')" class="w-full py-4 bg-primary text-white text-xl font-bold rounded-xl shadow-lg hover:bg-indigo-700 transition-colors duration-200 transform hover:scale-[1.02]">
-                        ✈️ 旅行用英語
-                    </button>
-                    </div>
+    <button id="btn-travel" onclick="selectCategory('travel')" class="w-full py-4 bg-primary text-white text-xl font-bold rounded-xl shadow-lg hover:bg-indigo-700 transition-colors duration-200 transform hover:scale-[1.02]">
+        ✈️ 旅行用英語
+    </button>
+    <button id="btn-highschool" onclick="showHighSchoolSubcategories()" class="w-full py-4 bg-purple-600 text-white text-xl font-bold rounded-xl shadow-lg hover:bg-purple-700 transition-colors duration-200 transform hover:scale-[1.02]">
+        📚 高校受験用英語
+    </button>
+</div>
+
+<div id="highschool-subcategory-buttons" class="space-y-6 w-full max-w-md hidden">
+    <button onclick="selectCategory('highschool_listening')" class="w-full py-4 bg-indigo-600 text-white text-xl font-bold rounded-xl shadow-lg hover:bg-indigo-700 transition-colors duration-200 transform hover:scale-[1.02]">
+        🎧 リスニング
+    </button>
+    <button onclick="selectCategory('highschool_reading')" class="w-full py-4 bg-blue-600 text-white text-xl font-bold rounded-xl shadow-lg hover:bg-blue-700 transition-colors duration-200 transform hover:scale-[1.02]">
+        📖 リーディング
+    </button>
+    <button onclick="backToMainCategories()" class="w-full py-3 bg-gray-400 text-white text-lg font-semibold rounded-xl shadow hover:bg-gray-500 transition-colors duration-200">
+        ← 戻る
+    </button>
+</div>
+
             </div>
             
             <div id="learning-screen" class="hidden flex-grow flex flex-col space-y-3">
@@ -255,12 +271,25 @@
 
     // JSONパスと対応する音声フォルダを定義
     const CATEGORY_MAP = {
-        'travel': {
-            jsonPath: './data/travel_sentences.json',
-            audioFolder: 'travel',
-            name: '旅行用英語',
-        },
-    };
+    'travel': {
+        jsonPath: './data/travel_sentences.json',
+        audioFolder: 'travel',
+        name: '旅行用英語',
+        hasSceneFilter: true,
+    },
+    'highschool_listening': {
+        jsonPath: './data/high_school_listening_sentences.json',
+        audioFolder: 'high_school/listening',
+        name: '高校受験用英語 - リスニング',
+        hasSceneFilter: false,
+    },
+    'highschool_reading': {
+        jsonPath: './data/high_school_reading_sentences.json',
+        audioFolder: 'high_school/reading',
+        name: '高校受験用英語 - リーディング',
+        hasSceneFilter: false,
+    },
+};
 
     // --- DOM要素の参照 ---
     const appHeaderEl = document.getElementById('app-header');
@@ -328,19 +357,44 @@
         selectionScreenEl.classList.remove('hidden');
         mainContentEl.classList.remove('grammar-layout-answered');
         mainContentEl.classList.add('overflow-y-auto'); 
+        
+        // サブカテゴリ画面を非表示にし、メインカテゴリ画面を表示
+        document.getElementById('highschool-subcategory-buttons').classList.add('hidden');
+        document.getElementById('main-category-buttons').classList.remove('hidden');
         document.getElementById('selection-title').textContent = '学習コンテンツを選択してください';
+        
         currentCategoryKey = '';
         currentSceneFilter = 'ALL'; 
         currentGrammarType = 'ALL'; 
-        // 通常モードの和訳カードを非表示に
         translationCardEl.classList.add('hidden'); 
         
-        // 【修正①】TOP画面に戻った時はリロードフラグをクリア
         sessionStorage.removeItem('isReload');
         
-        // 【修正②】TOP画面ではメッセージをクリア
         clearMessage();
     }
+
+    // ↓↓↓ ここから新規関数を追加 ↓↓↓
+    
+    /**
+     * 高校受験のサブカテゴリ選択画面を表示する
+     */
+    function showHighSchoolSubcategories() {
+        document.getElementById('main-category-buttons').classList.add('hidden');
+        document.getElementById('highschool-subcategory-buttons').classList.remove('hidden');
+        document.getElementById('selection-title').textContent = '学習する分野を選択してください';
+    }
+
+    /**
+     * メインカテゴリ選択画面に戻る
+     */
+    function backToMainCategories() {
+        document.getElementById('highschool-subcategory-buttons').classList.add('hidden');
+        document.getElementById('main-category-buttons').classList.remove('hidden');
+        document.getElementById('selection-title').textContent = '学習コンテンツを選択してください';
+    }
+    
+    // ↑↑↑ ここまで新規関数を追加 ↑↑↑
+
 
     /**
      * カテゴリを選択し、データを読み込む
@@ -413,29 +467,39 @@
      * 場面フィルターをセットアップする
      */
     function setupSceneFilter(data) {
-        const categoryCounts = {};
-        data.forEach(item => {
-            const scene = item.category_main || 'その他';
-            categoryCounts[scene] = (categoryCounts[scene] || 0) + 1;
-        });
-
-        const scenes = new Set(data.map(item => item.category_main).filter(c => c && c.trim() !== ''));
-        const sortedScenes = Array.from(scenes).sort((a, b) => a.localeCompare(b, 'ja', { sensitivity: 'base' }));
-
-        sceneFilterEl.innerHTML = '';
-        const allOption = document.createElement('option');
-        allOption.value = 'ALL';
-        allOption.textContent = `全ての使用場面 (${data.length}件)`;
-        sceneFilterEl.appendChild(allOption);
-
-        sortedScenes.forEach(scene => {
-            const option = document.createElement('option');
-            option.value = scene;
-            option.textContent = `${scene} (${categoryCounts[scene] || 0}件)`;
-            sceneFilterEl.appendChild(option);
-        });
-        sceneFilterEl.value = currentSceneFilter; 
+    const config = CATEGORY_MAP[currentCategoryKey];
+    
+    // 高校受験用の場合はフィルターを設定しない
+    if (config && !config.hasSceneFilter) {
+        sceneFilterContainerEl.style.display = 'none';
+        return;
     }
+    
+    sceneFilterContainerEl.style.display = 'flex';
+    
+    const categoryCounts = {};
+    data.forEach(item => {
+        const scene = item.category_main || 'その他';
+        categoryCounts[scene] = (categoryCounts[scene] || 0) + 1;
+    });
+
+    const scenes = new Set(data.map(item => item.category_main).filter(c => c && c.trim() !== ''));
+    const sortedScenes = Array.from(scenes).sort((a, b) => a.localeCompare(b, 'ja', { sensitivity: 'base' }));
+
+    sceneFilterEl.innerHTML = '';
+    const allOption = document.createElement('option');
+    allOption.value = 'ALL';
+    allOption.textContent = `全ての使用場面 (${data.length}件)`;
+    sceneFilterEl.appendChild(allOption);
+
+    sortedScenes.forEach(scene => {
+        const option = document.createElement('option');
+        option.value = scene;
+        option.textContent = `${scene} (${categoryCounts[scene] || 0}件)`;
+        sceneFilterEl.appendChild(option);
+    });
+    sceneFilterEl.value = currentSceneFilter; 
+}
 
     /**
      * 文法類型フィルターをセットアップする
@@ -470,28 +534,28 @@
      * 現在のフィルター設定に基づきデータを絞り込む
      */
     function applyAllFilters() {
-        const filterMode = filterModeSelectorEl.value;
-        const isGrammarMode = currentMode === 4;
+    const filterMode = filterModeSelectorEl.value;
+    const isGrammarMode = currentMode === 4;
+    const config = CATEGORY_MAP[currentCategoryKey];
 
-        DB = ALL_DB.filter(item => {
-            // 学習済み/未学習フィルター
-            if (filterMode === 'UNLEARNED' && item.isLearned) return false;
-            if (filterMode === 'LEARNED' && !item.isLearned) return false;
+    DB = ALL_DB.filter(item => {
+        // 学習済み/未学習フィルター
+        if (filterMode === 'UNLEARNED' && item.isLearned) return false;
+        if (filterMode === 'LEARNED' && !item.isLearned) return false;
 
-            // 使用場面フィルター
+        // 使用場面フィルター（旅行用のみ）
+        if (config && config.hasSceneFilter) {
             if (currentSceneFilter !== 'ALL' && item.category_main !== currentSceneFilter) return false;
+        }
 
-            // 文法モード固有のフィルター
-            if (isGrammarMode) {
-                // 文法問題データがないものは除外
-                if (!item.grammar_question || item.grammar_question.trim() === '') return false;
-                
-                // 文法類型フィルターを適用
-                if (currentGrammarType !== 'ALL' && item.grammar_type !== currentGrammarType) return false;
-            } 
-            
-            return true;
-        });
+        // 文法モード固有のフィルター
+        if (isGrammarMode) {
+            if (!item.grammar_question || item.grammar_question.trim() === '') return false;
+            if (currentGrammarType !== 'ALL' && item.grammar_type !== currentGrammarType) return false;
+        } 
+        
+        return true;
+    });
 
         // 文法モードの場合は、メインコンテンツにスタイルを適用
         mainContentEl.classList.toggle('overflow-y-auto', !isGrammarMode);
