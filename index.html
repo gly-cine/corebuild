@@ -444,6 +444,11 @@
             setupSceneFilter(ALL_DB);
             setupGrammarTypeFilter(ALL_DB);
             
+            // 高校受験用の場合は使用場面フィルターをリセット
+            if (!config.hasSceneFilter) {
+                currentSceneFilter = 'ALL';
+            }
+            
             // 【修正②】データ読み込み成功時はメッセージをクリア
             clearMessage();
             
@@ -466,15 +471,17 @@
     /**
      * 場面フィルターをセットアップする
      */
-    function setupSceneFilter(data) {
+function setupSceneFilter(data) {
     const config = CATEGORY_MAP[currentCategoryKey];
     
-    // 高校受験用の場合はフィルターを設定しない
+    // 高校受験用の場合はフィルターを完全に非表示
     if (config && !config.hasSceneFilter) {
         sceneFilterContainerEl.style.display = 'none';
+        currentSceneFilter = 'ALL'; // フィルター値もリセット
         return;
     }
     
+    // 旅行用の場合のみ表示
     sceneFilterContainerEl.style.display = 'flex';
     
     const categoryCounts = {};
@@ -575,15 +582,19 @@
         toggleLearnedBtn.classList.toggle('hidden', isGrammarMode);
         toggleTranslationBtn.classList.toggle('hidden', isGrammarMode);
         
-        // 【修正③④⑤】モードに応じてフィルターと音声ボタンの表示を切り替え
+        // 【修正②③④】モードに応じてフィルターと音声ボタンの表示を切り替え
         if (isGrammarMode) {
             // 文法問題モード: 使用場面フィルターを非表示、文法類型フィルターを同じ位置に表示
             sceneFilterContainerEl.style.display = 'none';
             grammarTypeFilterContainerEl.style.display = 'flex';
             playAudioBtn.classList.add('hidden');
         } else {
-            // 通常モード: 使用場面フィルターを表示、文法類型フィルターを非表示
-            sceneFilterContainerEl.style.display = 'flex';
+            // 通常モード: カテゴリに応じて使用場面フィルターの表示を制御
+            if (config && config.hasSceneFilter) {
+                sceneFilterContainerEl.style.display = 'flex';
+            } else {
+                sceneFilterContainerEl.style.display = 'none';
+            }
             grammarTypeFilterContainerEl.style.display = 'none';
             playAudioBtn.classList.remove('hidden');
         }
