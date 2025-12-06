@@ -126,34 +126,16 @@
 
         <main id="main-content" class="flex-grow p-6 flex flex-col space-y-3 overflow-y-auto">
 
-
-
-<div id="selection-screen" class="p-12 flex flex-col items-center justify-center h-full text-center">
-    <h2 id="selection-title" class="text-3xl font-extrabold text-gray-800 mb-8">学習コンテンツを選択してください</h2>
-    
-    <div id="main-category-buttons" class="space-y-6 w-full max-w-md">
-        <button id="btn-travel" onclick="selectCategory('travel')" class="w-full py-4 bg-indigo-600 text-white rounded-xl shadow-lg hover:bg-indigo-700 transition-colors duration-300 text-xl font-bold">
-            海外旅行用英語
-        </button>
-        <button id="btn-high-school" onclick="showHighSchoolSubSelection()" class="w-full py-4 bg-emerald-600 text-white rounded-xl shadow-lg hover:bg-emerald-700 transition-colors duration-300 text-xl font-bold">
-            高校受験用英語
-        </button>
-    </div>
-
-    <div id="high-school-category-buttons" class="space-y-6 w-full max-w-md hidden">
-        <button onclick="selectHighSchoolSubCategory('listening')" class="w-full py-4 bg-blue-600 text-white rounded-xl shadow-lg hover:bg-blue-700 transition-colors duration-300 text-xl font-bold">
-            リスニング (Listening)
-        </button>
-        <button onclick="selectHighSchoolSubCategory('reading')" class="w-full py-4 bg-red-600 text-white rounded-xl shadow-lg hover:bg-red-700 transition-colors duration-300 text-xl font-bold">
-            リーディング (Reading)
-        </button>
-        <button onclick="showSelectionScreen()" class="w-full py-2 mt-4 bg-gray-500 text-white rounded-xl shadow-lg hover:bg-gray-600 transition-colors duration-300 text-lg font-medium">
-            &lt; メインメニューに戻る
-        </button>
-    </div>
-</div>
-
-
+            <div id="selection-screen" class="p-12 flex flex-col items-center justify-center h-full text-center">
+                <h2 id="selection-title" class="text-3xl font-extrabold text-gray-800 mb-8">学習コンテンツを選択してください</h2>
+                
+                <div id="main-category-buttons" class="space-y-6 w-full max-w-md">
+                    <button id="btn-travel" onclick="selectCategory('travel')" class="w-full py-4 bg-primary text-white text-xl font-bold rounded-xl shadow-lg hover:bg-indigo-700 transition-colors duration-200 transform hover:scale-[1.02]">
+                        ✈️ 旅行用英語
+                    </button>
+                    </div>
+            </div>
+            
             <div id="learning-screen" class="hidden flex-grow flex flex-col space-y-3">
                 
                 <div class="text-center text-sm text-gray-500 mb-2 flex justify-between items-center">
@@ -171,20 +153,8 @@
                         </select>
                     </div>
 
-
-                <div id="sentence-info-card" class="bg-gray-100 p-4 rounded-xl shadow-inner text-sm text-gray-700 mb-6">
-                    <p><span class="font-bold text-indigo-700">ID:</span> <span id="info-id"></span></p>
-                    
-                    <div id="travel-info-section">
-                        <p><span class="font-bold text-indigo-700">使用場面:</span> <span id="info-scene-main"></span> - <span id="info-scene-sub"></span></p>
-                        <p><span class="font-bold text-indigo-700">優先度:</span> <span id="info-priority"></span></p>
-                    </div>
-                    
-                    <div id="high-school-info-section" class="hidden">
-                        <p><span class="font-bold text-indigo-700">出題元:</span> <span id="info-prefecture"></span> (<span id="info-year"></span>年度)</p>
-                    </div>
                 </div>
-
+    
                 <div id="english-display-card" class="bg-indigo-50 p-6 rounded-xl shadow-inner min-h-[100px] flex items-center justify-center transition-all duration-300">
                     <p id="english-text" class="text-xl md:text-2xl font-bold text-gray-800 text-center select-none w-full">
                         </p>
@@ -283,24 +253,12 @@
     let currentGrammarType = 'ALL';
     let currentSceneFilter = 'ALL'; 
 
-// JSONパスと対応する音声フォルダを定義
+    // JSONパスと対応する音声フォルダを定義
     const CATEGORY_MAP = {
         'travel': {
             jsonPath: './data/travel_sentences.json',
             audioFolder: 'travel',
-            name: '海外旅行用英語',
-        },
-        // 【追加】高校受験リスニング
-        'high_school_listening': {
-            jsonPath: './data/high_school_listening_sentences.json',
-            audioFolder: 'high_school/listening',
-            name: '高校受験 リスニング',
-        },
-        // 【追加】高校受験リーディング
-        'high_school_reading': {
-            jsonPath: './data/high_school_reading_sentences.json',
-            audioFolder: 'high_school/reading',
-            name: '高校受験 リーディング',
+            name: '旅行用英語',
         },
     };
 
@@ -334,13 +292,6 @@
     const sceneFilterContainerEl = document.getElementById('scene-filter-container');
     const grammarTypeFilterContainerEl = document.getElementById('grammar-type-filter-container');
     const playAudioBtn = document.getElementById('play-audio-btn');
-
-    // 【追加】英文情報カードの要素
-    const travelInfoSectionEl = document.getElementById('travel-info-section');
-    const highSchoolInfoSectionEl = document.getElementById('high-school-info-section');
-    const infoPrefectureEl = document.getElementById('info-prefecture');
-    const infoYearEl = document.getElementById('info-year');
-
 
     // --- 初期化処理 ---
 
@@ -376,7 +327,7 @@
         learningScreenEl.classList.add('hidden');
         selectionScreenEl.classList.remove('hidden');
         mainContentEl.classList.remove('grammar-layout-answered');
-        mainContentEl.classList.add('overflow-y-auto');
+        mainContentEl.classList.add('overflow-y-auto'); 
         document.getElementById('selection-title').textContent = '学習コンテンツを選択してください';
         currentCategoryKey = '';
         currentSceneFilter = 'ALL'; 
@@ -389,23 +340,6 @@
         
         // 【修正②】TOP画面ではメッセージをクリア
         clearMessage();
-
-        // 【修正】メインボタンと高校受験ボタンの表示切り替え
-        document.getElementById('main-category-buttons').classList.remove('hidden');
-        document.getElementById('high-school-category-buttons').classList.add('hidden');
-    }
-
-    // 【追加】高校受験サブカテゴリ選択画面を表示する
-    function showHighSchoolSubSelection() {
-        document.getElementById('selection-title').textContent = '高校受験用英語の学習形式を選択してください';
-        document.getElementById('main-category-buttons').classList.add('hidden');
-        document.getElementById('high-school-category-buttons').classList.remove('hidden');
-    }
-
-    // 【追加】高校受験サブカテゴリを選択してデータをロードする
-    function selectHighSchoolSubCategory(subCategory) {
-        const categoryKey = `high_school_${subCategory}`;
-        selectCategory(categoryKey); // 既存のselectCategory関数を利用
     }
 
     /**
@@ -701,35 +635,6 @@
             englishDisplayCard.classList.remove('hidden');
             grammarQuestionUiEl.classList.add('hidden');
         }
-
-
-
-        // 【修正】UIキャッシュで定義した高校受験用の要素を使用
-
-        if (data) {
-            
-            // IDは共通
-            infoIdEl.textContent = data.id;
-
-            // 【修正】カテゴリに応じて表示する情報を切り替える
-            if (currentCategoryKey === 'travel') {
-                travelInfoSectionEl.classList.remove('hidden');
-                highSchoolInfoSectionEl.classList.add('hidden');
-
-                // 旅行用英語の情報を設定
-                infoSceneMainEl.textContent = data.category_main || 'N/A';
-                infoSceneSubEl.textContent = data.category_sub || 'N/A';
-                infoPriorityEl.textContent = data.priority || 'N/A';
-            } else {
-                // 高校受験用英語の情報
-                travelInfoSectionEl.classList.add('hidden');
-                highSchoolInfoSectionEl.classList.remove('hidden');
-
-                infoPrefectureEl.textContent = data.prefecture || 'N/A';
-                infoYearEl.textContent = data.year || 'N/A';
-            }
-        }
-
 
         // 学習済みステータスを更新
         updateLearnedStatusUI(data.isLearned);
