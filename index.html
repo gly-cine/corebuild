@@ -78,6 +78,16 @@
             flex: 1 1 0%; 
             min-width: 0;
         }
+        
+        /* 出典表示用のスタイル */
+        .source-citation {
+            position: absolute;
+            bottom: 8px;
+            right: 12px;
+            font-size: 0.75rem;
+            color: #9ca3af;
+            font-weight: 500;
+        }
     </style>
     <script>
         tailwind.config = {
@@ -171,9 +181,10 @@
 
                 </div>
     
-                <div id="english-display-card" class="bg-indigo-50 p-6 rounded-xl shadow-inner min-h-[100px] flex items-center justify-center transition-all duration-300">
+                <div id="english-display-card" class="bg-indigo-50 p-6 rounded-xl shadow-inner min-h-[100px] flex items-center justify-center transition-all duration-300 relative">
                     <p id="english-text" class="text-xl md:text-2xl font-bold text-gray-800 text-center select-none w-full">
                         </p>
+                    <p id="source-citation" class="source-citation hidden"></p>
                 </div>
     
                 <div id="translation-card" class="bg-white border border-gray-200 rounded-xl shadow min-h-[60px] transition-all duration-300 hidden">
@@ -186,9 +197,10 @@
 
                 <div id="grammar-question-ui" class="hidden flex-col space-y-3 pt-2 flex-grow">
 
-                    <div id="grammar-sentence-card" class="bg-indigo-50 p-6 rounded-xl shadow-inner min-h-[80px] flex items-center justify-center transition-all duration-300">
+                    <div id="grammar-sentence-card" class="bg-indigo-50 p-6 rounded-xl shadow-inner min-h-[80px] flex items-center justify-center transition-all duration-300 relative">
                         <p id="grammar-target-sentence" class="text-xl md:text-2xl font-bold text-gray-800 text-center select-none">
                             </p>
+                        <p id="grammar-source-citation" class="source-citation hidden"></p>
                     </div>
                     
                     <div id="grammar-translation-card" class="bg-white border border-gray-200 rounded-xl shadow min-h-[60px] transition-all duration-300 hidden">
@@ -321,6 +333,8 @@
     const sceneFilterContainerEl = document.getElementById('scene-filter-container');
     const grammarTypeFilterContainerEl = document.getElementById('grammar-type-filter-container');
     const playAudioBtn = document.getElementById('play-audio-btn');
+    const sourceCitationEl = document.getElementById('source-citation');
+    const grammarSourceCitationEl = document.getElementById('grammar-source-citation');
 
     // --- 初期化処理 ---
 
@@ -372,6 +386,44 @@
         
         clearMessage();
     }
+
+
+
+    /**
+     * カテゴリに応じてモードセレクターの選択肢を更新
+     */
+    function updateModeSelector(categoryKey) {
+        const config = CATEGORY_MAP[categoryKey];
+        
+        modeSelectorEl.innerHTML = '';
+        
+        // 共通の選択肢
+        const option1 = document.createElement('option');
+        option1.value = '1';
+        option1.textContent = '① 英文先行';
+        modeSelectorEl.appendChild(option1);
+        
+        const option2 = document.createElement('option');
+        option2.value = '2';
+        option2.textContent = '② 音声先行';
+        modeSelectorEl.appendChild(option2);
+        
+        // 高校受験のみ文法問題を追加
+        if (categoryKey.startsWith('highschool_')) {
+            const option4 = document.createElement('option');
+            option4.value = '4';
+            option4.textContent = '③ 文法問題';
+            modeSelectorEl.appendChild(option4);
+        }
+        
+        // 現在のモードが利用不可になった場合はモード1にリセット
+        if (currentMode === 4 && !categoryKey.startsWith('highschool_')) {
+            changeMode(1);
+        } else {
+            modeSelectorEl.value = currentMode;
+        }
+    }
+
 
     // ↓↓↓ ここから新規関数を追加 ↓↓↓
     
@@ -439,6 +491,9 @@
             
             // ヘッダータイトルの更新
             document.querySelector('#app-header h1').textContent = config.name;
+
+            // モードセレクターの選択肢を動的に変更
+            updateModeSelector(key);
 
             // フィルターを初期化
             setupSceneFilter(ALL_DB);
@@ -713,6 +768,9 @@ function setupSceneFilter(data) {
 
         // 学習済みステータスを更新
         updateLearnedStatusUI(data.isLearned);
+        
+        // 出典情報を更新
+        updateSourceCitation(data);
     }
 
     /**
@@ -793,6 +851,60 @@ function setupSceneFilter(data) {
         }
     }
 
+    /**
+     * 出典情報を表示する
+     */
+    function updateSourceCitation(data) {
+        // 高校受験カテゴリ以外では非表示
+        if (!currentCategoryKey.startsWith('highschool_')) {
+            sourceCitationEl.classList.add('hidden');
+            grammarSourceCitationEl.classList.add('hidden');
+            return;
+        }
+        
+        // 年度と都道府県の情報を取得
+        const year = data.year || '';
+        const prefecture = data.prefecture || '';
+        
+        if (!year && !prefecture) {
+            sourceCitationEl.classList.add('hidden');
+            grammarSourceCitationEl.classList.add('hidden');
+            return;
+        }
+        
+        // 都道府県名の後に適切な接尾辞を付ける
+        let prefectureSuffix = '';
+        if (prefecture) {
+            // 「都」「道」「府」「県」が既に含まれているか確認
+            if (!prefecture.match(/[都道府県]$/)) {
+                // 東京、北海道、大阪、京都の特殊ケース
+                if (prefecture === '東京') {
+                    prefectureSuffix = '都';
+                } else if (prefecture === '北海道') {
+                    prefectureSuffix = '';
+                } else if (prefecture === '大阪' || prefecture === '京都') {
+                    prefectureSuffix = '府';
+                } else {
+                    prefectureSuffix = '県';
+                }
+            }
+        }
+        
+        // 出典テキストを構築
+        const citationText = `出典：${year}年${prefecture}${prefectureSuffix}高校英語入試問題`;
+        
+        // 通常モードと文法問題モードで表示を切り替え
+        if (currentMode === 4) {
+            grammarSourceCitationEl.textContent = citationText;
+            grammarSourceCitationEl.classList.remove('hidden');
+            sourceCitationEl.classList.add('hidden');
+        } else {
+            sourceCitationEl.textContent = citationText;
+            sourceCitationEl.classList.remove('hidden');
+            grammarSourceCitationEl.classList.add('hidden');
+        }
+    }
+
 
     // --- 和訳・音声再生 (省略) ---
 
@@ -840,12 +952,6 @@ function setupSceneFilter(data) {
             console.error("音声再生エラー:", error, audioPath);
             showMessage('音声ファイルの再生に失敗しました。ファイルが存在しないか、ブラウザの制限です。', 'danger');
         });
-
-        if (currentMode === 2 && englishTextEl.classList.contains('blur-strong')) {
-             englishTextEl.classList.remove('blur-strong');
-             englishTextEl.classList.add('italic', 'text-gray-400');
-             showMessage('英文のぼかしを解除しました。', 'gray');
-        }
     }
 
 
