@@ -218,7 +218,7 @@
                         <button id="choice-A" onclick="checkGrammarAnswer('A')" class="choice-button py-2 px-3 rounded-lg text-base text-left bg-gray-100 border border-gray-300 transition duration-150"></button> 
                         <button id="choice-B" onclick="checkGrammarAnswer('B')" class="choice-button py-2 px-3 rounded-lg text-base text-left bg-gray-100 border border-gray-300 transition duration-150"></button>
                         <button id="choice-C" onclick="checkGrammarAnswer('C')" class="choice-button py-2 px-3 rounded-lg text-base text-left bg-gray-100 border border-gray-300 transition duration-150"></button>
-                        <button id="choice-D" onclick="checkGrammarAnswer('D')" onclick="checkGrammarAnswer('D')" class="choice-button py-2 px-3 rounded-lg text-base text-left bg-gray-100 border border-gray-300 transition duration-150"></button>
+                        <button id="choice-D" onclick="checkGrammarAnswer('D')" class="choice-button py-2 px-3 rounded-lg text-base text-left bg-gray-100 border border-gray-300 transition duration-150"></button>
                     </div>
 
                     <div id="grammar-answer-explanation" class="hidden mt-4 p-3 rounded-xl shadow-xl bg-white border-2 border-green-500 max-w-xl mx-auto w-full flex-shrink-0">
@@ -339,7 +339,6 @@
     // --- 初期化処理 ---
 
     document.addEventListener('DOMContentLoaded', () => {
-        // 【修正②】初期状態ではメッセージをクリア（表示しない）
         clearMessage(); 
 
         // 【修正①】リロード時の挙動を制御
@@ -457,7 +456,6 @@
             return;
         }
 
-        // 【修正②】カテゴリ選択時はメッセージをクリア
         clearMessage();
 
         currentCategoryKey = key;
@@ -625,12 +623,12 @@ function setupSceneFilter(data) {
         // UIの表示/非表示を切り替え
         englishDisplayCard.classList.toggle('hidden', isGrammarMode);
         
-        // 【修正】通常の和訳カードも文法モードでは確実に非表示
+        // 和訳カードの表示制御
         translationCardEl.classList.add('hidden');
         if (isGrammarMode) {
-            translationCardEl.style.display = 'none'; // CSSでも非表示
+            translationCardEl.style.display = 'none'; 
         } else {
-            translationCardEl.style.display = ''; // 通常モードでは表示可能に戻す
+            translationCardEl.style.display = ''; 
         }
         
         grammarQuestionUiEl.classList.toggle('hidden', !isGrammarMode);
@@ -725,11 +723,11 @@ function setupSceneFilter(data) {
             // 文法問題のUIリセット
             resetGrammarUI(data);
             
-            // 【修正】通常の和訳カードを確実に非表示にする
+            // 通常の和訳カードを非表示
             translationCardEl.classList.add('hidden');
             translationCardEl.style.display = 'none'; // CSSでも確実に非表示
             
-            // 【修正①】文法問題モードでは最初から和訳を表示
+            // 文法問題モードでは和訳を表示
             grammarJapaneseTextEl.textContent = data.ja;
             grammarTranslationCardEl.classList.remove('hidden'); 
             isTranslationVisible = true;
@@ -754,7 +752,7 @@ function setupSceneFilter(data) {
                 toggleTranslationBtn.textContent = '英文・和訳を表示';
             }
 
-            // 【修正①】非文法モードでは和訳カードを初期状態で完全非表示
+            // 通常モードでは和訳を非表示
             translationCardEl.classList.add('hidden');
             translationCardEl.style.display = 'none';
             grammarTranslationCardEl.classList.add('hidden'); 
@@ -778,7 +776,7 @@ function setupSceneFilter(data) {
      */
     function navigate(direction) {
         loadSentence(currentSentenceIndex + direction);
-        // 【修正①】移動時は和訳を非表示にリセット（文法問題以外）
+        // 通常モード時は和訳をリセット
         if (currentMode !== 4) {
             isTranslationVisible = false;
             translationCardEl.classList.add('hidden');
@@ -915,7 +913,7 @@ function setupSceneFilter(data) {
 
         isTranslationVisible = !isTranslationVisible;
         
-        // 【修正①】和訳表示時はdisplayも変更
+        // 和訳表示時のスタイル設定
         if (isTranslationVisible) {
             translationCardEl.classList.remove('hidden');
             translationCardEl.style.display = 'flex'; // フレックス表示に
