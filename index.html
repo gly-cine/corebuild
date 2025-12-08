@@ -100,7 +100,7 @@
         /* 出典表示用のスタイル */
         .source-citation {
             position: absolute;
-            bottom: 16px; /* 8pxから16pxに変更して余白を確保 */
+            bottom: 5px; /* 16pxから5pxに変更（余白を近くに） */
             right: 12px;
             font-size: 0.75rem;
             color: #9ca3af;
@@ -297,7 +297,8 @@
     const LEARNED_STATUS_KEY = 'learning_app_learned_status';
     let messageTimeoutId = null;
     let currentGrammarType = 'ALL';
-    let currentSceneFilter = 'ALL'; 
+    let currentSceneFilter = 'ALL';
+    let lastDisplayedId = ''; // 現在表示中の英文のIDを記録
 
     // JSONパスと対応する音声フォルダを定義
     const CATEGORY_MAP = {
@@ -730,6 +731,15 @@ function setupSceneFilter(data) {
 
         mainContentEl.classList.remove('grammar-layout-answered');
         applyAllFilters();
+        
+        // モード切り替え後、前回表示していた拡張の英文を探索する
+        if (lastDisplayedId !== '') {
+            const foundIndex = DB.findIndex(item => item.id === lastDisplayedId);
+            if (foundIndex !== -1) {
+                currentSentenceIndex = foundIndex;
+                loadSentence(currentSentenceIndex);
+            }
+        }
     }
 
     /**
@@ -744,8 +754,11 @@ function setupSceneFilter(data) {
         currentSentenceIndex = (index + DB.length) % DB.length;
         const data = DB[currentSentenceIndex];
 
-        // 進捗状況を更新
+        // 進捗状態を更新
         progressIndicatorEl.textContent = `${currentSentenceIndex + 1}/${DB.length}`;
+        
+        // 現在表示中の英文IDを記録
+        lastDisplayedId = data.id;
 
         // 英文/和訳表示エリアの切り替えとデータ設定
         if (currentMode === 4) { // 文法問題モード
@@ -826,6 +839,9 @@ function setupSceneFilter(data) {
             englishTextEl.classList.add('blur-strong'); 
             englishTextEl.classList.remove('italic', 'text-gray-400');
         }
+        
+        // 現在表示中の英文IDを記録
+        lastDisplayedId = DB[currentSentenceIndex].id;
     }
 
 
