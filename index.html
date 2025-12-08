@@ -291,14 +291,15 @@
     let ALL_DB = []; 
     let DB = []; 
     let currentMode = 1; 
-    let currentSentenceIndex = 0;
-    let isTranslationVisible = false; 
-    let currentCategoryKey = ''; 
-    const LEARNED_STATUS_KEY = 'learning_app_learned_status';
-    let messageTimeoutId = null;
-    let currentGrammarType = 'ALL';
-    let currentSceneFilter = 'ALL';
-    let lastDisplayedId = ''; // 現在表示中の英文のIDを記録
+let currentSentenceIndex = 0;
+let isTranslationVisible = false; 
+let currentCategoryKey = ''; 
+const LEARNED_STATUS_KEY = 'learning_app_learned_status';
+let messageTimeoutId = null;
+let currentGrammarType = 'ALL';
+let currentSceneFilter = 'ALL';
+let lastDisplayedId = '';
+let translationVisibilityState = false;  // **新規追加：和訳表示状態を保持**
 
     // JSONパスと対応する音声フォルダを定義
     const CATEGORY_MAP = {
@@ -696,51 +697,83 @@ function setupSceneFilter(data) {
      * モードを切り替える
      */
     function changeMode(mode) {
-        currentMode = parseInt(mode, 10);
-        localStorage.setItem('lastLearningMode', currentMode);
-        modeSelectorEl.value = currentMode;
+    currentMode = parseInt(mode, 10);
+    localStorage.setItem('lastLearningMode', currentMode);
+    modeSelectorEl.value = currentMode;
+    
+    // ModōKirie kaeToki no WayakuHyoujiJoutaiwoRisetto
+    isTranslationVisible = translationVisibilityState;
+    
+    if (currentMode !== 4) {
+        // Tuuyou mode (Mode 1, 2)
+        translationCardEl.classList.add('hidden');
+        translationCardEl.style.display = 'none';
+        japaneseTextEl.textContent = '';
+        grammarTranslationCardEl.classList.add('hidden');
+        grammarTranslationCardEl.style.display = 'none';
+        grammarJapaneseTextEl.textContent = '';
+        englishTextEl.classList.remove('blur-strong', 'italic', 'text-gray-400');
         
-        // モード切り替え時の和訳表示状態をリセット
-        isTranslationVisible = false;
-        
-        if (currentMode !== 4) {
-            // 通常モード（1, 2）
-            translationCardEl.classList.add('hidden');
-            translationCardEl.style.display = 'none';
-            japaneseTextEl.textContent = '';
-            grammarTranslationCardEl.classList.add('hidden');
-            grammarTranslationCardEl.style.display = 'none';
-            grammarJapaneseTextEl.textContent = '';
-            englishTextEl.classList.remove('blur-strong', 'italic', 'text-gray-400');
-            
-            if (currentMode === 1) { 
-                toggleTranslationBtn.textContent = '和訳を表示';
-            } else if (currentMode === 2) { 
-                toggleTranslationBtn.textContent = '英文・和訳を表示';
-            }
+        // **修正：和訳カードの表示状態を保存状態に基づいて設定**
+        if (isTranslationVisible) {
+            translationCardEl.classList.remove('hidden');
+            translationCardEl.style.display = 'flex';
+            japaneseTextEl.textContent = DB[currentSentenceIndex] ? DB[currentSentenceIndex].ja : '';
+            toggleTranslationBtn.textContent = 'Wayaku woHibyouji';
         } else {
-            // 文法問題モード（4）
-            translationCardEl.classList.add('hidden');
-            translationCardEl.style.display = 'none';
-            japaneseTextEl.textContent = '';
+            toggleTranslationBtn.textContent = currentMode === 1 ? 'Wayaku woHyouji' : 'Eibun Fu Wayaku woHyouji';
+        }
+        
+        if (currentMode === 1) { 
+            toggleTranslationBtn.textContent = isTranslationVisible ? 'Wayaku woHibyouji' : 'Wayaku woHyouji';
+        } else if (currentMode === 2) { 
+            toggleTranslationBtn.textContent = isTranslationVisible ? 'Eibun Fu Wayaku woHibyouji' : 'Eibun Fu Wayaku woHyouji';
+        }
+    } else {
+        // Bunpou mondai mode (Mode 4)
+        translationCardEl.classList.add('hidden');
+        translationCardEl.style.display = 'none';
+        japaneseTextEl.textContent = '';
+        
+        // **修正：和訳カードの表示状態を保存状態に基づいて設定**
+        if (isTranslationVisible) {
+            grammarTranslationCardEl.classList.remove('hidden');
+            grammarTranslationCardEl.style.display = 'flex';
+            grammarJapaneseTextEl.textContent = DB[currentSentenceIndex] ? DB[currentSentenceIndex].ja : '';
+            toggleTranslationBtn.textContent = 'Wayaku woHibyouji';
+        } else {
             grammarTranslationCardEl.classList.add('hidden');
             grammarTranslationCardEl.style.display = 'none';
             grammarJapaneseTextEl.textContent = '';
-            toggleTranslationBtn.textContent = '和訳を表示';
-        }
-
-        mainContentEl.classList.remove('grammar-layout-answered');
-        applyAllFilters();
-        
-        // モード切り替え後、前回表示していた拡張の英文を探索する
-        if (lastDisplayedId !== '') {
-            const foundIndex = DB.findIndex(item => item.id === lastDisplayedId);
-            if (foundIndex !== -1) {
-                currentSentenceIndex = foundIndex;
-                loadSentence(currentSentenceIndex);
-            }
+            toggleTranslationBtn.textContent = 'Wayaku woHyouji';
         }
     }
+
+    mainContentEl.classList.remove('grammar-layout-answered');
+    applyAllFilters();
+    
+    // ModōKirie kaeToki ni MaeyoreTsukaHyoujiShiteItaTakuChouseiwoSagasu
+    if (lastDisplayedId !== '') {
+        const foundIndex = DB.findIndex(item => item.id === lastDisplayedId);
+        if (foundIndex !== -1) {
+            currentSentenceIndex = foundIndex;
+            loadSentence(currentSentenceIndex);
+        }
+    }
+}
+
+    mainContentEl.classList.remove('grammar-layout-answered');
+    applyAllFilters();
+    
+    // ModōKirie kaeToki ni MaeyoreTsukaHyoujiShiteItaTakuChouseiwoSagasu
+    if (lastDisplayedId !== '') {
+        const foundIndex = DB.findIndex(item => item.id === lastDisplayedId);
+        if (foundIndex !== -1) {
+            currentSentenceIndex = foundIndex;
+            loadSentence(currentSentenceIndex);
+        }
+    }
+
 
     /**
      * 現在の文のデータをUIに読み込む
@@ -949,50 +982,51 @@ function setupSceneFilter(data) {
     // --- 和訳・音声再生 (省略) ---
 
     function toggleTranslation() {
-        // 文法問題モードでの処理
-        if (currentMode === 4) {
-            isTranslationVisible = !isTranslationVisible;
-            
-            if (isTranslationVisible) {
-                grammarTranslationCardEl.classList.remove('hidden');
-                grammarTranslationCardEl.style.display = 'flex'; // フレックス表示に
-                grammarJapaneseTextEl.textContent = DB[currentSentenceIndex].ja;
-                toggleTranslationBtn.textContent = '和訳を非表示';
-            } else {
-                grammarTranslationCardEl.classList.add('hidden');
-                grammarTranslationCardEl.style.display = 'none'; // 完全非表示
-                grammarJapaneseTextEl.textContent = '';
-                toggleTranslationBtn.textContent = '和訳を表示';
-            }
-            return; 
+    // Bunpou mondai mode
+    if (currentMode === 4) {
+        isTranslationVisible = !isTranslationVisible;
+        translationVisibilityState = isTranslationVisible;  // **状態を保存**
+        
+        if (isTranslationVisible) {
+            grammarTranslationCardEl.classList.remove('hidden');
+            grammarTranslationCardEl.style.display = 'flex';
+            grammarJapaneseTextEl.textContent = DB[currentSentenceIndex].ja;
+            toggleTranslationBtn.textContent = 'Wayaku woHibyouji';
+        } else {
+            grammarTranslationCardEl.classList.add('hidden');
+            grammarTranslationCardEl.style.display = 'none';
+            grammarJapaneseTextEl.textContent = '';
+            toggleTranslationBtn.textContent = 'Wayaku woHyouji';
+        }
+        return; 
+    }
+
+    // Tuuyou mode (Mode 1, 2)
+    isTranslationVisible = !isTranslationVisible;
+    translationVisibilityState = isTranslationVisible;  // **状態を保存**
+    
+    if (isTranslationVisible) {
+        translationCardEl.classList.remove('hidden');
+        translationCardEl.style.display = 'flex';
+        japaneseTextEl.textContent = DB[currentSentenceIndex].ja;
+        toggleTranslationBtn.textContent = 'Wayaku woHibyouji';
+        
+        if (currentMode === 2) {
+            englishTextEl.classList.remove('blur-strong');
+            englishTextEl.classList.remove('italic', 'text-gray-400');
         }
 
-        // 通常モード（モード1, 2）での処理
-        isTranslationVisible = !isTranslationVisible;
+    } else {
+        translationCardEl.classList.add('hidden');
+        translationCardEl.style.display = 'none';
+        japaneseTextEl.textContent = ''; 
+        toggleTranslationBtn.textContent = currentMode === 1 ? 'Wayaku woHyouji' : 'Eibun Fu Wayaku woHyouji'; 
         
-        // 和訳表示時のスタイル設定
-        if (isTranslationVisible) {
-            translationCardEl.classList.remove('hidden');
-            translationCardEl.style.display = 'flex'; // フレックス表示に
-            japaneseTextEl.textContent = DB[currentSentenceIndex].ja;
-            toggleTranslationBtn.textContent = '和訳を非表示';
-            
-            if (currentMode === 2) {
-                englishTextEl.classList.remove('blur-strong');
-                englishTextEl.classList.remove('italic', 'text-gray-400');
-            }
-
-        } else {
-            translationCardEl.classList.add('hidden');
-            translationCardEl.style.display = 'none'; // 完全非表示
-            japaneseTextEl.textContent = ''; 
-            toggleTranslationBtn.textContent = currentMode === 1 ? '和訳を表示' : '英文・和訳を表示'; 
-            
-            if (currentMode === 2) {
-                englishTextEl.classList.add('blur-strong');
-            }
+        if (currentMode === 2) {
+            englishTextEl.classList.add('blur-strong');
         }
     }
+}
 
     function playAudio() {
         const data = DB[currentSentenceIndex];
@@ -1039,8 +1073,7 @@ function setupSceneFilter(data) {
             const choiceTextWithLetter = data[choiceKey];
 
             if (choiceTextWithLetter) {
-                const choiceText = choiceTextWithLetter.substring(3).trim(); 
-                buttonEl.textContent = choiceText;
+                buttonEl.textContent = choiceTextWithLetter;
                 buttonEl.setAttribute('onclick', `checkGrammarAnswer('${letter}')`);
                 buttonEl.disabled = false;
                 buttonEl.classList.remove('bg-green-100', 'bg-red-100', 'border-green-500', 'border-red-500', 'selected', 'opacity-50', 'hidden');
