@@ -650,9 +650,10 @@ function setupSceneFilter(data) {
         }
         
         grammarQuestionUiEl.classList.toggle('hidden', !isGrammarMode);
-        // 文法問題モードでも「覚えた」ボタンを表示するように変更
+        // 文法問題モードでも、「覚えた」ボタンを表示するように変更
         toggleLearnedBtn.classList.remove('hidden'); // 常に表示
-        toggleTranslationBtn.classList.toggle('hidden', isGrammarMode);
+        // 全モードで和訳表示ボタンを表示
+        toggleTranslationBtn.classList.remove('hidden');
         
         // 【修正②③④】モードに応じてフィルターと音声ボタンの表示を切り替え
         if (isGrammarMode) {
@@ -698,22 +699,33 @@ function setupSceneFilter(data) {
         localStorage.setItem('lastLearningMode', currentMode);
         modeSelectorEl.value = currentMode;
         
-        // 【修正①】モード切り替え時の和訳表示状態をリセット
+        // モード切り替え時の和訳表示状態をリセット
+        isTranslationVisible = false;
+        
         if (currentMode !== 4) {
-            isTranslationVisible = false;
+            // 通常モード（1, 2）
             translationCardEl.classList.add('hidden');
             translationCardEl.style.display = 'none';
-            japaneseTextEl.textContent = ''; 
-        }
-        
-        grammarTranslationCardEl.classList.add('hidden'); 
-        grammarJapaneseTextEl.textContent = ''; 
-        englishTextEl.classList.remove('blur-strong', 'italic', 'text-gray-400');
-        
-        if (currentMode === 1) { 
+            japaneseTextEl.textContent = '';
+            grammarTranslationCardEl.classList.add('hidden');
+            grammarTranslationCardEl.style.display = 'none';
+            grammarJapaneseTextEl.textContent = '';
+            englishTextEl.classList.remove('blur-strong', 'italic', 'text-gray-400');
+            
+            if (currentMode === 1) { 
+                toggleTranslationBtn.textContent = '和訳を表示';
+            } else if (currentMode === 2) { 
+                toggleTranslationBtn.textContent = '英文・和訳を表示';
+            }
+        } else {
+            // 文法問題モード（4）
+            translationCardEl.classList.add('hidden');
+            translationCardEl.style.display = 'none';
+            japaneseTextEl.textContent = '';
+            grammarTranslationCardEl.classList.add('hidden');
+            grammarTranslationCardEl.style.display = 'none';
+            grammarJapaneseTextEl.textContent = '';
             toggleTranslationBtn.textContent = '和訳を表示';
-        } else if (currentMode === 2) { 
-            toggleTranslationBtn.textContent = '英文・和訳を表示';
         }
 
         mainContentEl.classList.remove('grammar-layout-answered');
@@ -745,12 +757,6 @@ function setupSceneFilter(data) {
             // 通常の和訳カードを非表示
             translationCardEl.classList.add('hidden');
             translationCardEl.style.display = 'none'; // CSSでも確実に非表示
-            
-            // 文法問題モードでは和訳を表示
-            grammarJapaneseTextEl.textContent = data.ja;
-            grammarTranslationCardEl.classList.remove('hidden'); 
-            isTranslationVisible = true;
-            
             japaneseTextEl.textContent = '';
             
             // 文法UIを表示し、通常英文UIを非表示
@@ -795,30 +801,31 @@ function setupSceneFilter(data) {
      */
     function navigate(direction) {
         loadSentence(currentSentenceIndex + direction);
+        
         // 通常モード時は和訳をリセット
         if (currentMode !== 4) {
             isTranslationVisible = false;
             translationCardEl.classList.add('hidden');
             translationCardEl.style.display = 'none';
-            japaneseTextEl.textContent = ''; 
+            japaneseTextEl.textContent = '';
+            toggleTranslationBtn.textContent = currentMode === 1 ? '和訳を表示' : '英文・和訳を表示';
+        } else {
+            // 文法モード時は和訳をリセット
+            isTranslationVisible = false;
+            grammarTranslationCardEl.classList.add('hidden');
+            grammarTranslationCardEl.style.display = 'none';
+            grammarJapaneseTextEl.textContent = '';
+            toggleTranslationBtn.textContent = '和訳を表示';
+            resetGrammarUI(DB[currentSentenceIndex]);
         }
-        grammarTranslationCardEl.classList.add('hidden'); 
-        grammarJapaneseTextEl.textContent = '';
 
-        // モードに応じた英文表示の調整 (再度のマスキング)
+        // モードに応じた英文表示の調整（loadSentenceで既に設定されているので不要かもしれませんが保持）
         if (currentMode === 1) { 
             englishTextEl.classList.remove('blur-strong', 'italic', 'text-gray-400');
         } else if (currentMode === 2) { 
             englishTextEl.classList.add('blur-strong'); 
             englishTextEl.classList.remove('italic', 'text-gray-400');
         }
-
-        // 文法モードの場合は、UIをリセット
-        if (currentMode === 4) {
-             resetGrammarUI(DB[currentSentenceIndex]);
-        }
-        
-        toggleTranslationBtn.textContent = currentMode === 1 ? '和訳を表示' : '英文・和訳を表示';
     }
 
 
@@ -926,10 +933,25 @@ function setupSceneFilter(data) {
     // --- 和訳・音声再生 (省略) ---
 
     function toggleTranslation() {
+        // 文法問題モードでの処理
         if (currentMode === 4) {
+            isTranslationVisible = !isTranslationVisible;
+            
+            if (isTranslationVisible) {
+                grammarTranslationCardEl.classList.remove('hidden');
+                grammarTranslationCardEl.style.display = 'flex'; // フレックス表示に
+                grammarJapaneseTextEl.textContent = DB[currentSentenceIndex].ja;
+                toggleTranslationBtn.textContent = '和訳を非表示';
+            } else {
+                grammarTranslationCardEl.classList.add('hidden');
+                grammarTranslationCardEl.style.display = 'none'; // 完全非表示
+                grammarJapaneseTextEl.textContent = '';
+                toggleTranslationBtn.textContent = '和訳を表示';
+            }
             return; 
         }
 
+        // 通常モード（モード1, 2）での処理
         isTranslationVisible = !isTranslationVisible;
         
         // 和訳表示時のスタイル設定
@@ -978,15 +1000,16 @@ function setupSceneFilter(data) {
      * 文法問題のUIをリセットする
      */
     function resetGrammarUI(data) {
-        grammarQuestionTextEl.textContent = '(空欄に当てはまる語句を選んでください)'; 
+        grammarQuestionTextEl.textContent = '(空欄に当てはまる単語を選んでください)'; 
         grammarAnswerExplanationEl.classList.add('hidden');
         mainContentEl.classList.remove('grammar-layout-answered');
         mainContentEl.classList.add('overflow-y-auto');
         
-        // 【修正】通常の和訳カードを確実に非表示
+        // 両方の和訳カードを非表示に統一（ボタンで表示させるまで表示しない）
         translationCardEl.classList.add('hidden');
         translationCardEl.style.display = 'none'; // CSSでも非表示
         grammarTranslationCardEl.classList.add('hidden'); 
+        grammarTranslationCardEl.style.display = 'none'; // CSSでも非表示
         japaneseTextEl.textContent = '';
         grammarJapaneseTextEl.textContent = ''; 
         isTranslationVisible = false;
@@ -1052,21 +1075,22 @@ function setupSceneFilter(data) {
             }
         }
 
-        // 解説と和訳を表示
+        // 解説を表示
         grammarCorrectAnswerEl.textContent = correctChoiceWithLetter;
         grammarExplanationTextEl.textContent = data.grammar_explanation || '解説はありません。';
         grammarAnswerExplanationEl.classList.remove('hidden');
 
-        // 和訳カードの表示（解答後）
-        grammarJapaneseTextEl.textContent = data.ja; 
-        grammarTranslationCardEl.classList.remove('hidden'); 
-        isTranslationVisible = true; 
+        // 和訳カードを常に表示（回答後は必ず和訳を見せる）
+        grammarJapaneseTextEl.textContent = data.ja;
+        grammarTranslationCardEl.classList.remove('hidden');
+        grammarTranslationCardEl.style.display = 'flex'; // フレックス表示に
+        isTranslationVisible = true;
 
         // レイアウトを回答後スタイルに切り替え
         mainContentEl.classList.remove('overflow-y-auto');
         mainContentEl.classList.add('grammar-layout-answered');
     }
-
+    
     /**
      * 文法類型でフィルタリングする
      */
