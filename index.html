@@ -701,7 +701,10 @@ function setupSceneFilter(data) {
     localStorage.setItem('lastLearningMode', currentMode);
     modeSelectorEl.value = currentMode;
     
-    // ModōKirie kaeToki no WayakuHyoujiJoutaiwoRisetto
+    // Genzai hyouji-chuu no ID wo hozon
+    const currentId = (DB.length > 0 && DB[currentSentenceIndex]) ? DB[currentSentenceIndex].id : lastDisplayedId;
+    
+    // Mode wo kirikaetoki no WayakuHyoujiJoutai wo Risetto
     isTranslationVisible = translationVisibilityState;
     
     if (currentMode !== 4) {
@@ -714,7 +717,7 @@ function setupSceneFilter(data) {
         grammarJapaneseTextEl.textContent = '';
         englishTextEl.classList.remove('blur-strong', 'italic', 'text-gray-400');
         
-        // **修正：和訳カードの表示状態を保存状態に基づいて設定**
+        // **Shuusei: Wayaku card no hyouji joutai wo hozon joutai ni motozuite settei**
         if (isTranslationVisible) {
             translationCardEl.classList.remove('hidden');
             translationCardEl.style.display = 'flex';
@@ -735,7 +738,7 @@ function setupSceneFilter(data) {
         translationCardEl.style.display = 'none';
         japaneseTextEl.textContent = '';
         
-        // **修正：和訳カードの表示状態を保存状態に基づいて設定**
+        // **Shuusei: Wayaku card no hyouji joutai wo hozon joutai ni motozuite settei**
         if (isTranslationVisible) {
             grammarTranslationCardEl.classList.remove('hidden');
             grammarTranslationCardEl.style.display = 'flex';
@@ -752,13 +755,23 @@ function setupSceneFilter(data) {
     mainContentEl.classList.remove('grammar-layout-answered');
     applyAllFilters();
     
-    // ModōKirie kaeToki ni MaeyoreTsukaHyoujiShiteItaTakuChouseiwoSagasu
-    if (lastDisplayedId !== '') {
-        const foundIndex = DB.findIndex(item => item.id === lastDisplayedId);
+    // Mode wo kirikaetoki ni onaji ID no bun wo sagasu
+    if (currentId !== '') {
+        const foundIndex = DB.findIndex(item => item.id === currentId);
         if (foundIndex !== -1) {
             currentSentenceIndex = foundIndex;
             loadSentence(currentSentenceIndex);
+        } else {
+            // Mitsukara-nakattara saisho no bun wo hyouji
+            if (DB.length > 0) {
+                currentSentenceIndex = 0;
+                loadSentence(currentSentenceIndex);
+            }
         }
+    } else if (DB.length > 0) {
+        // ID ga nai baai wa saisho no bun wo hyouji
+        currentSentenceIndex = 0;
+        loadSentence(currentSentenceIndex);
     }
 }
 
@@ -1074,7 +1087,6 @@ function setupSceneFilter(data) {
 
             if (choiceTextWithLetter) {
                 buttonEl.textContent = choiceTextWithLetter;
-                buttonEl.setAttribute('onclick', `checkGrammarAnswer('${letter}')`);
                 buttonEl.disabled = false;
                 buttonEl.classList.remove('bg-green-100', 'bg-red-100', 'border-green-500', 'border-red-500', 'selected', 'opacity-50', 'hidden');
                 buttonEl.classList.add('bg-gray-100', 'border-gray-300');
